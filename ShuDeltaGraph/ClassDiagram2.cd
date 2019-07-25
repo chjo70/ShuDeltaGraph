@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CClassViewMenuButton" Collapsed="true">
+    <Position X="23" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ClassView.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CAboutDlg" Collapsed="true">
+    <Position X="16" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAAAAABAABAAAAAAAACAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ShuDeltaGraph.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CData" Collapsed="true">
+    <Position X="1.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAEAACQAgAAgAAAAgAAAAABBAAAAAAAAAAAAI=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CPDW" Collapsed="true">
+    <Position X="0.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAgAAhAAAAgAAAQAAAAAAABAAAAAAAI=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CIQ" Collapsed="true">
+    <Position X="2.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAgAAgAAAAgAAAAAAAABAAAAAQAAAEI=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CDataFile" Collapsed="true">
+    <Position X="16" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAiABEAAAABAAIAAAAAgIAAAAAAAAAQIAAAAAIAo=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CChildFrame" Collapsed="true">
+    <Position X="17.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAAAAAAACAAAgAAAgAAAAEAAAAABAAAQAAA=</HashCode>
+      <FileName>ChildFrm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CClassToolBar" Collapsed="true">
+    <Position X="19.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>ClassView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CClassView" Collapsed="true">
+    <Position X="21.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACACABAgAEAAAwAhAAMgAAAAiAEgAEAAAEBgEAAACA=</HashCode>
+      <FileName>ClassView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CFileViewToolBar" Collapsed="true">
+    <Position X="19.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>FileView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CFileView" Collapsed="true">
+    <Position X="17.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACgCAAAiAEAACABAAAAkAAAACAEAAFAgQABAABIAAA=</HashCode>
+      <FileName>FileView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CMainFrame" Collapsed="true">
+    <Position X="21.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAgCAAAAAIAACSAGAACiAAEoCEAAgAgAABRAAAAghA=</HashCode>
+      <FileName>MainFrm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="COutputList" Collapsed="true">
+    <Position X="23" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAABAAAAgAAAAAAAAAAAIAABAAAIAAA=</HashCode>
+      <FileName>OutputWnd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="COutputWnd" Collapsed="true">
+    <Position X="16" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QBIAACAAAAECAAAAAAAAAAAAACACAAAABAABIAAECAA=</HashCode>
+      <FileName>OutputWnd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CPropertiesToolBar" Collapsed="true">
+    <Position X="17.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>PropertiesWnd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CPropertiesWnd" Collapsed="true">
+    <Position X="19.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAFkAAQCAAAQAmAAAACAAAAUAAJAACBQAAAA=</HashCode>
+      <FileName>PropertiesWnd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CShuDeltaGraphApp" Collapsed="true">
+    <Position X="21.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAACEAAAAAAAADYAAAAEQCAAARAAASgAA=</HashCode>
+      <FileName>ShuDeltaGraph.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CShuDeltaGraphDoc">
+    <Position X="25.25" Y="2.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAABAgAIEAAAAAAAKAAAgAQgESggAEAAgAAAABQAAAA=</HashCode>
+      <FileName>ShuDeltaGraphDoc.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CShuDeltaGraphView" Collapsed="true">
+    <Position X="15" Y="3.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>CACASCkAAAEBCCCMGJKGgAFbgBIBAAgABAjBAETpQAE=</HashCode>
+      <FileName>ShuDeltaGraphView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CViewTree" Collapsed="true">
+    <Position X="17.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAgQAAAAA=</HashCode>
+      <FileName>ViewTree.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CDocument" Collapsed="true">
+    <Position X="25.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>F0iRGAEE3hIQGAghCcMKuCJisGjggtJWHCDsAwAQ4qA=</HashCode>
+      <FileName>c:\program files (x86)\microsoft visual studio 10.0\vc\atlmfc\include\afxwin.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="__unnamed_struct_0012_2" Collapsed="true">
+    <Position X="5.5" Y="13.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAEAAgAEAABAAAA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_struct_0012_3" Collapsed="true">
+    <Position X="9.5" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAAAAAAAgAAAQAAAQAAAAAAAAAAgAAIA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_struct_000e_1" Collapsed="true">
+    <Position X="1.5" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>PDW\_iq.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_struct_000f_1" Collapsed="true">
+    <Position X="9.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAQAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\_macro.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_struct_000f_2" Collapsed="true">
+    <Position X="4.75" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAEAAAAAAQAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\_macro.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="fftw_iodim_do_not_use_me" Collapsed="true">
+    <Position X="16" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUAEAAAAAAAA=</HashCode>
+      <FileName>FFTW\fftw3.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="fftw_iodim64_do_not_use_me" Collapsed="true">
+    <Position X="17.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUAEAAAAAAAA=</HashCode>
+      <FileName>FFTW\fftw3.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="ENUM_DataType" Collapsed="true">
+    <Position X="13.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="STR_RAWDATA" Collapsed="true">
+    <Position X="5.5" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="STR_PDW_DATA" Collapsed="true">
+    <Position X="9.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="STR_IQ_DATA" Collapsed="true">
+    <Position X="9.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="TNEW_IQ" Collapsed="true">
+    <Position X="1.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\_iq.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="FREQ_RESOL" Collapsed="true">
+    <Position X="9.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\_macro.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PA_RESOL" Collapsed="true">
+    <Position X="4.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\_macro.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="TNEW_PDW" Collapsed="true">
+    <Position X="19.5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PDW\_pdw.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="fftw_write_char_func_do_not_use_me" Collapsed="true">
+    <Position X="17.75" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FFTW\fftw3.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="fftw_read_char_func_do_not_use_me" Collapsed="true">
+    <Position X="16" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FFTW\fftw3.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ENUM_GRAPH_VIEW" Collapsed="true">
+    <Position X="4" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ShuDeltaGraphView.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ENUM_SUB_GRAPH" Collapsed="true">
+    <Position X="1.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ShuDeltaGraphView.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Enum Name="__unnamed_enum_0012_1" Collapsed="true">
+    <Position X="13.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAQAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>PDW\DataFile.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="fftw_r2r_kind_do_not_use_me" Collapsed="true">
+    <Position X="16" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAEAAAAgAAAAQAEAAEAAAAAAAgAA=</HashCode>
+      <FileName>FFTW\fftw3.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_enum_001b_1" Collapsed="true">
+    <Position X="4" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACCAAAAAACAAAAAAAAAIAAAAAAAgAAAAAFA=</HashCode>
+      <FileName>ShuDeltaGraphView.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_enum_001b_2" Collapsed="true">
+    <Position X="1.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAgAAAAAAgQAAAAAAAABAAAAAAAAIAAAABAAAAA=</HashCode>
+      <FileName>ShuDeltaGraphView.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="맑은 고딕" Size="9" />
+</ClassDiagram>
