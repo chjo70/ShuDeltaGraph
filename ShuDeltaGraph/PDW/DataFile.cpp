@@ -243,7 +243,7 @@ void CEPDW::ConvertArray()
 			preToa = pPDW->llTOA;
 		}
 
-		*pfFreq = (float) pPDW->iFreq;	//FFRQCNV(pPDW->item.band + 1, uiTemp);
+		*pfFreq = FRQMhzCNV( 0, pPDW->iFreq );	//FFRQCNV(pPDW->item.band + 1, uiTemp);
 
 		*pfPW = PWCNV(pPDW->iPW * 1000. );
 
@@ -265,7 +265,7 @@ void CEPDW::ConvertArray()
 
 		*pcDV = PDW_DV;
 
-		// printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
+		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[kHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
 		++pfFreq;
 		++pfAOA;

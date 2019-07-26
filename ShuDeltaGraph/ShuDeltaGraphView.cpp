@@ -286,13 +286,13 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 
 		if (enDataType == en_PDW_DATA) {
 			j = 1;
-			m_pListCtrl->InsertColumn( j++, _T("TOA[us]"), LVCFMT_RIGHT, 100, -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 100, -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 40, -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 100, -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 100, -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 100, -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, 100, -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("TOA[us]"), LVCFMT_RIGHT, 16*wcslen(_T("TOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 16*wcslen(_T("DTOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 16*wcslen(_T("DV")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 16*wcslen(_T("방위[도]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 16*wcslen(_T("주파수[MHz]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 16*wcslen(_T("신호세기[dBm]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, 16*wcslen(_T("펄스폭[ns]")), -1 ); 
 
 			pPDWData = (STR_PDW_DATA *) pData;
 			if( pPDWData != NULL ) {
