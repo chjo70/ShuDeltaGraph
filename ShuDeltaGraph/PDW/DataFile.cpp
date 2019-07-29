@@ -646,6 +646,7 @@ void CDataFile::ReadDataFile( CString & strPathname)
 
 	if( bPDW == true ) {
 		m_RawData.enDataType = en_PDW_DATA;
+		m_RawData.enUnitType = en_SONATA;
 
 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE) {
 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
@@ -669,6 +670,7 @@ void CDataFile::ReadDataFile( CString & strPathname)
 
 	else if( bSPDW == true ) {
 		m_RawData.enDataType = en_PDW_DATA;
+		m_RawData.enUnitType = en_SONATA;
 
 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE) {
 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
@@ -692,6 +694,7 @@ void CDataFile::ReadDataFile( CString & strPathname)
 
 	else if( bEPDW == true ) {
 		m_RawData.enDataType = en_PDW_DATA;
+		m_RawData.enUnitType = en_ELINT;
 
 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE) {
 			STR_PDWDATA *pPDWData;
@@ -717,6 +720,7 @@ void CDataFile::ReadDataFile( CString & strPathname)
 	}
 	else if( bIQ == true ) {
 		m_RawData.enDataType = en_IQ_DATA;
+		m_RawData.enUnitType = en_SONATA;
 
 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::modeRead | CFile::typeBinary) == TRUE) {
 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );

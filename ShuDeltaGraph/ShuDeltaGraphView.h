@@ -75,6 +75,8 @@ private:
 	void SetupPlotting(void);
 	void SetupGraph(void);
 
+	void SetFreqRange(void);
+
 public:
 	void ShowGraph( ENUM_GRAPH_VIEW enGraphView, ENUM_SUB_GRAPH enSubGraph );
 

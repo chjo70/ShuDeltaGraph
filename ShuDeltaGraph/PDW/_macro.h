@@ -8,9 +8,6 @@
 #define  _MACRO_H
 
 #ifdef _SONATA_
-#define	FREQ_MIN			(500)			// 최소 주파수
-#define	FREQ_MAX			(18000)
-
 
 
 #define DFD_FREQ_OFFSET		(1900)
@@ -67,6 +64,12 @@ float _spOneMilli;
 float _spOneMicrosec;
 float _spOneNanosec;
 
+// #define	FREQ_MIN			(500)			// 최소 주파수
+// #define	FREQ_MAX			(18000)
+
+float _spFreqMin;
+float _spFreqMax;
+
 // #define   _spAOAres       (0.351562)		// Degree */
 // #define   _spTOAres       (0.000000025)		// SEC(25 ns) */
 // #define   _spPWres        (25.)				// pw res.
@@ -77,6 +80,9 @@ extern PA_RESOL gPaRes[ 6 ];
 
 extern float _toaRes[en50MHZ_BW+1];
 extern float _frqRes[en50MHZ_BW+1];
+
+extern float _spFreqMin;
+extern float _spFreqMax;
 
 #endif
 

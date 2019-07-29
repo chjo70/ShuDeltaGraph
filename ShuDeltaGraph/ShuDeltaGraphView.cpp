@@ -1567,9 +1567,9 @@ void CShuDeltaGraphView::SetupPopupMenu( ENUM_DataType enDataType )
 
 }
 
-#define FREQ_TICK				1000					// [MHz]
+#define FREQ_TICK				(100)					// [MHz]
 #define AOA_TICK				10					// [도]
-#define FREQ_RANGE				18000
+#define FREQ_RANGE			18000
 #define AOA_RANGE				360
 /**
   * @brief		3차원 그래프에 PDW 데이터를 전시한다.
@@ -1595,9 +1595,12 @@ void CShuDeltaGraphView::Show3DGraph(ENUM_SUB_GRAPH enSubGraph)
 
 	RECT rect;
 
+	ENUM_DataType enDataType;
+
 	uiDataItems = m_pDoc->GetDataItems();
 	pPDWData = (STR_PDW_DATA *)m_pDoc->GetData();
 
+	enDataType = m_pDoc->GetDataType();
 
 	GetClientRect( &rect );
 	m_hPE = PEcreate(PECONTROL_3D, WS_VISIBLE, &rect, m_hWnd, 1001);
@@ -1610,6 +1613,8 @@ void CShuDeltaGraphView::Show3DGraph(ENUM_SUB_GRAPH enSubGraph)
 		PEnset(m_hPE, PEP_nPOLYMODE, PEPM_SCATTER);
 	}
 
+	SetFreqRange();
+
 	wsprintf(szBuffer, _T("%s[%d]"), strMainTitleLabel[enSubGraph-1], uiDataItems );
 
 	PEszset(m_hPE, PEP_szMAINTITLE, szBuffer);
@@ -1618,7 +1623,7 @@ void CShuDeltaGraphView::Show3DGraph(ENUM_SUB_GRAPH enSubGraph)
 	// 그래프 데이터 계산하기
 	if( enSubGraph == enSubMenu_1 ) {
 		nTargetRows = 360 / AOA_TICK;
-		nTargetCols = ( FREQ_MAX - FREQ_MIN ) / FREQ_TICK;
+		nTargetCols = ( _spFreqMax - _spFreqMin ) / FREQ_TICK;
 		PEnset(m_hPE, PEP_nSUBSETS, nTargetRows );
 		PEnset(m_hPE, PEP_nPOINTS, nTargetCols );
 
@@ -1632,7 +1637,7 @@ void CShuDeltaGraphView::Show3DGraph(ENUM_SUB_GRAPH enSubGraph)
 		pfFreq = pPDWData->pfFreq;
 		for (i = 0; i < uiDataItems; ++i) {
 			uiAoa = _DIV( *pfAOA, AOA_TICK );
-			uiFreq = _DIV( ( *pfFreq - FREQ_MIN ), FREQ_TICK );
+			uiFreq = _DIV( ( *pfFreq - _spFreqMin ), FREQ_TICK );
 
 			if( ( uiAoa >= 0 && uiAoa < nTargetRows ) && ( uiFreq >= 0 && uiFreq < nTargetCols ) ) {
 				++ pXYData[uiAoa][uiFreq];
@@ -1692,9 +1697,9 @@ void CShuDeltaGraphView::Show3DGraph(ENUM_SUB_GRAPH enSubGraph)
 		for( i=0 ; i < nTargetCols ; ++i ) {
 			float fVal, fVal2;
 
-			fVal = ( i*FREQ_TICK+FREQ_MIN ) / (float) 1000.;
-			fVal2 = fVal;
-			fVal2 = fVal - fVal2;
+			fVal = ( i*FREQ_TICK+_spFreqMin ) / (float) 1000.;
+			fVal2 = fVal * (float) 100.;
+			fVal2 = fmod( fVal2, 50 );
 
 			if( fVal2 == 0.0 || i == 0 ) {
 				_stprintf_s( szBuffer, _T("%.1f") , fVal );
@@ -2139,5 +2144,19 @@ void CShuDeltaGraphView::OnDestroy()
 	if( bRet == true ) {
 		CShuDeltaGraphDoc::CloseMapData( & strPathName );
 	}
+
+}
+
+void CShuDeltaGraphView::SetFreqRange()
+{
+	if( m_pDoc->GetUnitType() == en_SONATA ) {
+		_spFreqMin = 500;
+		_spFreqMax = 18000;
+	}
+	else {
+		_spFreqMin = 500;
+		_spFreqMax = 8000;
+	}
+
 
 }
