@@ -260,6 +260,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 	float *pfTOA, *pfDTOA;
 	float *pfAOA, *pfFreq, *pfPA, *pfPW;
 	float *pfI, *pfQ, *pfIP, *pfFFT;
+	_TOA *pfllTOA;
 	CString strVal;
 
 	void *pData;
@@ -286,8 +287,8 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 
 		if (enDataType == en_PDW_DATA) {
 			j = 1;
-			m_pListCtrl->InsertColumn( j++, _T("TOA[us]"), LVCFMT_RIGHT, 16*wcslen(_T("TOA[us]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 16*wcslen(_T("DTOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, 16*wcslen(_T("TOA[us]/TOA")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]/DTOA"), LVCFMT_RIGHT, 16*wcslen(_T("DTOA[us]/DTOA")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 16*wcslen(_T("DV")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 16*wcslen(_T("방위[도]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 16*wcslen(_T("주파수[MHz]")), -1 ); 
@@ -304,13 +305,14 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 				pfPA = pPDWData->pfPA;
 				pfPW = pPDWData->pfPW;
 				pcDV = pPDWData->pcDV;
+				pfllTOA = pPDWData->pfllTOA;
 				for( i=0 ; i < (int) uiDataItems && i < 1000 ; ++i ) {
 					j = 1;
 
 					strVal.Format( _T("%7d") , i+1 );
 					m_pListCtrl->InsertItem( i, strVal );
 
-					strVal.Format( _T("%12.3f") , *pfTOA*1. );
+					strVal.Format( _T("%12.3f/%12ld") , *pfTOA*1., *pfllTOA );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
@@ -342,6 +344,8 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					++ pfFreq;
 					++ pfPA;
 					++ pfPW;
+
+					++ pfllTOA;
 
 					++ pcDV;
 

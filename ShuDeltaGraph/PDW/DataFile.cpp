@@ -34,6 +34,7 @@ void CPDW::Alloc()
 	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
 
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
@@ -47,6 +48,8 @@ void CPDW::Free()
 	free(m_PDWData.pfTOA);
 	free(m_PDWData.pfDTOA);
 	free(m_PDWData.pfPA);
+
+	free( m_PDWData.pfllTOA );
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
@@ -73,6 +76,7 @@ void CPDW::ConvertArray()
 	float *pfTOA = m_PDWData.pfTOA;
 	float *pfDTOA = m_PDWData.pfDTOA;
 	float *pfPA = m_PDWData.pfPA;
+	_TOA *pfllTOA = m_PDWData.pfllTOA;
 
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
@@ -103,6 +107,8 @@ void CPDW::ConvertArray()
 			firstToa = temp.wpdw[0];
 			*pfTOA = 0;
 
+			uiToa = 0;
+
 			*pfDTOA = 0;
 			preToa = temp.wpdw[0];
 		}
@@ -114,6 +120,10 @@ void CPDW::ConvertArray()
 			*pfDTOA = FDIV( uiToa, _spOneMicrosec );
 			preToa = temp.wpdw[0] - firstToa;
 		}
+
+
+		*pfllTOA = uiToa;
+
 
 		uiTemp = BIT_MERGE(pPDW->item.frequency_h, pPDW->item.frequency_l);
 		*pfFreq = FFRQCNV(pPDW->item.band + 1, uiTemp);
@@ -146,6 +156,8 @@ void CPDW::ConvertArray()
 		++pcType;
 		++pcDV;
 
+		++ pfllTOA;
+
 		++pPDW;
 	}
 }
@@ -169,6 +181,7 @@ void CEPDW::Alloc()
 	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
 
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
@@ -183,6 +196,8 @@ void CEPDW::Free()
 	free(m_PDWData.pfTOA);
 	free(m_PDWData.pfDTOA);
 	free(m_PDWData.pfPA);
+
+	free( m_PDWData.pfllTOA );
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
@@ -209,6 +224,7 @@ void CEPDW::ConvertArray()
 	float *pfTOA = m_PDWData.pfTOA;
 	float *pfDTOA = m_PDWData.pfDTOA;
 	float *pfPA = m_PDWData.pfPA;
+	_TOA *pfllTOA = m_PDWData.pfllTOA;
 
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
@@ -243,7 +259,9 @@ void CEPDW::ConvertArray()
 			preToa = pPDW->llTOA;
 		}
 
-		*pfFreq = FRQMhzCNV( 0, pPDW->iFreq );	//FFRQCNV(pPDW->item.band + 1, uiTemp);
+		*pfllTOA = pPDW->llTOA;
+
+		*pfFreq = F_FRQMhzCNV( 0, pPDW->iFreq );	//FFRQCNV(pPDW->item.band + 1, uiTemp);
 
 		*pfPW = PWCNV(pPDW->iPW * 1000. );
 
@@ -275,6 +293,8 @@ void CEPDW::ConvertArray()
 		++pfDTOA;
 		++pcType;
 		++pcDV;
+
+		++ pfllTOA;
 
 		++pPDW;
 	}

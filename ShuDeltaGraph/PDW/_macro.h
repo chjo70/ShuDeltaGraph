@@ -98,6 +98,7 @@ extern float _spFreqMax;
 #define UDIV( A, B )            (UINT) ( (float) (A) / (float) (B) + 0.5 )
 #define NDIV( A, B )            (UINT) ( (float) (A) / (float) (B) - 0.5 )
 
+#define F_FRQMhzCNV( A, B )			FMUL( (B), (_frqRes[0]*0.001) )
 #define FRQMhzCNV( A, B )				IMUL( (B), (_frqRes[0]*0.001) )
 #define IFRQMhzCNV( A, B )			IDIV( (B), (_frqRes[0]*0.001) )
 

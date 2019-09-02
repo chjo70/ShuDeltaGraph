@@ -77,6 +77,8 @@ typedef struct {
 	float *pfPA;
 	float *pfDTOA;
 
+	_TOA *pfllTOA;
+
 	char *pcType;			// [신호형태]
 	char *pcDV;				// [DV]
 
