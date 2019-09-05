@@ -43,6 +43,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>C:\ProEssentials9\VC;$(IncludePath)</IncludePath>
     <LibraryPath>C:\ProEssentials5\VC;C:\ProEssentials9\VC;$(SolutionDir)ShuDeltaGraph\FFTW;$(LibraryPath)</LibraryPath>
+    <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
