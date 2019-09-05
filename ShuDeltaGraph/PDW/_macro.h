@@ -52,10 +52,11 @@ PA_RESOL gPaRes[ 6 ] = { {     0,     0,  (float) _spSONATAPAoffset, _spSONATAAM
 
 // 인천공항 ELINT
 float _toaRes[en50MHZ_BW+1] = { (float) 65.104167, (float) 8.138021 } ;
+//float _frqRes[en50MHZ_BW+1] = { (float) 0.117, (float) 65.104167 } ;
 float _frqRes[en50MHZ_BW+1] = { (float) 0.117, (float) 65.104167 } ;
 
 float _spAMPres;
-float _spAOAres;
+float _spAOAres=0.01;
 float _spTOAres;
 float _spPWres;
 
@@ -98,8 +99,8 @@ extern float _spFreqMax;
 #define UDIV( A, B )            (UINT) ( (float) (A) / (float) (B) + 0.5 )
 #define NDIV( A, B )            (UINT) ( (float) (A) / (float) (B) - 0.5 )
 
-#define FRQMhzCNV( A, B )				IMUL( (B), (_frqRes[0]*0.001) )
-#define IFRQMhzCNV( A, B )			IDIV( (B), (_frqRes[0]*0.001) )
+#define FRQMhzCNV( A, B )				FMUL( (B), 0.001 /* (_frqRes[0]*0.001) */ )
+#define IFRQMhzCNV( A, B )			FDIV( (B), 0.001 /* (_frqRes[0]*0.001) */ )
 
 #define F_NDIV( A, B )          (UINT) ( (float) (A) / (float) (B) - 0.5 )
 #define C_NDIV( A, B )          (UINT) ( (float) (A) / (float) (B) + 0.5 )

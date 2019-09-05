@@ -251,7 +251,7 @@ void CEPDW::ConvertArray()
 			*pfAOA = (float) 0.00000001;
 		}
 		else {
-			*pfAOA = (float) pPDW->iAOA;
+			*pfAOA = (float) AOACNV( pPDW->iAOA );
 		}
 
 		*pfPA = PACNV(pPDW->iPA);
