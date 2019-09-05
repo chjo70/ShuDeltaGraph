@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>"O:\EPDW\수집소_1\20190822200424\_COL1_2019-09-05 11_26_15_00003.EPDW.epdw"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"E:\수집소_1\20190905203224\_COL1_2019-09-05 20_37_59_00001.epdw"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

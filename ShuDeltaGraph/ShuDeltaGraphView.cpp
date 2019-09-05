@@ -256,7 +256,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 	int i, j;
 	UINT uiDataItems;
 
-	char *pcDV;
+	char *pcDV, *pcType;
 	float *pfTOA, *pfDTOA;
 	float *pfAOA, *pfFreq, *pfPA, *pfPW;
 	float *pfI, *pfQ, *pfIP, *pfFFT;
@@ -287,13 +287,14 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 
 		if (enDataType == en_PDW_DATA) {
 			j = 1;
-			m_pListCtrl->InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, 16*wcslen(_T("TOA[us]/TOA")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]/DTOA"), LVCFMT_RIGHT, 16*wcslen(_T("DTOA[us]/DTOA")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 16*wcslen(_T("DV")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 16*wcslen(_T("방위[도]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 16*wcslen(_T("주파수[MHz]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 16*wcslen(_T("신호세기[dBm]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, 16*wcslen(_T("펄스폭[ns]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, 12*wcslen(_T("신호 형태")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, 14*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 8*wcslen(_T("DTOA[us]/DTOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 12*wcslen(_T("DV")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 12*wcslen(_T("방위[도]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 10*wcslen(_T("주파수[MHz]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 10*wcslen(_T("신호세기[dBm]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, 12*wcslen(_T("펄스폭[ns]")), -1 ); 
 
 			pPDWData = (STR_PDW_DATA *) pData;
 			if( pPDWData != NULL ) {
@@ -306,11 +307,15 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 				pfPW = pPDWData->pfPW;
 				pcDV = pPDWData->pcDV;
 				pfllTOA = pPDWData->pfllTOA;
+				pcType = pPDWData->pcType;
 				for( i=0 ; i < (int) uiDataItems && i < 1000 ; ++i ) {
 					j = 1;
 
 					strVal.Format( _T("%7d") , i+1 );
 					m_pListCtrl->InsertItem( i, strVal );
+
+					strVal.Format( _T("%d") , *pcType );
+					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f/%12ld") , *pfTOA*1., *pfllTOA );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
@@ -348,6 +353,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					++ pfllTOA;
 
 					++ pcDV;
+					++ pcType;
 
 				}
 			}
@@ -968,7 +974,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
 				}
 
-				dwColor[0] = RGB( 198,198,0 );
+				dwColor[0] = RGB( 198,98,0 );
 				dwColor[1] = RGB(198, 0, 0 );
 				PEvset( m_hPE, PEP_dwaSUBSETCOLORS, dwColor, 2 );
 				break;
@@ -1122,7 +1128,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 	PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_NONE );
-	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT_MB);
+	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
 	PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_RO2_NOT);
 
 	// Version 4.0 Features //
@@ -1239,7 +1245,7 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 
 	PEnset(m_hPE, PEP_bALLOWRIBBON, TRUE);
-	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORIZONTAL_MB);
+	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORIZONTAL);
 	PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_FRAMED_RECT );
 
 	// subset labels //
@@ -2115,8 +2121,8 @@ void CShuDeltaGraphView::OnDestroy()
 
 	bool bRet=true;
 	int iCompare;
-	POSITION pos;
-	CShuDeltaGraphDoc *pDoc;
+	//POSITION pos;
+	//CShuDeltaGraphDoc *pDoc;
 	CShuDeltaGraphView *pView;
 	CWinApp *pApp = AfxGetApp();
 	POSITION posTemplate = pApp->GetFirstDocTemplatePosition();

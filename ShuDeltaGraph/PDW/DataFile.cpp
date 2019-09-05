@@ -248,7 +248,7 @@ void CEPDW::ConvertArray()
 
 			*pfDTOA = 0;
 			*pfTOA = 0;
-			preToa = pPDW->llTOA;
+			preToa = 0; // pPDW->llTOA;
 		}
 		else {
 			uiToa = pPDW->llTOA - firstToa;
@@ -256,7 +256,7 @@ void CEPDW::ConvertArray()
 
 			*pfDTOA = (float) ( uiToa - preToa );
 			*pfDTOA = FDIV(*pfDTOA, _spOneMicrosec );
-			preToa = pPDW->llTOA;
+			preToa = pPDW->llTOA - firstToa;
 		}
 
 		*pfllTOA = pPDW->llTOA;

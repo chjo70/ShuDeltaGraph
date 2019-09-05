@@ -53,7 +53,7 @@ PA_RESOL gPaRes[ 6 ] = { {     0,     0,  (float) _spSONATAPAoffset, _spSONATAAM
 // 인천공항 ELINT
 float _toaRes[en50MHZ_BW+1] = { (float) 65.104167, (float) 8.138021 } ;
 //float _frqRes[en50MHZ_BW+1] = { (float) 0.117, (float) 65.104167 } ;
-float _frqRes[en50MHZ_BW+1] = { (float) 0.117, (float) 65.104167 } ;
+float _frqRes[en50MHZ_BW+1] = { (float) 0.001, (float) 0.001 } ;
 
 float _spAMPres;
 float _spAOAres=0.01;
@@ -99,14 +99,9 @@ extern float _spFreqMax;
 #define UDIV( A, B )            (UINT) ( (float) (A) / (float) (B) + 0.5 )
 #define NDIV( A, B )            (UINT) ( (float) (A) / (float) (B) - 0.5 )
 
-<<<<<<< HEAD
-#define FRQMhzCNV( A, B )				FMUL( (B), 0.001 /* (_frqRes[0]*0.001) */ )
-#define IFRQMhzCNV( A, B )			FDIV( (B), 0.001 /* (_frqRes[0]*0.001) */ )
-=======
-#define F_FRQMhzCNV( A, B )			FMUL( (B), (_frqRes[0]*0.001) )
-#define FRQMhzCNV( A, B )				IMUL( (B), (_frqRes[0]*0.001) )
-#define IFRQMhzCNV( A, B )			IDIV( (B), (_frqRes[0]*0.001) )
->>>>>>> 6b45a27213314c019ddc1b6109f086436f018d32
+#define F_FRQMhzCNV( A, B )		FMUL( (B), (_frqRes[0]) )
+#define FRQMhzCNV( A, B )		IMUL( (B), (_frqRes[0]) )
+#define IFRQMhzCNV( A, B )		IDIV( (B), (_frqRes[0]) )
 
 #define F_NDIV( A, B )          (UINT) ( (float) (A) / (float) (B) - 0.5 )
 #define C_NDIV( A, B )          (UINT) ( (float) (A) / (float) (B) + 0.5 )
@@ -162,7 +157,6 @@ extern float _spFreqMax;
 #define F_AOACNV( A )           (UINT) ( (A) * _spAOAres )
 #define C_AOACNV( A )           (UINT) ( C_MUL( (A), _spAOAres ) )
 
-
 //#define PWCNV( A )              UMUL( (A), _spPWres )
 #define PWCNV( A )              FDIV( (A), _spPWres )
 
@@ -172,8 +166,9 @@ extern float _spFreqMax;
 #define F_PACNV( A, B )         F_IDIV( FPACNV(A,B), 1 )
 #define C_PACNV( A, B )         C_IDIV( FPACNV(A,B), 1 )
 
-#define PACNV( A )							FMUL( (A), _spAMPres )
-#define IPACNV( A )							IDIV( (A), _spAMPres )
+#define PACNV( A )				( FMUL( (A), _spAMPres ) - 110. )
+#define IPACNV( A )				( IDIV( (A), _spAMPres ) - 110. )
+
 
 //#define F_PACNV( A )            ( F_MUL( (A), _spAMPres ) - _spPAoffset )
 //#define C_PACNV( A )            ( C_MUL( (A), _spAMPres ) - 74.6875 )
