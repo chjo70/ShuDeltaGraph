@@ -772,13 +772,6 @@ void CDataFile::ReadDataFile( CString & strPathname)
 
 			m_pData = new CEPDW( & m_RawData );
 
-// 			if( m_RawData.uiByte == (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW) ) + sizeof(_PDW)*m_RawData.uiDataItems ) {
-// 				m_pData->m_bPhaseData = true;
-// 			}
-// 			else {
-// 				m_pData->m_bPhaseData = false;
-// 			}
-
 			m_pData->Alloc();
 
 			m_pData->ConvertArray();

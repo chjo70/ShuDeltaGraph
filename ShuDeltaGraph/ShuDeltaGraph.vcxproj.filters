@@ -105,6 +105,12 @@
     </None>
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
+    <None Include="C:\ProEssentials9\VC\Res\PEDemo7.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\PEDemo7.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShuDeltaGraph.h">
