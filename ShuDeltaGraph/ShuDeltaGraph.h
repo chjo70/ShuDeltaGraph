@@ -50,6 +50,7 @@ public:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileNew();
 	afx_msg void OnFileOpen();
+	afx_msg void OnMenuCloseAll();
 };
 
 extern CShuDeltaGraphApp theApp;

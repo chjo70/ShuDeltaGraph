@@ -35,6 +35,9 @@ public:
 	inline UINT GetDataItems() { return m_theDataFile.GetDataItems();}
 	inline ENUM_DataType GetDataType() { return m_theDataFile.GetDataType(); }
 	inline ENUM_UnitType GetUnitType() { return m_theDataFile.GetUnitType(); }
+
+	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
+
 	inline void *GetData() { return m_theDataFile.GetData();}
 
 	static void CloseMapData( CString *pStrWindowTitle=NULL );

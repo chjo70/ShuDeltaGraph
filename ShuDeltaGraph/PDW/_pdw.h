@@ -160,6 +160,11 @@ typedef struct {
 	int iPFTag;
 	int iAOA;
 
+	float fPh1;
+	float fPh2;
+	float fPh3;
+	float fPh4;
+
 } _PDW;
 #endif
 

@@ -259,9 +259,12 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 	char *pcDV, *pcType;
 	float *pfTOA, *pfDTOA;
 	float *pfAOA, *pfFreq, *pfPA, *pfPW;
+	float *pfPh1, *pfPh2, *pfPh3, *pfPh4;
 	float *pfI, *pfQ, *pfIP, *pfFFT;
 	_TOA *pfllTOA;
 	CString strVal;
+
+	bool bPhaseData;
 
 	void *pData;
 	STR_PDW_DATA *pPDWData=NULL;
@@ -275,12 +278,13 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 	uiDataItems = m_pDoc->GetDataItems();
 
 	if( uiDataItems != 0 ) {
+		bPhaseData = m_pDoc->IsPhaseData();
 		enDataType = m_pDoc->GetDataType();
 		pData = m_pDoc->GetData();
 
 		m_pListCtrl = new CListCtrl;
 
-		m_pListCtrl->Create( WS_VISIBLE | LVS_REPORT | WS_BORDER, CRect( 0, 0, 900, 700 ), this, 501 );
+		m_pListCtrl->Create( WS_VISIBLE | LVS_REPORT | WS_BORDER, CRect( 0, 0, 1200, 700 ), this, 501 );
 		m_pListCtrl->SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
 
 		m_pListCtrl->InsertColumn( 0, _T("순서"), LVCFMT_RIGHT, 80, -1 );
@@ -289,12 +293,16 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 			j = 1;
 			m_pListCtrl->InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, 12*wcslen(_T("신호 형태")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, 14*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 8*wcslen(_T("DTOA[us]/DTOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 12*wcslen(_T("DTOA[us]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 12*wcslen(_T("DV")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 12*wcslen(_T("방위[도]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 10*wcslen(_T("주파수[MHz]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 10*wcslen(_T("신호세기[dBm]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 8*wcslen(_T("신호세기[dBm]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, 12*wcslen(_T("펄스폭[ns]")), -1 ); 
+
+			if( bPhaseData == true ) {
+				m_pListCtrl->InsertColumn( j++, _T("위상차"), LVCFMT_RIGHT, 24*wcslen(_T("위상차")), -1 ); 
+			}
 
 			pPDWData = (STR_PDW_DATA *) pData;
 			if( pPDWData != NULL ) {
@@ -308,6 +316,10 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 				pcDV = pPDWData->pcDV;
 				pfllTOA = pPDWData->pfllTOA;
 				pcType = pPDWData->pcType;
+				pfPh1 = pPDWData->pfPh1;
+				pfPh2 = pPDWData->pfPh2;
+				pfPh3 = pPDWData->pfPh3;
+				pfPh4 = pPDWData->pfPh4;
 				for( i=0 ; i < (int) uiDataItems && i < 1000 ; ++i ) {
 					j = 1;
 
@@ -343,6 +355,11 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					strVal.Format( _T("%5.1f") , *pfPW );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
+					if( bPhaseData == true ) {
+						strVal.Format( _T("%7.2f/%7.2f/%7.2f/%7.2f") , *pfPh1, *pfPh2, *pfPh3, *pfPh4 );
+						m_pListCtrl->SetItemText( i, j++, strVal ); 
+					}
+
 					++ pfTOA;
 					++ pfDTOA;
 					++ pfAOA;
@@ -354,6 +371,11 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 
 					++ pcDV;
 					++ pcType;
+
+					++ pfPh1;
+					++ pfPh2;
+					++ pfPh3;
+					++ pfPh4;
 
 				}
 			}
@@ -1317,7 +1339,7 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	double dMax = 360.0;
 	PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
 	PEnset(m_hPE, PEP_nSHOWTICKMARKY, PESTM_TICKS_HIDE); 
-	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
+	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 
 	// Set second axis parameters //
 	++ i;

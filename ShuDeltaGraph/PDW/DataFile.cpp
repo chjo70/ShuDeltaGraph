@@ -165,7 +165,14 @@ void CPDW::ConvertArray()
 //////////////////////////////////////////////////////////////////////////
 CEPDW::CEPDW(STR_RAWDATA *pRawData) : CData(pRawData )
 {
-
+ 	STR_PDWDATA *pPDWData;
+ 
+ 	if( pRawData->uiByte == (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW) ) + sizeof(_PDW)*pRawData->uiDataItems ) {
+ 		m_bPhaseData = true;
+ 	}
+	else {
+		m_bPhaseData = false;
+	}
 }
 
 CEPDW::~CEPDW(void)
@@ -186,6 +193,11 @@ void CEPDW::Alloc()
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 
+	m_PDWData.pfPh1 = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPh2 = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPh3 = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPh4 = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+
 }
 
 void CEPDW::Free()
@@ -201,6 +213,11 @@ void CEPDW::Free()
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
+
+	free( m_PDWData.pfPh1 );
+	free( m_PDWData.pfPh2 );
+	free( m_PDWData.pfPh3 );
+	free( m_PDWData.pfPh4 );
 
 }
 
@@ -225,6 +242,11 @@ void CEPDW::ConvertArray()
 	float *pfDTOA = m_PDWData.pfDTOA;
 	float *pfPA = m_PDWData.pfPA;
 	_TOA *pfllTOA = m_PDWData.pfllTOA;
+
+	float *pfPh1 = m_PDWData.pfPh1;
+	float *pfPh2 = m_PDWData.pfPh2;
+	float *pfPh3 = m_PDWData.pfPh3;
+	float *pfPh4 = m_PDWData.pfPh4;
 
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
@@ -283,6 +305,13 @@ void CEPDW::ConvertArray()
 
 		*pcDV = PDW_DV;
 
+		if( m_bPhaseData == true ) {
+			*pfPh1 = pPDW->fPh1;
+			*pfPh2 = pPDW->fPh2;
+			*pfPh3 = pPDW->fPh3;
+			*pfPh4 = pPDW->fPh4;
+		}
+
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[kHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
 		++pfFreq;
@@ -296,7 +325,23 @@ void CEPDW::ConvertArray()
 
 		++ pfllTOA;
 
-		++pPDW;
+		if( m_bPhaseData == true ) {
+			++ pfPh1;
+			++ pfPh2;
+			++ pfPh3;
+			++ pfPh4;
+		}
+
+		if( m_bPhaseData == true )
+			++ pPDW;
+		else {
+			char *pByte;
+
+			++ pPDW;
+			pByte = (char *) pPDW;
+			pByte = pByte - (sizeof(float)*4);
+			pPDW = ( _PDW * ) pByte;
+		}
 	}
 }
 
@@ -575,6 +620,8 @@ CData::CData( STR_RAWDATA *pRawData )
 	m_uiDataItems = pRawData->uiDataItems;
 
 	m_uiWindowNumber = 1;
+
+	m_bPhaseData = true;
 }
 
 CData::~CData(void)
@@ -724,6 +771,13 @@ void CDataFile::ReadDataFile( CString & strPathname)
 			m_RawData.uiDataItems = pPDWData->count;
 
 			m_pData = new CEPDW( & m_RawData );
+
+// 			if( m_RawData.uiByte == (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW) ) + sizeof(_PDW)*m_RawData.uiDataItems ) {
+// 				m_pData->m_bPhaseData = true;
+// 			}
+// 			else {
+// 				m_pData->m_bPhaseData = false;
+// 			}
 
 			m_pData->Alloc();
 

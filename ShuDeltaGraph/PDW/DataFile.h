@@ -82,6 +82,11 @@ typedef struct {
 	char *pcType;			// [신호형태]
 	char *pcDV;				// [DV]
 
+	float *pfPh1;
+	float *pfPh2;
+	float *pfPh3;
+	float *pfPh4;
+
 } STR_PDW_DATA ;
 
 typedef struct {
@@ -105,6 +110,8 @@ public:
 	UINT m_uiDataItems;
 
 	UINT m_uiWindowNumber;
+
+	bool m_bPhaseData;
 
 public:
 	CData(STR_RAWDATA *pRawData);
@@ -205,6 +212,8 @@ public:
 	inline ENUM_DataType GetDataType() { return m_pData->m_enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
+
+	inline bool IsPhaseData() { return m_pData->m_bPhaseData; }
 	
 	
 private:

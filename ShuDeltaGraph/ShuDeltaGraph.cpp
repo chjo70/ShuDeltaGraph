@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CShuDeltaGraphApp, CWinAppEx)
 	//ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
 	ON_COMMAND(ID_FILE_NEW, &CShuDeltaGraphApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, &CShuDeltaGraphApp::OnFileOpen)
+	ON_COMMAND(ID_Menu_CloseALL, &CShuDeltaGraphApp::OnMenuCloseAll)
 END_MESSAGE_MAP()
 
 
@@ -290,6 +291,8 @@ void CShuDeltaGraphApp::OnFileOpen()
 	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
 	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
 
+	OnMenuCloseAll();
+
 	if( m_strArgument.IsEmpty() == true ) {
 		if( false == OpenFile( strPathName ) ) {
 			bRet = true;
@@ -446,5 +449,12 @@ ENUM_DataType CShuDeltaGraphApp::GetDataType(CString &strPathName)
 	}
 
 	return enDataType;
+
+}
+
+void CShuDeltaGraphApp::OnMenuCloseAll()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	OnWindowCloseAll();
 
 }
