@@ -21,10 +21,16 @@ class CShuDeltaGraphApp : public CWinAppEx
 {
 private:
 	CString m_strArgument;
+	CString m_strIniFile;
 
 public:
 	CShuDeltaGraphApp();
 	bool IsExistFile( CString &strPathname );
+
+	void FilteredOpenFile( CString strPathname );
+
+	void SaveProfile( STR_FILTER_SETUP *pstFilterSetup );
+	void LoadProfile( STR_FILTER_SETUP *pstFilterSetup );
 
 private:
 	bool OpenFile( CString &strPathname );

@@ -98,6 +98,18 @@ typedef struct {
 
 } STR_IQ_DATA ;
 
+typedef struct {
+	double dToaMin;
+	double dToaMax;
+	double dAoaMin;
+	double dAoaMax;
+	double dFrqMin;
+	double dFrqMax;
+	double dPaMin;
+	double dPaMax;
+
+} STR_FILTER_SETUP;
+
 static char *gstpRawDataBuffer;
 
 class CData
@@ -107,11 +119,13 @@ public:
 
 	ENUM_DataType m_enDataType;
 	ENUM_UnitType m_enUnitType;
-	UINT m_uiDataItems;
+	//UINT m_uiDataItems;
 
 	UINT m_uiWindowNumber;
 
 	bool m_bPhaseData;
+
+	STR_FILTER_SETUP m_stFilterSetup;
 
 public:
 	CData(STR_RAWDATA *pRawData);
@@ -162,7 +176,7 @@ private:
 	STR_PDW_DATA m_PDWData;
 
 public:
-	CEPDW(STR_RAWDATA *pRawData);
+	CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~CEPDW();
 
 	void Alloc();
@@ -201,13 +215,13 @@ public:
 	CDataFile(void);
 	virtual ~CDataFile(void);
 
-	void ReadDataFile( CString & strPathname);
+	void ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	void Alloc();
 	void Free();
 	void *GetData();
 	void SetData( CData *pData );
 
-	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_uiDataItems; else return 0; }
+	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_pRawData->uiDataItems; else return 0; }
 	inline ENUM_UnitType GetUnitType() { return m_pData->m_enUnitType; }
 	inline ENUM_DataType GetDataType() { return m_pData->m_enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }

@@ -170,6 +170,12 @@
     <ClInclude Include="FFTW\fftw3.h">
       <Filter>소스 파일\FFTW</Filter>
     </ClInclude>
+    <ClInclude Include="DlgFilterSetup.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="NumSpinCtrl.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -212,6 +218,12 @@
       <Filter>소스 파일\LOG</Filter>
     </ClCompile>
     <ClCompile Include="revision.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgFilterSetup.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="NumSpinCtrl.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

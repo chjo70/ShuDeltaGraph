@@ -163,7 +163,7 @@ void CPDW::ConvertArray()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CEPDW::CEPDW(STR_RAWDATA *pRawData) : CData(pRawData )
+CEPDW::CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
 {
  	STR_PDWDATA *pPDWData;
  
@@ -172,6 +172,10 @@ CEPDW::CEPDW(STR_RAWDATA *pRawData) : CData(pRawData )
  	}
 	else {
 		m_bPhaseData = false;
+	}
+
+	if( pstFilterSetup != NULL ) {
+		memcpy( & m_stFilterSetup, pstFilterSetup, sizeof(STR_FILTER_SETUP) );
 	}
 }
 
@@ -233,7 +237,7 @@ void *CEPDW::GetData()
 */
 void CEPDW::ConvertArray()
 {
-	UINT i;
+	UINT i, uiDataItems;
 
 	float *pfFreq = m_PDWData.pfFreq;
 	float *pfPW = m_PDWData.pfPW;
@@ -264,7 +268,7 @@ void CEPDW::ConvertArray()
 	_spAMPres = (float) (0.25);
 	_spPWres = _spOneMicrosec;
 
-	for (i = 0; i < m_pRawData->uiDataItems ; ++i ) {
+	for (i = uiDataItems = 0; i < m_pRawData->uiDataItems ; ++i ) {
 		if (i == 0) {
 			firstToa = pPDW->llTOA;
 
@@ -314,26 +318,32 @@ void CEPDW::ConvertArray()
 
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[kHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
-		++pfFreq;
-		++pfAOA;
-		++pfPW;
-		++pfPA;
-		++pfTOA;
-		++pfDTOA;
-		++pcType;
-		++pcDV;
+		if( ( (double) *pfAOA >= m_stFilterSetup.dAoaMin && (double) *pfAOA <= m_stFilterSetup.dAoaMax ) &&
+			( (double) *pfFreq >= m_stFilterSetup.dFrqMin && (double) *pfFreq <= m_stFilterSetup.dFrqMax ) ) {
+			++pfFreq;
+			++pfAOA;
+			++pfPW;
+			++pfPA;
+			++pfTOA;
+			++pfDTOA;
+			++pcType;
+			++pcDV;
 
-		++ pfllTOA;
+			++ pfllTOA;
 
-		if( m_bPhaseData == true ) {
-			++ pfPh1;
-			++ pfPh2;
-			++ pfPh3;
-			++ pfPh4;
+			if( m_bPhaseData == true ) {
+				++ pfPh1;
+				++ pfPh2;
+				++ pfPh3;
+				++ pfPh4;
+			}
+
+			++ uiDataItems;
 		}
 
-		if( m_bPhaseData == true )
+		if( m_bPhaseData == true ) {
 			++ pPDW;
+		}
 		else {
 			char *pByte;
 
@@ -343,6 +353,8 @@ void CEPDW::ConvertArray()
 			pPDW = ( _PDW * ) pByte;
 		}
 	}
+
+	m_pRawData->uiDataItems = uiDataItems;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -617,11 +629,20 @@ CData::CData( STR_RAWDATA *pRawData )
 	m_pRawData = pRawData;
 
 	m_enDataType = pRawData->enDataType;
-	m_uiDataItems = pRawData->uiDataItems;
+	//m_uiDataItems = pRawData->uiDataItems;
 
 	m_uiWindowNumber = 1;
 
 	m_bPhaseData = true;
+
+	m_stFilterSetup.dToaMin = -1.;
+	m_stFilterSetup.dToaMax = -1.;
+	m_stFilterSetup.dAoaMin = -360.;
+	m_stFilterSetup.dAoaMax = 360.;
+	m_stFilterSetup.dFrqMin = 500.;
+	m_stFilterSetup.dFrqMax = 18000.;
+	m_stFilterSetup.dPaMin = -100.;
+	m_stFilterSetup.dPaMax = 10.;
 }
 
 CData::~CData(void)
@@ -691,7 +712,7 @@ void CDataFile::Free()
   * @return		성공시 true, 실패시 false
   * @date       2019/05/31 10:34
 */
-void CDataFile::ReadDataFile( CString & strPathname)
+void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup )
 {
 	bool bPDW=false, bSPDW=false, bIQ=false, bEPDW=false;
 
@@ -770,7 +791,7 @@ void CDataFile::ReadDataFile( CString & strPathname)
 			pPDWData = ( STR_PDWDATA * ) gstpRawDataBuffer;
 			m_RawData.uiDataItems = pPDWData->count;
 
-			m_pData = new CEPDW( & m_RawData );
+			m_pData = new CEPDW( & m_RawData, pstFilterSetup );
 
 			m_pData->Alloc();
 

@@ -135,6 +135,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	// 접미사가 있을 경우에만 DragAcceptFiles를 호출합니다.
 	//  MDI 응용 프로그램에서는 m_pMainWnd를 설정한 후 바로 이러한 호출이 발생해야 합니다.
 
+	m_strIniFile = AfxGetApp()->m_pszHelpFilePath;
+	m_strIniFile.Replace( _T(".HLP"), _T(".ini") );
+
 	// 표준 셸 명령, DDE, 파일 열기에 대한 명령줄을 구문 분석합니다.
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
@@ -148,6 +151,8 @@ BOOL CShuDeltaGraphApp::InitInstance()
 		OnFileOpen();
 		//cmdInfo.m_nShellCommand = CCommandLineInfo::FileOpen;
 	}
+
+	
 
 
 	// 명령줄에 지정된 명령을 디스패치합니다.
@@ -312,12 +317,13 @@ void CShuDeltaGraphApp::OnFileOpen()
 
 		if( GetDataType(strPathName) == en_PDW_DATA ) {
 			if( true == IsExistFile( strPathName ) ) {
+
 				for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
 					pos = GetFirstDocTemplatePosition();
 
 					pDocTemplate = GetNextDocTemplate( pos );
 
-					pDoc= ( CShuDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+					pDoc = ( CShuDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
 
 					pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
 					pView = (CShuDeltaGraphView *) pChild->GetActiveView();
@@ -457,4 +463,78 @@ void CShuDeltaGraphApp::OnMenuCloseAll()
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	OnWindowCloseAll();
 
+}
+
+void CShuDeltaGraphApp::FilteredOpenFile( CString strPathname )
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	int i=0;
+	POSITION posTemplate, posDoc, posView;
+	CDocTemplate* pTemplate;
+
+	CData *pData;
+	STR_FILTER_SETUP stFilterSetup;
+	
+	CShuDeltaGraphDoc *pDoc = (CShuDeltaGraphDoc *) (((CMainFrame *)AfxGetMainWnd())->GetActiveFrame())->GetActiveDocument();
+
+	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
+
+	pData = pDoc->FindMapData( & strPathname );
+	memcpy( & stFilterSetup, & pData->m_stFilterSetup, sizeof(STR_FILTER_SETUP) );
+	pDoc->CloseMapData( & strPathname );
+
+	posTemplate = GetFirstDocTemplatePosition();
+
+	while (posTemplate != NULL)
+	{
+		pTemplate = GetNextDocTemplate(posTemplate);
+		posDoc = pTemplate->GetFirstDocPosition();
+		while( posDoc ) {
+			CShuDeltaGraphDoc *pDoc=( CShuDeltaGraphDoc *) pTemplate->GetNextDoc( posDoc );
+			
+			pDoc->OpenFile( strPathname, & stFilterSetup );
+			posView = pDoc->GetFirstViewPosition();
+			
+			while( posView ) {
+				CShuDeltaGraphView *pView;
+				pView = ( CShuDeltaGraphView * ) pDoc->GetNextView(posView);
+				pView->ShowGraph( pView->m_enGraphView, enSubMenu_1 );
+			}
+		}
+	}
+
+}
+
+void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
+{
+	TCHAR szBuffer[100];
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstFilterSetup->dAoaMin );
+	::WritePrivateProfileString( L"FilterSetup", L"AOA_MIN", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstFilterSetup->dAoaMax );
+	::WritePrivateProfileString( L"FilterSetup", L"AOA_MAX", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstFilterSetup->dFrqMin );
+	::WritePrivateProfileString( L"FilterSetup", L"FRQ_MIN", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstFilterSetup->dFrqMax );
+	::WritePrivateProfileString( L"FilterSetup", L"FRQ_MAX", szBuffer, m_strIniFile );
+}
+
+void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
+{
+	TCHAR szBuffer[100];
+
+	::GetPrivateProfileString( L"FilterSetup", L"AOA_MIN", L"0.0", szBuffer, 100, m_strIniFile );
+	pstFilterSetup->dAoaMin = _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"FilterSetup", L"AOA_MAX", L"0.0", szBuffer, 100, m_strIniFile );
+	pstFilterSetup->dAoaMax = _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"FilterSetup", L"FRQ_MIN", L"0.0", szBuffer, 100, m_strIniFile );
+	pstFilterSetup->dFrqMin = _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"FilterSetup", L"FRQ_MAX", L"0.0", szBuffer, 100, m_strIniFile );
+	pstFilterSetup->dFrqMax = _wtof(szBuffer);
 }
