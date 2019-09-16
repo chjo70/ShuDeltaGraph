@@ -82,6 +82,23 @@ void CShuDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
 
 }
 
+CData *CShuDeltaGraphDoc::FindMapData( CString *pStrPathName )
+{
+	CData *pData;
+	map<CString, CData *>::iterator it;
+
+	it = m_gMapData.find( *pStrPathName );
+	if( it == m_gMapData.end() ) {
+		pData = NULL;
+	}
+	else {
+		pData = it->second;
+	}
+
+	return pData;
+}
+
+
 BOOL CShuDeltaGraphDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
@@ -189,12 +206,12 @@ void CShuDeltaGraphDoc::Dump(CDumpContext& dc) const
   * @return     성공시 true, 실패시 false
   * @date		2019/05/31 9:30
 */
-bool CShuDeltaGraphDoc::OpenFile( CString &strPathname )
+bool CShuDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup )
 {
 	CString strMainTitle;
 	map<CString, CData *>::iterator it;
 	CChildFrame *pChild;
-	//CData *pData;
+	CShuDeltaGraphView *pView;
 
 	pChild = ( CChildFrame * ) m_pFrame->GetActiveFrame();
 
@@ -203,7 +220,7 @@ bool CShuDeltaGraphDoc::OpenFile( CString &strPathname )
 	// 데이터 읽기
 	it = m_gMapData.find( m_strPathname );
 	if( it == m_gMapData.end() ) {
-		ReadDataFile();
+		ReadDataFile( pstFilterSetup );
 
 	}
 	else {
@@ -215,6 +232,9 @@ bool CShuDeltaGraphDoc::OpenFile( CString &strPathname )
 	strMainTitle.Format( _T("%s:%d") , m_strPathname, m_theDataFile.GetWindowNumber() );
 	pChild->SetWindowText( strMainTitle );
 
+	pView = (CShuDeltaGraphView *) pChild->GetActiveView();
+	pView->SetWindowTitle( m_strPathname );
+
 	return true;
 }
 
@@ -223,11 +243,11 @@ bool CShuDeltaGraphDoc::OpenFile( CString &strPathname )
   * @return 	void
   * @date       2019/06/05 10:23
 */
-void CShuDeltaGraphDoc::ReadDataFile()
+void CShuDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 {
 	CData *pData;
 
-	m_theDataFile.ReadDataFile( m_strPathname );
+	m_theDataFile.ReadDataFile( m_strPathname, pstFilterSetup );
 
 	pData = m_theDataFile.GetRawData();
 	if( pData != NULL ) {

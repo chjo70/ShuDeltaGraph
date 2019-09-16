@@ -22,6 +22,8 @@
 #define new DEBUG_NEW
 #endif
 
+CDlgFilterSetup *CShuDeltaGraphView::m_pDlgFilterSetup=NULL;
+
 
 //////////////////////////////////////////////////////////////////////////
 // 팝업 사용자 메뉴
@@ -81,6 +83,10 @@ CShuDeltaGraphView::~CShuDeltaGraphView()
 
 	delete m_pListCtrl;
 
+	if( m_pDlgFilterSetup != NULL ) {
+		delete m_pDlgFilterSetup;
+		m_pDlgFilterSetup = NULL;
+	}
 
 }
 
@@ -109,6 +115,12 @@ void CShuDeltaGraphView::OnInitialUpdate()
 
 	m_enGraphView = enUnselectedGraphView;
 	m_enSubGraph = enUnselectedSubGraph;
+
+	if( m_pDlgFilterSetup == NULL )	{
+		m_pDlgFilterSetup = new CDlgFilterSetup;
+	}
+
+	
 
 }
 
@@ -189,13 +201,6 @@ void CShuDeltaGraphView::OnBnClickedButton1()
 */
 void CShuDeltaGraphView::ShowGraph( ENUM_GRAPH_VIEW enGraphView, ENUM_SUB_GRAPH enSubGraph )
 {
-	m_enGraphView = enGraphView;
-	m_enSubGraph = enSubGraph;
-
-	if( m_hPE ) {
-		PEdestroy( m_hPE );
-	}
-
 	if(  m_pListCtrl != NULL ) {
 		delete m_pListCtrl;
 		m_pListCtrl = NULL;
@@ -203,9 +208,26 @@ void CShuDeltaGraphView::ShowGraph( ENUM_GRAPH_VIEW enGraphView, ENUM_SUB_GRAPH 
 	}
 
 	if( enGraphView == enGraphPulseInfo ) {
+		m_enGraphView = enGraphView;
+		m_enSubGraph = enSubGraph;
+
+		if( m_hPE ) {
+			PEdestroy( m_hPE );
+		}
+
 		ShowPulseInfo( enSubGraph );
 	}
+	else if( enGraphView == enFilter_Set ) {
+		ShowFilterSetup( enSubGraph );
+	}
 	else {
+		m_enGraphView = enGraphView;
+		m_enSubGraph = enSubGraph;
+
+		if( m_hPE ) {
+			PEdestroy( m_hPE );
+		}
+
 		CSize scrollSize(0,0);
 		SetScrollSizes( MM_TEXT, scrollSize );
 
@@ -238,6 +260,58 @@ void CShuDeltaGraphView::ShowGraph( ENUM_GRAPH_VIEW enGraphView, ENUM_SUB_GRAPH 
 		PEreinitialize(m_hPE);
 		PEresetimage(m_hPE, 0, 0);
 	}
+}
+
+void CShuDeltaGraphView::ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph )
+{
+	CData *pData;
+	SGRAPHPROPERTIES stSGRAPHPROPERTIES;
+
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp* )AfxGetApp();
+
+	pData = m_pDoc->FindMapData( & m_strPathName );
+
+	// TOA
+	PEvget(m_hPE, PEP_fZOOMMINX, & pData->m_stFilterSetup.dToaMin ); 
+	PEvget(m_hPE, PEP_fZOOMMAXX, & pData->m_stFilterSetup.dToaMax ); 
+
+	PEgetsgraph( m_hPE, & stSGRAPHPROPERTIES );
+
+	// 2차원 그래프에 어떤 종류의 그래프인지를 확인한다.
+	switch( m_enSubGraph ) {
+		case enSubMenu_1 :
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dAoaMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dAoaMax ); 
+			break;
+		case enSubMenu_2 :
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dFrqMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dFrqMax ); 
+			break;
+		case enSubMenu_3 :
+			//PEvget(m_hPE, PEP_fMANUALMINY, &dMinY ); 
+			//PEvget(m_hPE, PEP_fMANUALMAXY, &dMaxY ); 
+			break;
+
+		case enSubMenu_4 :
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dPaMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dPaMax ); 
+			break;
+	}
+
+	STR_FILTER_SETUP stFilterSetup;
+	pApp->LoadProfile( & stFilterSetup );
+	m_pDlgFilterSetup->SetValue( & stFilterSetup );
+	if( IDOK == m_pDlgFilterSetup->DoModal() ) {
+
+		pApp->SaveProfile( & m_pDlgFilterSetup->m_stFilterSetup );
+		// Redraw Graph
+		pApp->FilteredOpenFile( m_strPathName );
+	}
+	else {
+
+	}
+	
+
 }
 
 /**
@@ -291,17 +365,17 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 
 		if (enDataType == en_PDW_DATA) {
 			j = 1;
-			m_pListCtrl->InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, 12*wcslen(_T("신호 형태")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, 14*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, 12*wcslen(_T("형태")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, 12*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, 12*wcslen(_T("DTOA[us]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("DV"), LVCFMT_CENTER, 12*wcslen(_T("DV")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, 12*wcslen(_T("방위[도]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 10*wcslen(_T("주파수[MHz]")), -1 ); 
-			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 8*wcslen(_T("신호세기[dBm]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, 12*wcslen(_T("주파수[MHz]")), -1 ); 
+			m_pListCtrl->InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, 12*wcslen(_T("신호세기[dBm]")), -1 ); 
 			m_pListCtrl->InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, 12*wcslen(_T("펄스폭[ns]")), -1 ); 
 
 			if( bPhaseData == true ) {
-				m_pListCtrl->InsertColumn( j++, _T("위상차"), LVCFMT_RIGHT, 24*wcslen(_T("위상차")), -1 ); 
+				m_pListCtrl->InsertColumn( j++, _T("위상차"), LVCFMT_RIGHT, 12*wcslen(_T("위상차          ")), -1 ); 
 			}
 
 			pPDWData = (STR_PDW_DATA *) pData;
@@ -830,6 +904,10 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	m_hPE = PEcreate( PECONTROL_SGRAPH, WS_VISIBLE, &rect, m_hWnd, 1001);
 
+	PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  
+	PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
+
+
 	ShowAnnotation();
 
 	uiDataItems = m_pDoc->GetDataItems();
@@ -870,12 +948,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					pfY = pPDWData->pfAOA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubMenu_1] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubMenu_1] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
 
 					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
 					dMin = pPDWData->pfTOA[0];
@@ -883,8 +961,8 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					dMax = pPDWData->pfTOA[uiDataItems - 1];
 					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-					dMin = -360.0;
+					PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
+					dMin = -0.0;
 					PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
 					dMax = 360.0;
 					PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
@@ -926,12 +1004,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					pfY = pPDWData->pfFreq;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubMenu_1] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubMenu_2] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
 				}
 				else {
 					pfY = pIQData->pfPA;
@@ -967,12 +1045,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					pfY = pPDWData->pfDTOA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]") );
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubMenu_3] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubMenu_3] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
 				}
 				else {
 					pfY = pIQData->pfIP;
@@ -1008,12 +1086,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					pfY = pPDWData->pfPA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubMenu_4] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubMenu_4] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
 				}
 				else {
 					pfY = pIQData->pfFFT;
@@ -1043,12 +1121,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					pfY = pPDWData->pfPW;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubMenu_5] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubMenu_5] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
 				}
 				else {
 
@@ -1448,6 +1526,8 @@ void CShuDeltaGraphView::SetupGraph()
 		// Set up cursor //
 		PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
 
+		PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
+
 		// This will allow you to move cursor by clicking data point //
 		PEnset(m_hPE, PEP_bMOUSECURSORCONTROL, TRUE);
 		PEnset(m_hPE, PEP_bALLOWDATAHOTSPOTS, TRUE);
@@ -1456,6 +1536,8 @@ void CShuDeltaGraphView::SetupGraph()
 		PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);
 		PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
 		PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TOP_RIGHT);
+
+		PEnset(m_hPE, PEP_bALLOWAXISPAGE, TRUE );
 	}
 	else if( m_enGraphView == enGRAPH_POLAR ) {
 		PEnset(m_hPE, PEP_bINVERTEDXAXIS, TRUE );
@@ -1489,6 +1571,7 @@ void CShuDeltaGraphView::SetupPlotting()
 */
 void CShuDeltaGraphView::SetupFont()
 {
+	PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
 	PEnset(m_hPE, PEP_nFONTSIZE, PEFS_SMALL);
 }
 
@@ -1536,7 +1619,7 @@ void CShuDeltaGraphView::SetupPopupMenu( ENUM_DataType enDataType )
 			PEnset(m_hPE, PEP_bALLOWPOPUP, TRUE );
 			PEnset(m_hPE, PEP_naCUSTOMMENU, PECM_SHOW );
 
-			PEnset(m_hPE, PEP_bALLOWCUSTOMIZATION, FALSE );
+			PEnset(m_hPE, PEP_bALLOWCUSTOMIZATION, TRUE );
 
 			PEnset(m_hPE, PEP_nALLOWUSERINTERFACE, PEAUI_ALL );
 
@@ -1570,6 +1653,11 @@ void CShuDeltaGraphView::SetupPopupMenu( ENUM_DataType enDataType )
 		wcscpy_s( szTmp, L"2차원 그래프|시간대 방위|시간대 주파수|시단대 DTOA|시간대 신호세기|시간대 펄스폭"); PEvsetcell(m_hPE, PEP_szaCUSTOMMENUTEXT, i++, szTmp);
 		wcscpy_s( szTmp, L"멀티 그래프|시간대 방위/주파수/신호세기/펄스폭|시간대 방위,주파수/신호세기/펄스폭|시간대 방위,주파수/신호세기"); PEvsetcell(m_hPE, PEP_szaCUSTOMMENUTEXT, i++, szTmp);
 		wcscpy_s( szTmp, L"3차원 그래프|방위,주파수|방위,주파수,펄스폭"); PEvsetcell(m_hPE, PEP_szaCUSTOMMENUTEXT, i++, szTmp);
+
+		if( m_enGraphView == enGRAPH_2D || m_enGraphView == enGRAPH_MULTI ) {
+			wcscpy_s( szTmp, L"|"); PEvsetcell(m_hPE, PEP_szaCUSTOMMENUTEXT, i++, szTmp);
+			wcscpy_s( szTmp, L"필터 설정|필터 설정|필터 적용"); PEvsetcell(m_hPE, PEP_szaCUSTOMMENUTEXT, i++, szTmp);
+		}
 	}
 	else {
 		wcscpy_s( szTmp, L"2차원 그래프|인덱스대 I/Q데이터|인덱스대 순시진폭|인덱스대 위상차|인덱스대 FFT"); PEvsetcell(m_hPE, PEP_szaCUSTOMMENUTEXT, i++, szTmp);
@@ -1893,7 +1981,7 @@ BOOL CShuDeltaGraphView::OnCommand(WPARAM wParam, LPARAM lParam)
 				enM = ( ENUM_GRAPH_VIEW ) PEnget(m_hPE, PEP_nLASTMENUINDEX );
 				enSM = ( ENUM_SUB_GRAPH ) PEnget(m_hPE, PEP_nLASTSUBMENUINDEX );
 
-				if( m_enGraphView != enM || m_enSubGraph != enSM ) {
+				if( m_enGraphView != enM || m_enSubGraph != enSM || enM == enFilter_Set ) {
 					ShowGraph( enM, enSM );
 				}
 				else {
@@ -2142,7 +2230,7 @@ void CShuDeltaGraphView::OnDestroy()
 	//AfxExtractSubString( strPathName, strWindowTitle, 1, ':' );
 
 	bool bRet=true;
-	int iCompare;
+	//int iCompare;
 	//POSITION pos;
 	//CShuDeltaGraphDoc *pDoc;
 	CShuDeltaGraphView *pView;

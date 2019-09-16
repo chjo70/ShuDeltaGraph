@@ -6,6 +6,8 @@
 
 #include "resource.h"
 
+#include "DlgFilterSetup.h"
+
 
 typedef enum {
 	enUnselectedGraphView = -1,
@@ -17,6 +19,10 @@ typedef enum {
 	enGRAPH_MULTI,
 	enGRAPH_3D,
 
+	enGRAPH_Seperated,
+
+	enFilter_Set,
+	
 	enGRAPH_BubbleChart,
 
 } ENUM_GRAPH_VIEW ;
@@ -50,14 +56,28 @@ public:
 
 // 작업입니다.
 public:
+	static CDlgFilterSetup *m_pDlgFilterSetup;
+
+	ENUM_GRAPH_VIEW m_enGraphView;
 
 private:
 	HWND m_hPE;			// the proessentials control object
 	CShuDeltaGraphDoc *m_pDoc;
-	ENUM_GRAPH_VIEW m_enGraphView;
+	
 	ENUM_SUB_GRAPH m_enSubGraph;
 
+	CString m_strPathName;
+
 	CListCtrl *m_pListCtrl;
+
+	double m_dToaMinX;
+	double m_dToaMaxX;
+	double m_dAoaMin;
+	double m_dAoaMax;
+	double m_dFrqMin;
+	double m_dFrqMax;
+	double m_dPaMin;
+	double m_dPaMax;
 	
 private:
 	void ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph);
@@ -76,9 +96,12 @@ private:
 	void SetupGraph(void);
 
 	void SetFreqRange(void);
+	void ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph );
 
 public:
 	void ShowGraph( ENUM_GRAPH_VIEW enGraphView, ENUM_SUB_GRAPH enSubGraph );
+
+	inline void SetWindowTitle( CString strWindowTitle ) { m_strPathName=strWindowTitle; }
 
 // 재정의입니다.
 public:
