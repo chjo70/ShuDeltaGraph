@@ -270,7 +270,12 @@ void CEPDW::ConvertArray()
 
 	for (i = uiDataItems = 0; i < m_pRawData->uiDataItems ; ++i ) {
 		if (i == 0) {
-			firstToa = pPDW->llTOA;
+			if( pPDWData->iIsStorePDW == 1 ) {
+				firstToa = pPDW->llTOA;
+			}
+			else {
+				firstToa = 0;
+			}
 
 			*pfDTOA = 0;
 			*pfTOA = 0;
@@ -438,7 +443,7 @@ void CSPDW::ConvertArray()
 			//firstToa = pPDW->TOA;
 			*pfTOA = FDIV( ( pPDW->TOA * 20 ), 1000. );
 			*pfDTOA = 0;
-			preToa = ( pPDW->TOA * 20 ) / 1000.;
+			preToa = FDIV( ( pPDW->TOA * 20 ), 1000. );
 		}
 		else {
 			fToa = (float) pPDW->TOA; // - firstToa;

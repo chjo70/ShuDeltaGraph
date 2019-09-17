@@ -56,7 +56,7 @@ float _toaRes[en50MHZ_BW+1] = { (float) 65.104167, (float) 8.138021 } ;
 float _frqRes[en50MHZ_BW+1] = { (float) 0.001, (float) 0.001 } ;
 
 float _spAMPres;
-float _spAOAres=0.01;
+float _spAOAres=(float) 0.01;
 float _spTOAres;
 float _spPWres;
 
@@ -166,8 +166,8 @@ extern float _spFreqMax;
 #define F_PACNV( A, B )         F_IDIV( FPACNV(A,B), 1 )
 #define C_PACNV( A, B )         C_IDIV( FPACNV(A,B), 1 )
 
-#define PACNV( A )				( FMUL( (A), _spAMPres ) - 110. )
-#define IPACNV( A )				( IDIV( (A), _spAMPres ) - 110. )
+#define PACNV( A )				(float) ( FMUL( (A), _spAMPres ) - (float) 110. )
+#define IPACNV( A )				(float) ( IDIV( (A), _spAMPres ) - (float) 110. )
 
 
 //#define F_PACNV( A )            ( F_MUL( (A), _spAMPres ) - _spPAoffset )
