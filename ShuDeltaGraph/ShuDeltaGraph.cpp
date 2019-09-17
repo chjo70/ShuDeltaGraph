@@ -292,6 +292,7 @@ void CShuDeltaGraphApp::OnFileOpen()
 
 	int i;
 	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
+	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;
 
 	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
 	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
@@ -330,7 +331,7 @@ void CShuDeltaGraphApp::OnFileOpen()
 
 					if( true == pDoc->OpenFile( strPathName ) ) {
 						if( pView != NULL && pDoc->GetDataItems() != 0 ) {
-							pView->ShowGraph( viewPDWGraph[i], enSubMenu_1 );
+							pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
 						}
 						else {
 							wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , strPathName );
