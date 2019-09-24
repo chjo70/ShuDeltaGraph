@@ -153,7 +153,7 @@ extern float _spFreqMax;
 #define FRQCNV( A, B )          (UINT) ( UMUL( gFreqRes[(A)].res, (B) ) + gFreqRes[(A)].offset )
 #define F_FRQCNV( A, B )        (UINT) ( F_MUL( gFreqRes[(A)].res, (B) ) + gFreqRes[(A)].offset )
 #define C_FRQCNV( A, B )        (UINT) ( C_MUL( gFreqRes[(A)].res, (B) ) + gFreqRes[(A)].offset )
-#define AOACNV( A )             UMUL( (A), _spAOAres )
+#define AOACNV( A )             FMUL( (A), _spAOAres )
 #define F_AOACNV( A )           (UINT) ( (A) * _spAOAres )
 #define C_AOACNV( A )           (UINT) ( C_MUL( (A), _spAOAres ) )
 
