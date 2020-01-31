@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(CShuDeltaGraphView, CFormView)
 	ON_MESSAGE( PEWN_KEYDOWN, OnPEKeyDwon )
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
+	ON_COMMAND(ID_DLG_COLLIST, &CShuDeltaGraphView::OnDlgCollist)
 END_MESSAGE_MAP()
 
 // CShuDeltaGraphView 생성/소멸
@@ -119,8 +120,6 @@ void CShuDeltaGraphView::OnInitialUpdate()
 	if( m_pDlgFilterSetup == NULL )	{
 		m_pDlgFilterSetup = new CDlgFilterSetup;
 	}
-
-	
 
 }
 
@@ -2279,4 +2278,11 @@ void CShuDeltaGraphView::SetFreqRange()
 	}
 
 
+}
+
+
+
+void CShuDeltaGraphView::OnDlgCollist()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }

@@ -13,6 +13,8 @@
 
 #include "./PDW/DataFile.h"
 
+#include "DlgColList.h"
+
 // CShuDeltaGraphApp:
 // 이 클래스의 구현에 대해서는 ShuDeltaGraph.cpp을 참조하십시오.
 //
@@ -22,6 +24,8 @@ class CShuDeltaGraphApp : public CWinAppEx
 private:
 	CString m_strArgument;
 	CString m_strIniFile;
+
+	CDlgColList *m_pDlgColList;
 
 public:
 	CShuDeltaGraphApp();
@@ -57,6 +61,7 @@ public:
 	afx_msg void OnFileNew();
 	afx_msg void OnFileOpen();
 	afx_msg void OnMenuCloseAll();
+	afx_msg void OnDlgCollist();
 };
 
 extern CShuDeltaGraphApp theApp;

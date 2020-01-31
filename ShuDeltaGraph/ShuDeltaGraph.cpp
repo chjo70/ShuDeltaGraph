@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CShuDeltaGraphApp, CWinAppEx)
 	ON_COMMAND(ID_FILE_NEW, &CShuDeltaGraphApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, &CShuDeltaGraphApp::OnFileOpen)
 	ON_COMMAND(ID_Menu_CloseALL, &CShuDeltaGraphApp::OnMenuCloseAll)
+	ON_COMMAND(ID_DLG_COLLIST, &CShuDeltaGraphApp::OnDlgCollist)
 END_MESSAGE_MAP()
 
 
@@ -163,6 +164,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	// 주 창이 초기화되었으므로 이를 표시하고 업데이트합니다.
 	pMainFrame->ShowWindow( SW_SHOWMAXIMIZED /* m_nCmdShow */ );
 	pMainFrame->UpdateWindow();
+
+	m_pDlgColList = new CDlgColList();
+	m_pDlgColList->Create( IDD_DIALOG_COL_LIST );
 
 	return TRUE;
 }
@@ -506,6 +510,15 @@ void CShuDeltaGraphApp::FilteredOpenFile( CString strPathname )
 
 }
 
+/**
+ * @brief     
+ * @param     STR_FILTER_SETUP * pstFilterSetup
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/01/31 17:59:42
+ * @warning   
+ */
 void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
 {
 	TCHAR szBuffer[100];
@@ -523,6 +536,15 @@ void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
 	::WritePrivateProfileString( L"FilterSetup", L"FRQ_MAX", szBuffer, m_strIniFile );
 }
 
+/**
+ * @brief     
+ * @param     STR_FILTER_SETUP * pstFilterSetup
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/01/31 17:59:39
+ * @warning   
+ */
 void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 {
 	TCHAR szBuffer[100];
@@ -538,4 +560,26 @@ void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 
 	::GetPrivateProfileString( L"FilterSetup", L"FRQ_MAX", L"0.0", szBuffer, 100, m_strIniFile );
 	pstFilterSetup->dFrqMax = _wtof(szBuffer);
+
+}
+
+void CShuDeltaGraphApp::OnDlgCollist()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+
+
+
+	BOOL chk = m_pDlgColList->IsWindowVisible();
+
+	if(chk)
+	{
+		m_pDlgColList->ShowWindow(SW_HIDE);
+	}
+	else
+	{
+		m_pDlgColList->ShowWindow(SW_SHOW);
+	}	
+
+	//m_pDlgColList->SetParent();
+
 }

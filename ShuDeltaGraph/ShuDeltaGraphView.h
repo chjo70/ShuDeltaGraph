@@ -8,6 +8,7 @@
 
 #include "DlgFilterSetup.h"
 
+#include "DlgColList.h"
 
 typedef enum {
 	enUnselectedGraphView = -1,
@@ -61,6 +62,8 @@ public:
 	ENUM_GRAPH_VIEW m_enGraphView;
 
 private:
+	CDlgColList *m_pDlgColList;
+
 	HWND m_hPE;			// the proessentials control object
 	CShuDeltaGraphDoc *m_pDoc;
 	
@@ -156,6 +159,9 @@ public:
 	
 	afx_msg void OnClose();
 	afx_msg void OnDestroy();
+	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
+	afx_msg void OnUpdateDlgCollist(CCmdUI *pCmdUI);
+	afx_msg void OnDlgCollist();
 };
 
 #ifndef _DEBUG  // ShuDeltaGraphView.cpp의 디버그 버전
