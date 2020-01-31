@@ -8,8 +8,6 @@
 
 #include "DlgFilterSetup.h"
 
-#include "DlgColList.h"
-
 typedef enum {
 	enUnselectedGraphView = -1,
 
@@ -62,8 +60,6 @@ public:
 	ENUM_GRAPH_VIEW m_enGraphView;
 
 private:
-	CDlgColList *m_pDlgColList;
-
 	HWND m_hPE;			// the proessentials control object
 	CShuDeltaGraphDoc *m_pDoc;
 	

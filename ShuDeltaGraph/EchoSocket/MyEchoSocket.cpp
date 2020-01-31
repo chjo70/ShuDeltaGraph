@@ -2,9 +2,9 @@
 //
 
 #include "stdafx.h"
-#include "RWRJAM-SIM.h"
+#include "../ShuDeltaGraph.h"
 #include "MyEchoSocket.h"
-#include "RWRJAM-SIMDlg.h"
+#include "../DlgColList.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,7 +51,7 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CRWRJAMSIMDlg*)m_pDlg)->OnAccept( m_id );
+		((CDlgColList*)m_pDlg)->OnAccept( m_id );
 		//m_bConnected = true;
 	}
 	CAsyncSocket::OnAccept(nErrorCode);
@@ -64,7 +64,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	{
 		m_uiErrorCode = CAsyncSocket::GetLastError();
 
-		((CRWRJAMSIMDlg*)m_pDlg)->OnClose(m_id );
+		((CDlgColList*)m_pDlg)->OnClose(m_id );
 		TRACE( "랜이 끊겼습니다 !!!" );
 	}
 	CAsyncSocket::OnClose(nErrorCode);
@@ -73,7 +73,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 void MyEchoSocket::OnConnect(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	((CRWRJAMSIMDlg*)m_pDlg)->OnConnect(nErrorCode, m_id );
+	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode, m_id );
 	m_uiErrorCode = CAsyncSocket::GetLastError();
 	
 	CAsyncSocket::OnConnect(nErrorCode);
@@ -91,7 +91,7 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CRWRJAMSIMDlg*)m_pDlg)->OnReceive(m_id );
+		((CDlgColList*)m_pDlg)->OnReceive(m_id );
 	}
 	
 	CAsyncSocket::OnReceive(nErrorCode);
@@ -155,7 +155,7 @@ bool MyEchoSocket::Send( void *pData, int iDataLength )
 			m_uiErrorCode = CAsyncSocket::GetLastError();
 
 			bRet = false;
-			Log( enError, "송신 Send() 에러[%d] 입니다." , m_uiErrorCode );
+			//Log( enError, "송신 Send() 에러[%d] 입니다." , m_uiErrorCode );
 		}
 
 	}
@@ -188,7 +188,7 @@ int MyEchoSocket::Receive( void *pData, int iDataLength )
 
 	if( m_bBigEndian == false ) {
 		if( iDataLength % sizeof(int) != 0 ) {
-			AfxMessageBox( "엔디안 데이터가 4바이트 배수가 아닙니다." );
+			//AfxMessageBox( "엔디안 데이터가 4바이트 배수가 아닙니다." );
 		}
 		AllSwapData32( pData, iDataLength );
 	}

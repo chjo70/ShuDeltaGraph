@@ -149,6 +149,7 @@
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="DlgColList.h" />
     <ClInclude Include="DlgFilterSetup.h" />
+    <ClInclude Include="EchoSocket\MyEchoSocket.h" />
     <ClInclude Include="FFTW\fftw3.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="Log\LogDebug.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="ShuDeltaGraphView.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Thread\Thread.h" />
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +175,7 @@
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="DlgColList.cpp" />
     <ClCompile Include="DlgFilterSetup.cpp" />
+    <ClCompile Include="EchoSocket\MyEchoSocket.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="Log\LogDebug.cpp" />
     <ClCompile Include="MainFrm.cpp" />

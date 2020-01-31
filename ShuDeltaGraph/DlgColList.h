@@ -1,10 +1,21 @@
 #pragma once
 
+#include "./EchoSocket/MyEchoSocket.h"
 
 // CDlgColList 대화 상자입니다.
 
 class CDlgColList : public CDialogEx
 {
+public:
+	void InitSocketSetting( enUnitID enUnit );
+	void CloseSocketSetting( enUnitID enUnit );
+	void Connect( enUnitID enUnit );
+
+	void OnAccept(enUnitID enUnit );
+	void OnConnect(int nErrorCode, enUnitID enUnit );
+	void OnClose(enUnitID enUnit );
+	void OnReceive(enUnitID enUnit );
+
 	DECLARE_DYNAMIC(CDlgColList)
 
 public:

@@ -22,6 +22,12 @@
     <Filter Include="소스 파일\FFTW">
       <UniqueIdentifier>{2407c60e-4f5d-4c85-86d0-5805c029d341}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Thread">
+      <UniqueIdentifier>{674e4211-578e-46ae-b75a-996bb5a8250a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\EchoSocket">
+      <UniqueIdentifier>{0e14a991-c0d3-4ac9-8b00-296debaf3367}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -179,6 +185,12 @@
     <ClInclude Include="DlgColList.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Thread\Thread.h">
+      <Filter>소스 파일\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="EchoSocket\MyEchoSocket.h">
+      <Filter>소스 파일\EchoSocket</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -231,6 +243,9 @@
     </ClCompile>
     <ClCompile Include="DlgColList.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="EchoSocket\MyEchoSocket.cpp">
+      <Filter>소스 파일\EchoSocket</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
