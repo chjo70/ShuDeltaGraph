@@ -29,6 +29,7 @@ BEGIN_MESSAGE_MAP(CShuDeltaGraphApp, CWinAppEx)
 	ON_COMMAND(ID_FILE_OPEN, &CShuDeltaGraphApp::OnFileOpen)
 	ON_COMMAND(ID_Menu_CloseALL, &CShuDeltaGraphApp::OnMenuCloseAll)
 	ON_COMMAND(ID_DLG_COLLIST, &CShuDeltaGraphApp::OnDlgCollist)
+	ON_COMMAND(ID_APP_EXIT, &CShuDeltaGraphApp::OnAppExit)
 END_MESSAGE_MAP()
 
 
@@ -75,6 +76,12 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	InitCommonControlsEx(&InitCtrls);
 
 	CWinAppEx::InitInstance();
+
+	if (!AfxSocketInit())
+	{
+		AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
+		return FALSE;
+	}
 
 
 	// OLE 라이브러리를 초기화합니다.
@@ -177,6 +184,8 @@ int CShuDeltaGraphApp::ExitInstance()
 	CShuDeltaGraphDoc::CloseMapData();
 
 	AfxOleTerm(FALSE);
+
+	delete m_pDlgColList;
 
 	return CWinAppEx::ExitInstance();
 }
@@ -566,9 +575,6 @@ void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 void CShuDeltaGraphApp::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-
-
-
 	BOOL chk = m_pDlgColList->IsWindowVisible();
 
 	if(chk)
@@ -582,4 +588,10 @@ void CShuDeltaGraphApp::OnDlgCollist()
 
 	//m_pDlgColList->SetParent();
 
+}
+
+
+void CShuDeltaGraphApp::OnAppExit()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }

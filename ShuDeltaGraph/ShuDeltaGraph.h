@@ -62,6 +62,7 @@ public:
 	afx_msg void OnFileOpen();
 	afx_msg void OnMenuCloseAll();
 	afx_msg void OnDlgCollist();
+	afx_msg void OnAppExit();
 };
 
 extern CShuDeltaGraphApp theApp;

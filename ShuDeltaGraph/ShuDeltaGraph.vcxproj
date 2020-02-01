@@ -152,6 +152,10 @@
     <ClInclude Include="EchoSocket\MyEchoSocket.h" />
     <ClInclude Include="FFTW\fftw3.h" />
     <ClInclude Include="FileView.h" />
+    <ClInclude Include="ListCtrl\ComboItem.h" />
+    <ClInclude Include="ListCtrl\EditItem.h" />
+    <ClInclude Include="ListCtrl\EditList.h" />
+    <ClInclude Include="ListCtrl\ReportCtrl.h" />
     <ClInclude Include="Log\LogDebug.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="NumSpinCtrl.h" />
@@ -177,6 +181,10 @@
     <ClCompile Include="DlgFilterSetup.cpp" />
     <ClCompile Include="EchoSocket\MyEchoSocket.cpp" />
     <ClCompile Include="FileView.cpp" />
+    <ClCompile Include="ListCtrl\ComboItem.cpp" />
+    <ClCompile Include="ListCtrl\EditItem.cpp" />
+    <ClCompile Include="ListCtrl\EditList.cpp" />
+    <ClCompile Include="ListCtrl\ReportCtrl.cpp" />
     <ClCompile Include="Log\LogDebug.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="NumSpinCtrl.cpp" />

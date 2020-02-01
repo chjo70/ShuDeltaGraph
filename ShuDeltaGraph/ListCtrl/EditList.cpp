@@ -101,7 +101,7 @@ void CEditList::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 		// this will invoke an ItemChanged handler in parent
 		if ( plvItem->iSubItem != 0 )
 		{
-			char szText[0x10+1];
+			TCHAR szText[0x10+1];
 			GetItemText( plvItem->iItem, 0, szText, 0x10);				
 			SetItemText( plvItem->iItem, 0, szText);				
 		}	

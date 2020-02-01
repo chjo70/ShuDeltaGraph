@@ -1742,7 +1742,7 @@ void CShuDeltaGraphView::Show3DGraph(ENUM_SUB_GRAPH enSubGraph)
 	// 그래프 데이터 계산하기
 	if( enSubGraph == enSubMenu_1 ) {
 		nTargetRows = 360 / AOA_TICK;
-		nTargetCols = ( _spFreqMax - _spFreqMin ) / FREQ_TICK;
+		nTargetCols = (int) ( ( _spFreqMax - _spFreqMin ) / FREQ_TICK );
 		PEnset(m_hPE, PEP_nSUBSETS, nTargetRows );
 		PEnset(m_hPE, PEP_nPOINTS, nTargetCols );
 

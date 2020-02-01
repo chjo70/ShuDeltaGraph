@@ -41,7 +41,47 @@
 #include <afxsock.h>            // MFC 소켓 확장
 
 
+#define BIK
+#define _USER_AESA
 
+#define _SERVER
+
+#define LOG_DIRECTORY					_T("SHUDELTAGRAPH_LOG")
+#define	LOG_SUBDIRECTORY				_T("RWRSuite 모의")
+#define GLOBAL_LOG_DIRECTORY			_T("\\\\192.168.0.41\\Files")
+#define GLOBAL_LOG_DIRECTORY2			_T("\\\\192.168.0.41")
+
+// 로그 타입 사용자가 원하는 대로 정의
+enum LogType {
+	enDebug=0,
+	enNormal,
+	enLineFeed,
+	enError,
+	enEnd,
+};
+
+void Log( int nType, const TCHAR *fmt, ... );
+CString GetFilePath();
+BOOL CreateDir( TCHAR *pPath );
+void SetLocal( bool bLocal );
+CString GetIpAddress();
+int UnicodeToUtf8( char* pUtf8, TCHAR* pUnicode);
+
+#define BUILTIN_IP					_T("192.168.0.66")
+#define OFFICE_IP					_T("10.29.52.175")
+#define MYHOME_IP					_T("192.168.0.156")
+#define MYHOME_IP_2					_T("192.168.0.178")
+#define MYHOME_SUBNET				_T("192.168.10")
+#define NO_NETWORK_IP				_T("127.0.0.1")
+
+typedef enum {
+	enBuiltIn=0,
+	enOffice,
+	enMyHome,
+	enNoNetwork
+} enPosition;
+
+enPosition GetPosition();
 
 
 

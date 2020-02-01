@@ -15,9 +15,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // MyEchoSocket
 
-MyEchoSocket::MyEchoSocket( enUnitID id, bool bBigEndian )
+MyEchoSocket::MyEchoSocket( bool bBigEndian )
 {
-	m_id = id;
 	m_bConnected = false;
 	m_bBigEndian = bBigEndian;
 
@@ -29,8 +28,6 @@ MyEchoSocket::MyEchoSocket( enUnitID id, bool bBigEndian )
 
 MyEchoSocket::~MyEchoSocket()
 {
-	m_id = enUnknown;
-
 	free( m_pData );
 }
 
@@ -51,7 +48,7 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CDlgColList*)m_pDlg)->OnAccept( m_id );
+		((CDlgColList*)m_pDlg)->OnAccept();
 		//m_bConnected = true;
 	}
 	CAsyncSocket::OnAccept(nErrorCode);
@@ -64,7 +61,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	{
 		m_uiErrorCode = CAsyncSocket::GetLastError();
 
-		((CDlgColList*)m_pDlg)->OnClose(m_id );
+		((CDlgColList*)m_pDlg)->OnClose();
 		TRACE( "·£ÀÌ ²÷°å½À´Ï´Ù !!!" );
 	}
 	CAsyncSocket::OnClose(nErrorCode);
@@ -73,7 +70,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 void MyEchoSocket::OnConnect(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode, m_id );
+	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode );
 	m_uiErrorCode = CAsyncSocket::GetLastError();
 	
 	CAsyncSocket::OnConnect(nErrorCode);
@@ -91,7 +88,7 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CDlgColList*)m_pDlg)->OnReceive(m_id );
+		((CDlgColList*)m_pDlg)->OnReceive();
 	}
 	
 	CAsyncSocket::OnReceive(nErrorCode);

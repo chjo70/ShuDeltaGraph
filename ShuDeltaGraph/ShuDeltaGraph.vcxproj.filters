@@ -28,6 +28,9 @@
     <Filter Include="소스 파일\EchoSocket">
       <UniqueIdentifier>{0e14a991-c0d3-4ac9-8b00-296debaf3367}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\ListCtrl">
+      <UniqueIdentifier>{9f4abe97-6326-4790-8ec3-e9f7f0ec91f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -191,6 +194,18 @@
     <ClInclude Include="EchoSocket\MyEchoSocket.h">
       <Filter>소스 파일\EchoSocket</Filter>
     </ClInclude>
+    <ClInclude Include="ListCtrl\ComboItem.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="ListCtrl\EditItem.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="ListCtrl\EditList.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="ListCtrl\ReportCtrl.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -246,6 +261,18 @@
     </ClCompile>
     <ClCompile Include="EchoSocket\MyEchoSocket.cpp">
       <Filter>소스 파일\EchoSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="ListCtrl\ComboItem.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="ListCtrl\EditItem.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="ListCtrl\EditList.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="ListCtrl\ReportCtrl.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

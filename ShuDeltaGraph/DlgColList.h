@@ -1,20 +1,45 @@
 #pragma once
 
+#include "./Thread/Thread.h"
 #include "./EchoSocket/MyEchoSocket.h"
+#include "./ListCtrl/ReportCtrl.h"
+#include "afxcmn.h"
 
 // CDlgColList 대화 상자입니다.
 
 class CDlgColList : public CDialogEx
 {
-public:
-	void InitSocketSetting( enUnitID enUnit );
-	void CloseSocketSetting( enUnitID enUnit );
-	void Connect( enUnitID enUnit );
+private:
+	CStatusBarCtrl m_StatusBar;
+	bool m_bConnected;
+	EN_CONNECT_MODE m_enConnectMode;
 
-	void OnAccept(enUnitID enUnit );
-	void OnConnect(int nErrorCode, enUnitID enUnit );
-	void OnClose(enUnitID enUnit );
-	void OnReceive(enUnitID enUnit );
+	char *m_ptxData;
+	char *m_prxData;
+
+public:
+	CThread m_theThread;
+
+	MyEchoSocket *m_pListener;
+	MyEchoSocket *m_pConnected;
+
+private:
+	void InitStatusBar();
+	void InitBuffer();
+	void InitThread();
+	void FreeBuffer();
+
+	void InitListCtrl();
+
+public:
+	void InitSocketSetting();
+	void CloseSocketSetting();
+	void Connect();
+
+	void OnAccept();
+	void OnConnect( int nErrorCode );
+	void OnClose();
+	void OnReceive();
 
 	DECLARE_DYNAMIC(CDlgColList)
 
@@ -29,4 +54,8 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
 	DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL OnInitDialog();
+	CReportCtrl m_ColList;
+	CReportCtrl m_CListRawData;
 };
