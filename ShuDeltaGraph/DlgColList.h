@@ -3,9 +3,20 @@
 #include "./Thread/Thread.h"
 #include "./EchoSocket/MyEchoSocket.h"
 #include "./ListCtrl/ReportCtrl.h"
+#include "./SpinCtrl/NumSpinCtrl.h"
 #include "afxcmn.h"
+#include "afxwin.h"
 
 // CDlgColList 대화 상자입니다.
+
+typedef struct {
+	float fFrqLow;
+	float fFrqHigh;
+
+	float fColTime;
+	UINT uiColNumber;
+
+} STR_COL_LIST;
 
 class CDlgColList : public CDialogEx
 {
@@ -16,6 +27,8 @@ private:
 
 	char *m_ptxData;
 	char *m_prxData;
+
+	STR_COL_LIST m_stColList;
 
 public:
 	CThread m_theThread;
@@ -28,7 +41,6 @@ private:
 	void InitBuffer();
 	void InitThread();
 	void FreeBuffer();
-
 	void InitListCtrl();
 
 public:
@@ -58,4 +70,6 @@ public:
 	virtual BOOL OnInitDialog();
 	CReportCtrl m_ColList;
 	CReportCtrl m_CListRawData;
+	CNumSpinCtrl m_CEditFrqLow;
+	CNumSpinCtrl m_CEditFrqHigh;
 };

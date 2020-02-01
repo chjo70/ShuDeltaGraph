@@ -21,7 +21,11 @@ CDlgColList::CDlgColList(CWnd* pParent /*=NULL*/)
 
 CDlgColList::~CDlgColList()
 {
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
 	FreeBuffer();
+
+	pApp->SaveProfile( & m_stColList );
 }
 
 void CDlgColList::DoDataExchange(CDataExchange* pDX)
@@ -29,6 +33,8 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_COL_LIST, m_ColList);
 	DDX_Control(pDX, IDC_LIST2_RAWDATA, m_CListRawData);
+	DDX_Control(pDX, IDC_EDIT_FREQ_LOW, m_CEditFrqLow);
+	DDX_Control(pDX, IDC_EDIT_FREQ_HIGH, m_CEditFrqHigh);
 }
 
 /**
@@ -124,9 +130,23 @@ BOOL CDlgColList::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
 	InitBuffer();
 	InitStatusBar();
 	InitListCtrl();
+
+	pApp->LoadProfile( & m_stColList );
+
+	m_CEditFrqLow.SetDecimalPlaces(0);
+	m_CEditFrqLow.SetTrimTrailingZeros(FALSE);
+	m_CEditFrqLow.SetRangeAndDelta( 500, 180000, 1.0 );
+	m_CEditFrqLow.SetPos( m_stColList.fFrqLow );
+
+	m_CEditFrqHigh.SetDecimalPlaces(0);
+	m_CEditFrqHigh.SetTrimTrailingZeros(FALSE);
+	m_CEditFrqHigh.SetRangeAndDelta( 500, 180000, 1.0 );
+	m_CEditFrqHigh.SetPos( m_stColList.fFrqHigh );
 
 	InitThread();
 

@@ -395,6 +395,15 @@ void CShuDeltaGraphApp::OnFileOpen()
 
 }
 
+/**
+ * @brief     
+ * @param     CString & strPathname
+ * @return    bool
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 16:31:42
+ * @warning   
+ */
 bool CShuDeltaGraphApp::IsExistFile( CString &strPathname )
 {
 	bool bRet;
@@ -409,6 +418,15 @@ bool CShuDeltaGraphApp::IsExistFile( CString &strPathname )
 	return bRet;
 }
 
+/**
+ * @brief     
+ * @param     CString & strPathname
+ * @return    bool
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 16:31:37
+ * @warning   
+ */
 bool CShuDeltaGraphApp::OpenFile( CString &strPathname )
 {
 	bool bRet = true;
@@ -479,6 +497,15 @@ void CShuDeltaGraphApp::OnMenuCloseAll()
 
 }
 
+/**
+ * @brief     
+ * @param     CString strPathname
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 16:31:49
+ * @warning   
+ */
 void CShuDeltaGraphApp::FilteredOpenFile( CString strPathname )
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
@@ -545,6 +572,18 @@ void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
 	::WritePrivateProfileString( L"FilterSetup", L"FRQ_MAX", szBuffer, m_strIniFile );
 }
 
+void CShuDeltaGraphApp::SaveProfile( STR_COL_LIST *pstColList )
+{
+	TCHAR szBuffer[100];
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fFrqLow );
+	::WritePrivateProfileString( L"COL_LIST", L"FRQ_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fFrqHigh );
+	::WritePrivateProfileString( L"COL_LIST", L"FRQ_HIGH", szBuffer, m_strIniFile );
+
+}
+
 /**
  * @brief     
  * @param     STR_FILTER_SETUP * pstFilterSetup
@@ -572,6 +611,32 @@ void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 
 }
 
+void CShuDeltaGraphApp::LoadProfile( STR_COL_LIST *pstColList )
+{
+	TCHAR szBuffer[100];
+
+	::GetPrivateProfileString( L"COL_LIST", L"FRQ_LOW", L"8000.0", szBuffer, 100, m_strIniFile );
+	pstColList->fFrqLow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST", L"FRQ_HIGH", L"8010.0", szBuffer, 100, m_strIniFile );
+	pstColList->fFrqHigh = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST", L"COL_TIME", L"1000.0", szBuffer, 100, m_strIniFile );
+	pstColList->fColTime = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST", L"COL_NUM", L"100.0", szBuffer, 100, m_strIniFile );
+	pstColList->uiColNumber = (int) _wtof(szBuffer);
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 16:28:39
+ * @warning   
+ */
 void CShuDeltaGraphApp::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.

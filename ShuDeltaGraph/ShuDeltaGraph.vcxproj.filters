@@ -31,6 +31,9 @@
     <Filter Include="소스 파일\ListCtrl">
       <UniqueIdentifier>{9f4abe97-6326-4790-8ec3-e9f7f0ec91f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\SpinCtrl">
+      <UniqueIdentifier>{390778d7-5292-4b80-938c-33d3043a0154}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -206,6 +209,9 @@
     <ClInclude Include="ListCtrl\ReportCtrl.h">
       <Filter>소스 파일\ListCtrl</Filter>
     </ClInclude>
+    <ClInclude Include="SpinCtrl\NumSpinCtrl.h">
+      <Filter>소스 파일\SpinCtrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -273,6 +279,9 @@
     </ClCompile>
     <ClCompile Include="ListCtrl\ReportCtrl.cpp">
       <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="SpinCtrl\NumSpinCtrl.cpp">
+      <Filter>소스 파일\SpinCtrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
