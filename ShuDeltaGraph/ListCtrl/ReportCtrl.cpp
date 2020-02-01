@@ -464,6 +464,21 @@ void CReportCtrl::SetGridLines(BOOL bSet)
 	SetExtendedStyle(dwStype);	
 }
 
+void CReportCtrl::SetCheckboxes(BOOL bSet)
+{
+	DWORD dwStype = CListCtrl::GetExtendedStyle();
+	if (bSet)
+	{
+		dwStype |= LVS_EX_CHECKBOXES;
+	}
+	else
+	{
+		dwStype &= ~LVS_EX_CHECKBOXES;
+	}
+
+	SetExtendedStyle(dwStype);
+}
+
 int CReportCtrl::InsertColumn(int nCol, const LVCOLUMN *pColumn)
 {
 	EndEdit(TRUE);

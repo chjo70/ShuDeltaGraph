@@ -81,7 +81,7 @@ END_MESSAGE_MAP()
 
 // CDlgColList 메시지 처리기입니다.
 
-#define NUM_OF_STATUSBAR			(7)
+#define NUM_OF_STATUSBAR			(6)
 /**
  * @brief     
  * @return    void
@@ -357,6 +357,14 @@ DWORD WINAPI FuncReceiveLAN( LPVOID lpData )
 	return 0;
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 15:44:24
+ * @warning   
+ */
 void CDlgColList::InitListCtrl()
 {
 	CRect rt;
@@ -368,8 +376,12 @@ void CDlgColList::InitListCtrl()
 
 	// m_CListCtrlLOG.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES | LVS_EX_GRIDLINES);
 
-	m_ColList.InsertColumn(0, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.05), -1 );
-	m_ColList.InsertColumn(1, _T("수집 주파수"), LVCFMT_LEFT, (int) ( rt.Width() * 0.25) , -1);
+	m_ColList.InsertColumn(0, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
+	m_ColList.InsertColumn(1, _T("수집 주파수"), LVCFMT_LEFT, (int) ( rt.Width() * 0.20) , -1);
 	m_ColList.InsertColumn(2, _T("수집 개수/시간"), LVCFMT_LEFT, (int) ( rt.Width() * 0.6 ), -1);
-	m_ColList.InsertColumn(3, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.1), -1);
+	m_ColList.InsertColumn(3, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.09), -1);
+
+	m_ColList.SetGridLines(TRUE);
+	m_ColList.SetCheckboxes(TRUE);
+
 }

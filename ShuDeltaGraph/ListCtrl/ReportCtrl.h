@@ -146,6 +146,7 @@ public:
 	
 	void ResizeToFitParent(); // Resize the list control to occupy parent's client area
 	void SetGridLines(BOOL bSet = TRUE); // Show grid lines.
+	void SetCheckboxes(BOOL bSet=TRUE);
 	void SetCheckboxeStyle(int nStyle = RC_CHKBOX_NORMAL); // Set checkbox styles.	
 	int GetCheckboxStyle() const;	
 	BOOL IsSortable() const; // Is sort allowed?
