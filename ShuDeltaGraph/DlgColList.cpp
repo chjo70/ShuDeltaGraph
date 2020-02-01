@@ -33,8 +33,12 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_COL_LIST, m_ColList);
 	DDX_Control(pDX, IDC_LIST2_RAWDATA, m_CListRawData);
-	DDX_Control(pDX, IDC_EDIT_FREQ_LOW, m_CEditFrqLow);
-	DDX_Control(pDX, IDC_EDIT_FREQ_HIGH, m_CEditFrqHigh);
+	DDX_Control(pDX, IDC_SPIN_FRQ_LOW, m_CSpinFreqLow);
+	DDX_Control(pDX, IDC_SPIN_FRQ_HIGH, m_CSpinFreqHigh);
+	DDX_Control(pDX, IDC_SPIN_COL_TIME, m_CSpinColTime);
+	DDX_Control(pDX, IDC_SPIN_COL_NUM, m_CSpinColNum);
+	DDX_Control(pDX, IDC_SPIN_NUM, m_CSpinNum);
+	DDX_Control(pDX, IDC_STATIC_TOTAL_COL_LIST, m_CStaticTotalColList);
 }
 
 /**
@@ -48,6 +52,8 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 void CDlgColList::InitBuffer()
 {
 
+	m_iSelItem = -1;
+
 	m_pListener = new MyEchoSocket( false );
 	m_pConnected = new MyEchoSocket( false );
 
@@ -55,8 +61,9 @@ void CDlgColList::InitBuffer()
 	m_pConnected->SetParentDlg(this);
 
 	m_ptxData = (char *) malloc(sizeof(char) * 100000);
+	m_prxData = (char *) malloc(sizeof(char) * 100000);
 
-	m_prxData = (char *)malloc(sizeof(char) * 100000);
+	m_pColList = ( STR_COL_LIST *) malloc( sizeof(STR_COL_ITEM) * MAX_COL_ITEMS );
 
 }
 
@@ -76,16 +83,41 @@ void CDlgColList::FreeBuffer()
 	delete m_pConnected;
 
 	free( m_ptxData );
-	free(m_prxData);
+	free( m_prxData );
+	free( m_pColList );
 }
 
 
 
 BEGIN_MESSAGE_MAP(CDlgColList, CDialogEx)
+	ON_BN_CLICKED(IDC_BUTTON_ADD_LIST, &CDlgColList::OnBnClickedButtonAddList)
+	ON_NOTIFY(HDN_ITEMDBLCLICK, 0, &CDlgColList::OnHdnItemdblclickListColList)
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST_COL_LIST, &CDlgColList::OnDblclkListColList)
+	ON_BN_CLICKED(IDC_BUTTON_MODIFY_LIST, &CDlgColList::OnBnClickedButtonModifyList)
+	ON_BN_CLICKED(IDC_BUTTON_ALLSELECT, &CDlgColList::OnBnClickedButtonAllselect)
+	ON_BN_CLICKED(IDC_BUTTON_SEL_DELETE, &CDlgColList::OnBnClickedButtonSelDelete)
+	ON_BN_CLICKED(IDC_BUTTON_ALLSEL_CHECKBOX, &CDlgColList::OnBnClickedButtonAllselCheckbox)
+	ON_BN_CLICKED(IDC_BUTTON_ALLSEL_UNCHECKBOX, &CDlgColList::OnBnClickedButtonAllselUncheckbox)
+	ON_BN_CLICKED(IDC_BUTTON_ALLSEL_INVCHECKBOX, &CDlgColList::OnBnClickedButtonAllselInvcheckbox)
 END_MESSAGE_MAP()
 
 
 // CDlgColList 메시지 처리기입니다.
+
+void CDlgColList::InitButton()
+{
+	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
+
+	GetDlgItem(IDC_EDIT_NUM)->EnableWindow( FALSE );
+}
+
+void CDlgColList::InitStatic()
+{
+	m_CStaticTotalColList.SetTextColor(RGB(0,0,255), FALSE);
+	m_CStaticTotalColList.SetBackgroundColor(RGB(255,255,255), FALSE);
+	m_CStaticTotalColList.SetBold(TRUE, FALSE);
+	//m_CStaticTotalColList.SetFont(_T("Comic Sans MS"), 20, FALSE);
+}
 
 #define NUM_OF_STATUSBAR			(6)
 /**
@@ -132,21 +164,45 @@ BOOL CDlgColList::OnInitDialog()
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
+	//m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	HICON hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_ICON_COL_LIST));
+	this->SetIcon(hIcon, FALSE);
+
+	InitButton();
 	InitBuffer();
 	InitStatusBar();
 	InitListCtrl();
+	InitStatic();
+
+	LoadColList();
 
 	pApp->LoadProfile( & m_stColList );
 
-	m_CEditFrqLow.SetDecimalPlaces(0);
-	m_CEditFrqLow.SetTrimTrailingZeros(FALSE);
-	m_CEditFrqLow.SetRangeAndDelta( 500, 180000, 1.0 );
-	m_CEditFrqLow.SetPos( m_stColList.fFrqLow );
+	// 스핀 카트롤 세팅
+	m_CSpinNum.SetDecimalPlaces(0);
+	m_CSpinNum.SetTrimTrailingZeros(FALSE);
+	m_CSpinNum.SetRangeAndDelta( 1, 1000, 1.0 );
+	m_CSpinNum.SetPos( (double) 1 );
 
-	m_CEditFrqHigh.SetDecimalPlaces(0);
-	m_CEditFrqHigh.SetTrimTrailingZeros(FALSE);
-	m_CEditFrqHigh.SetRangeAndDelta( 500, 180000, 1.0 );
-	m_CEditFrqHigh.SetPos( m_stColList.fFrqHigh );
+	m_CSpinFreqLow.SetDecimalPlaces(1);
+	m_CSpinFreqLow.SetTrimTrailingZeros(FALSE);
+	m_CSpinFreqLow.SetRangeAndDelta( 500, 180000, 10.0 );
+	m_CSpinFreqLow.SetPos( (double) m_stColList.fFrqLow );
+
+	m_CSpinFreqHigh.SetDecimalPlaces(1);
+	m_CSpinFreqHigh.SetTrimTrailingZeros(FALSE);
+	m_CSpinFreqHigh.SetRangeAndDelta( 500, 180000, 10.0 );
+	m_CSpinFreqHigh.SetPos( (double) m_stColList.fFrqHigh );
+
+	m_CSpinColTime.SetDecimalPlaces(1);
+	m_CSpinColTime.SetTrimTrailingZeros(FALSE);
+	m_CSpinColTime.SetRangeAndDelta( 100, 100000, 1.0 );
+	m_CSpinColTime.SetPos( (double) m_stColList.fColTime );
+
+	m_CSpinColNum.SetDecimalPlaces(0);
+	m_CSpinColNum.SetTrimTrailingZeros(FALSE);
+	m_CSpinColNum.SetRangeAndDelta( 10, 1000, 1.0 );
+	m_CSpinColNum.SetPos( (double) m_stColList.uiColNumber );
 
 	InitThread();
 
@@ -154,6 +210,11 @@ BOOL CDlgColList::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
+}
+
+void CDlgColList::LoadColList()
+{
+	m_uiCoColList = 0;
 }
 
 
@@ -392,16 +453,266 @@ void CDlgColList::InitListCtrl()
 	m_ColList.GetWindowRect(&rt);
 	m_ColList.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-	m_ColList.SetSortable( false );
-
-	// m_CListCtrlLOG.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES | LVS_EX_GRIDLINES);
-
 	m_ColList.InsertColumn(0, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
-	m_ColList.InsertColumn(1, _T("수집 주파수"), LVCFMT_LEFT, (int) ( rt.Width() * 0.20) , -1);
-	m_ColList.InsertColumn(2, _T("수집 개수/시간"), LVCFMT_LEFT, (int) ( rt.Width() * 0.6 ), -1);
+	m_ColList.InsertColumn(1, _T("수집 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.5) , -1);
+	m_ColList.InsertColumn(2, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.3 ), -1);
 	m_ColList.InsertColumn(3, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.09), -1);
 
 	m_ColList.SetGridLines(TRUE);
 	m_ColList.SetCheckboxes(TRUE);
 
+	m_CListRawData.GetWindowRect(&rt);
+	m_CListRawData.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
+
+	m_CListRawData.InsertColumn(0, _T("순번"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
+	m_CListRawData.InsertColumn(1, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
+	m_CListRawData.InsertColumn(2, _T("종류"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
+	m_CListRawData.InsertColumn(3, _T("주파수 범위[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2 ), -1);
+	m_CListRawData.InsertColumn(4, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2 ), -1);
+	m_CListRawData.InsertColumn(5, _T("저장 위치"), LVCFMT_LEFT, (int) (rt.Width() * 0.29), -1);
+
+	m_CListRawData.SetGridLines(TRUE);
+	m_CListRawData.SetCheckboxes(TRUE);
+
+}
+
+/**
+ * @brief     
+ * @param     STR_COL_LIST * pstColList
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 18:23:00
+ * @warning   
+ */
+void CDlgColList::GetColList( STR_COL_LIST *pstColList )
+{
+	pstColList->uiNo = (UINT) m_CSpinNum.GetPos();
+	pstColList->stColItem.fFrqLow = (float) m_CSpinFreqLow.GetPos();
+	pstColList->stColItem.fFrqHigh = (float) m_CSpinFreqHigh.GetPos();
+	pstColList->stColItem.fColTime = (float) m_CSpinColTime.GetPos();
+	pstColList->stColItem.uiColNumber = (UINT) m_CSpinColNum.GetPos();
+}
+
+/**
+ * @brief     
+ * @param     STR_COL_LIST * pstColList
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 20:55:07
+ * @warning   
+ */
+void CDlgColList::PutColList( STR_COL_LIST *pstColList )
+{
+	pstColList->uiNo = (UINT) m_CSpinNum.GetPos();
+	pstColList->stColItem.fFrqLow = (float) m_CSpinFreqLow.GetPos();
+	pstColList->stColItem.fFrqHigh = (float) m_CSpinFreqHigh.GetPos();
+	pstColList->stColItem.fColTime = (float) m_CSpinColTime.GetPos();
+	pstColList->stColItem.uiColNumber = (UINT) m_CSpinColNum.GetPos();
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 18:22:57
+ * @warning   
+ */
+void CDlgColList::OnBnClickedButtonAddList()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int nIndex;
+	CString strTemp;
+
+	STR_COL_LIST stColList;
+	STR_COL_LIST *pColList;
+
+	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
+
+	GetColList( & stColList );
+
+	//
+	pColList = m_pColList + m_uiCoColList;
+	stColList.uiNo = m_uiCoColList + 1;
+	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
+
+	//
+	strTemp.Format(_T("%d"), pColList->uiNo );
+ 	nIndex = m_ColList.InsertItem( INT_MAX, strTemp, NULL );
+
+	strTemp.Format(_T("%.1f/%.1f"), pColList->stColItem.fFrqLow, pColList->stColItem.fFrqHigh );
+ 	m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	strTemp.Format(_T("%.1f/%d"), pColList->stColItem.fColTime, pColList->stColItem.uiColNumber );
+	m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	
+ 	//m_ColList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+ 	m_ColList.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+ 	//m_ColList.EnsureVisible( m_uiCoColList, FALSE); 
+
+	SetTotalColList();
+
+	++ m_uiCoColList;
+
+}
+
+void CDlgColList::SetTotalColList()
+{
+	CString strTemp;
+
+	strTemp.Format( _T("%d"), m_ColList.GetItemCount() );
+	m_CStaticTotalColList.SetWindowText( strTemp );
+
+	Invalidate();
+
+	//m_CStaticTotalColList.SetTextColor(RGB(0,0,255), FALSE);
+	//m_CStaticTotalColList.SetBackgroundColor(RGB(255,255,255), FALSE);
+	//m_CStaticTotalColList.SetBold(TRUE, FALSE);
+
+}
+
+
+void CDlgColList::OnHdnItemdblclickListColList(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
+}
+
+
+/**
+ * @brief     
+ * @param     NMHDR * pNMHDR
+ * @param     LRESULT * pResult
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 18:22:53
+ * @warning   
+ */
+void CDlgColList::OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
+
+	CString strTemp;
+	STR_COL_LIST stColList;
+
+	m_iSelItem = pNMItemActivate->iItem;
+	if( m_iSelItem >= 0 ) {
+		GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( TRUE );
+
+		strTemp = m_ColList.GetItemText( m_iSelItem, 0 );
+		swscanf_s( strTemp.GetBuffer(), _T("%d"), & stColList.uiNo );
+		m_CSpinNum.SetPos( (double) stColList.uiNo );
+
+		strTemp = m_ColList.GetItemText( m_iSelItem, 1 );
+		swscanf_s( strTemp.GetBuffer(), _T("%f/%f"), & stColList.stColItem.fFrqLow, & stColList.stColItem.fFrqHigh );
+		m_CSpinFreqLow.SetPos( (double) stColList.stColItem.fFrqLow );
+		m_CSpinFreqHigh.SetPos( (double) stColList.stColItem.fFrqHigh );
+
+		strTemp = m_ColList.GetItemText( m_iSelItem, 2 );
+		swscanf_s( strTemp.GetBuffer(), _T("%f/%d"), & stColList.stColItem.fColTime, & stColList.stColItem.uiColNumber );
+		m_CSpinColTime.SetPos( (double) stColList.stColItem.fColTime );
+		m_CSpinColNum.SetPos( (double) stColList.stColItem.uiColNumber );
+	}
+
+
+}
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 18:23:06
+ * @warning   
+ */
+void CDlgColList::OnBnClickedButtonModifyList()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strTemp;
+
+	STR_COL_LIST stColList;
+	STR_COL_LIST *pColList;
+
+	GetDlgItem(IDC_EDIT_NUM)->EnableWindow( FALSE );
+	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
+
+	GetColList( & stColList );
+
+	//
+	pColList = m_pColList + ( stColList.uiNo - 1 );
+	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
+
+	//
+	strTemp.Format(_T("%d"), pColList->uiNo );
+	m_ColList.SetItem( m_iSelItem, 0, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	strTemp.Format(_T("%.1f/%.1f"), pColList->stColItem.fFrqLow, pColList->stColItem.fFrqHigh );
+	m_ColList.SetItem( m_iSelItem, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	strTemp.Format(_T("%.1f/%d"), pColList->stColItem.fColTime, pColList->stColItem.uiColNumber );
+	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+}
+
+
+void CDlgColList::OnBnClickedButtonAllselect()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_ColList.SelectAllItems();
+	m_ColList.SetFocus();
+}
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 22:15:41
+ * @warning   
+ */
+void CDlgColList::OnBnClickedButtonSelDelete()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strTemp;
+
+	m_ColList.DeleteAllSelectedItems(ItemdataProc, (LPARAM)this);
+
+	SetTotalColList();
+
+}
+
+BOOL CDlgColList::ItemdataProc(DWORD dwData, LPARAM lParam)
+{
+	// TODO: Process your item data here
+
+	// Please return TRUE to proceed the deletion, return FALSE to abort.
+	return TRUE;
+}
+
+void CDlgColList::OnBnClickedButtonAllselCheckbox()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_ColList.CheckAllItems();
+	m_ColList.SetFocus();
+}
+
+
+void CDlgColList::OnBnClickedButtonAllselUncheckbox()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_ColList.UnCheckAllItems();
+	m_ColList.SetFocus();
+}
+
+
+void CDlgColList::OnBnClickedButtonAllselInvcheckbox()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_ColList.InvertCheck();
 }

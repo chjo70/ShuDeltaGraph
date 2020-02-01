@@ -35,8 +35,8 @@ public:
 
 	void SaveProfile( STR_FILTER_SETUP *pstFilterSetup );
 	void LoadProfile( STR_FILTER_SETUP *pstFilterSetup );
-	void LoadProfile( STR_COL_LIST *pstColList );
-	void SaveProfile( STR_COL_LIST *pstColList );
+	void LoadProfile( STR_COL_ITEM *pstColList );
+	void SaveProfile( STR_COL_ITEM *pstColList );
 
 private:
 	bool OpenFile( CString &strPathname );

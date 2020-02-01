@@ -572,7 +572,7 @@ void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
 	::WritePrivateProfileString( L"FilterSetup", L"FRQ_MAX", szBuffer, m_strIniFile );
 }
 
-void CShuDeltaGraphApp::SaveProfile( STR_COL_LIST *pstColList )
+void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
@@ -581,6 +581,12 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_LIST *pstColList )
 
 	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fFrqHigh );
 	::WritePrivateProfileString( L"COL_LIST", L"FRQ_HIGH", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fColTime );
+	::WritePrivateProfileString( L"COL_LIST", L"COL_TIME", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->uiColNumber );
+	::WritePrivateProfileString( L"COL_LIST", L"COL_NUM", szBuffer, m_strIniFile );
 
 }
 
@@ -596,7 +602,7 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_LIST *pstColList )
 void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 {
 	TCHAR szBuffer[100];
-
+	
 	::GetPrivateProfileString( L"FilterSetup", L"AOA_MIN", L"0.0", szBuffer, 100, m_strIniFile );
 	pstFilterSetup->dAoaMin = _wtof(szBuffer);
 
@@ -611,7 +617,7 @@ void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 
 }
 
-void CShuDeltaGraphApp::LoadProfile( STR_COL_LIST *pstColList )
+void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 

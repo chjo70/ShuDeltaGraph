@@ -4,10 +4,13 @@
 #include "./EchoSocket/MyEchoSocket.h"
 #include "./ListCtrl/ReportCtrl.h"
 #include "./SpinCtrl/NumSpinCtrl.h"
+#include "./XColorStatic/XColorStatic.h"
 #include "afxcmn.h"
 #include "afxwin.h"
 
 // CDlgColList 대화 상자입니다.
+
+#define MAX_COL_ITEMS	(1000)
 
 typedef struct {
 	float fFrqLow;
@@ -15,6 +18,12 @@ typedef struct {
 
 	float fColTime;
 	UINT uiColNumber;
+
+} STR_COL_ITEM;
+
+typedef struct {
+	UINT uiNo;
+	STR_COL_ITEM stColItem;;
 
 } STR_COL_LIST;
 
@@ -28,7 +37,12 @@ private:
 	char *m_ptxData;
 	char *m_prxData;
 
-	STR_COL_LIST m_stColList;
+	STR_COL_ITEM m_stColList;
+
+	UINT m_uiCoColList;
+	STR_COL_LIST *m_pColList;
+
+	UINT m_iSelItem;
 
 public:
 	CThread m_theThread;
@@ -41,7 +55,16 @@ private:
 	void InitBuffer();
 	void InitThread();
 	void FreeBuffer();
+	void InitButton();
 	void InitListCtrl();
+	void InitStatic();
+
+	void SetTotalColList();
+
+	void LoadColList();
+	void GetColList( STR_COL_LIST *pstColList );
+	void PutColList( STR_COL_LIST *pstColList );
+	static BOOL CALLBACK ItemdataProc(DWORD dwData, LPARAM lParam);
 
 public:
 	void InitSocketSetting();
@@ -70,6 +93,19 @@ public:
 	virtual BOOL OnInitDialog();
 	CReportCtrl m_ColList;
 	CReportCtrl m_CListRawData;
-	CNumSpinCtrl m_CEditFrqLow;
-	CNumSpinCtrl m_CEditFrqHigh;
+	CNumSpinCtrl m_CSpinFreqLow;
+	CNumSpinCtrl m_CSpinFreqHigh;
+	CNumSpinCtrl m_CSpinColTime;
+	CNumSpinCtrl m_CSpinColNum;
+	afx_msg void OnBnClickedButtonAddList();
+	afx_msg void OnHdnItemdblclickListColList(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnBnClickedButtonModifyList();
+	CNumSpinCtrl m_CSpinNum;
+	afx_msg void OnBnClickedButtonAllselect();
+	afx_msg void OnBnClickedButtonSelDelete();
+	afx_msg void OnBnClickedButtonAllselCheckbox();
+	afx_msg void OnBnClickedButtonAllselUncheckbox();
+	afx_msg void OnBnClickedButtonAllselInvcheckbox();
+	CXColorStatic m_CStaticTotalColList;
 };
