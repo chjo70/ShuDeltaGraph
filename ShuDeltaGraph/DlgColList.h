@@ -108,4 +108,5 @@ public:
 	afx_msg void OnBnClickedButtonAllselUncheckbox();
 	afx_msg void OnBnClickedButtonAllselInvcheckbox();
 	CXColorStatic m_CStaticTotalColList;
+	afx_msg void OnBnClickedButtonColstart();
 };

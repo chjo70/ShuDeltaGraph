@@ -99,6 +99,7 @@ BEGIN_MESSAGE_MAP(CDlgColList, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ALLSEL_CHECKBOX, &CDlgColList::OnBnClickedButtonAllselCheckbox)
 	ON_BN_CLICKED(IDC_BUTTON_ALLSEL_UNCHECKBOX, &CDlgColList::OnBnClickedButtonAllselUncheckbox)
 	ON_BN_CLICKED(IDC_BUTTON_ALLSEL_INVCHECKBOX, &CDlgColList::OnBnClickedButtonAllselInvcheckbox)
+	ON_BN_CLICKED(IDC_BUTTON_COLSTART, &CDlgColList::OnBnClickedButtonColstart)
 END_MESSAGE_MAP()
 
 
@@ -687,6 +688,16 @@ void CDlgColList::OnBnClickedButtonSelDelete()
 
 }
 
+/**
+ * @brief     
+ * @param     DWORD dwData
+ * @param     LPARAM lParam
+ * @return    BOOL
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/02 11:01:49
+ * @warning   
+ */
 BOOL CDlgColList::ItemdataProc(DWORD dwData, LPARAM lParam)
 {
 	// TODO: Process your item data here
@@ -695,6 +706,14 @@ BOOL CDlgColList::ItemdataProc(DWORD dwData, LPARAM lParam)
 	return TRUE;
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/02 11:01:53
+ * @warning   
+ */
 void CDlgColList::OnBnClickedButtonAllselCheckbox()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -703,6 +722,14 @@ void CDlgColList::OnBnClickedButtonAllselCheckbox()
 }
 
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/02 11:01:43
+ * @warning   
+ */
 void CDlgColList::OnBnClickedButtonAllselUncheckbox()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -711,8 +738,48 @@ void CDlgColList::OnBnClickedButtonAllselUncheckbox()
 }
 
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/02 11:01:34
+ * @warning   
+ */
 void CDlgColList::OnBnClickedButtonAllselInvcheckbox()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	m_ColList.InvertCheck();
+}
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/02 11:16:00
+ * @warning   
+ */
+void CDlgColList::OnBnClickedButtonColstart()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+		if( TRUE == m_ColList.GetCheck(i) ) {
+			strTemp = m_ColList.GetItemText( m_iSelItem, 0 );
+			swscanf_s( strTemp.GetBuffer(), _T("%d"), & stColList.uiNo );
+			m_CSpinNum.SetPos( (double) stColList.uiNo );
+
+			strTemp = m_ColList.GetItemText( m_iSelItem, 1 );
+			swscanf_s( strTemp.GetBuffer(), _T("%f/%f"), & stColList.stColItem.fFrqLow, & stColList.stColItem.fFrqHigh );
+			m_CSpinFreqLow.SetPos( (double) stColList.stColItem.fFrqLow );
+			m_CSpinFreqHigh.SetPos( (double) stColList.stColItem.fFrqHigh );
+
+			strTemp = m_ColList.GetItemText( m_iSelItem, 2 );
+			swscanf_s( strTemp.GetBuffer(), _T("%f/%d"), & stColList.stColItem.fColTime, & stColList.stColItem.uiColNumber );
+			m_CSpinColTime.SetPos( (double) stColList.stColItem.fColTime );
+			m_CSpinColNum.SetPos( (double) stColList.stColItem.uiColNumber );
+		}
+	}
+
 }
