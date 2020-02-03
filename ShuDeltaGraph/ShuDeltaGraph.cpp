@@ -576,11 +576,14 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
-	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fFrqLow );
-	::WritePrivateProfileString( L"COL_LIST", L"FRQ_LOW", szBuffer, m_strIniFile );
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->iMode );
+	::WritePrivateProfileString( L"COL_LIST", L"MODE", szBuffer, m_strIniFile );
 
-	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fFrqHigh );
-	::WritePrivateProfileString( L"COL_LIST", L"FRQ_HIGH", szBuffer, m_strIniFile );
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fCenterFreq );
+	::WritePrivateProfileString( L"COL_LIST", L"CENTER_FREQ", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fThreshold );
+	::WritePrivateProfileString( L"COL_LIST", L"THRESHOLD", szBuffer, m_strIniFile );
 
 	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fColTime );
 	::WritePrivateProfileString( L"COL_LIST", L"COL_TIME", szBuffer, m_strIniFile );
@@ -621,11 +624,14 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
-	::GetPrivateProfileString( L"COL_LIST", L"FRQ_LOW", L"8000.0", szBuffer, 100, m_strIniFile );
-	pstColList->fFrqLow = (float) _wtof(szBuffer);
+	::GetPrivateProfileString( L"COL_LIST", L"MODE", L"0", szBuffer, 100, m_strIniFile );
+	pstColList->iMode = _wtoi(szBuffer);
 
-	::GetPrivateProfileString( L"COL_LIST", L"FRQ_HIGH", L"8010.0", szBuffer, 100, m_strIniFile );
-	pstColList->fFrqHigh = (float) _wtof(szBuffer);
+	::GetPrivateProfileString( L"COL_LIST", L"CENTER_FRQ", L"8000.0", szBuffer, 100, m_strIniFile );
+	pstColList->fCenterFreq = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST", L"THRESHOLD", L"-30.0", szBuffer, 100, m_strIniFile );
+	pstColList->fThreshold = (float) _wtof(szBuffer);
 
 	::GetPrivateProfileString( L"COL_LIST", L"COL_TIME", L"1000.0", szBuffer, 100, m_strIniFile );
 	pstColList->fColTime = (float) _wtof(szBuffer);

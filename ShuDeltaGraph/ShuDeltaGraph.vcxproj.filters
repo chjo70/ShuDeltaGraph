@@ -37,6 +37,12 @@
     <Filter Include="소스 파일\ColorStatic">
       <UniqueIdentifier>{f8914ae9-eabf-41fe-bb2e-b7a3457545ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\ButtonST">
+      <UniqueIdentifier>{f58d2632-6274-4682-9221-28cd415c43a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\ToolTip">
+      <UniqueIdentifier>{55965a80-d77b-42de-89e1-ceb113b3814a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -130,6 +136,15 @@
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="res\task_list_19659.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\Question.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\OK.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\Error.ico">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>
@@ -227,6 +242,15 @@
     <ClInclude Include="XColorStatic\FontSize.h">
       <Filter>소스 파일\ColorStatic</Filter>
     </ClInclude>
+    <ClInclude Include="ButtonST\BCMenu.h">
+      <Filter>소스 파일\ButtonST</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonST\BtnST.h">
+      <Filter>소스 파일\ButtonST</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolTip\XInfoTip.h">
+      <Filter>소스 파일\ToolTip</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -303,6 +327,15 @@
     </ClCompile>
     <ClCompile Include="XColorStatic\FontSize.cpp">
       <Filter>소스 파일\ColorStatic</Filter>
+    </ClCompile>
+    <ClCompile Include="ButtonST\BCMenu.cpp">
+      <Filter>소스 파일\ButtonST</Filter>
+    </ClCompile>
+    <ClCompile Include="ButtonST\BtnST.cpp">
+      <Filter>소스 파일\ButtonST</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolTip\XInfoTip.cpp">
+      <Filter>소스 파일\ToolTip</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

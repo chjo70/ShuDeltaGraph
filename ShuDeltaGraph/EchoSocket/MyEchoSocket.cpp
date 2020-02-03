@@ -49,7 +49,7 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	if(nErrorCode==0)
 	{
 		((CDlgColList*)m_pDlg)->OnAccept();
-		//m_bConnected = true;
+		m_bConnected = true;
 	}
 	CAsyncSocket::OnAccept(nErrorCode);
 }
@@ -59,6 +59,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0 || nErrorCode == 10053 )
 	{
+		m_bConnected = false;
 		m_uiErrorCode = CAsyncSocket::GetLastError();
 
 		((CDlgColList*)m_pDlg)->OnClose();
