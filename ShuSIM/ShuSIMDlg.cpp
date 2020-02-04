@@ -246,8 +246,9 @@ void CShuSIMDlg::ParseData( void *pData )
 	case REQ_RAWDATA :
 		MakeResultOfPDWMessage();
 		Send();
-		MakeResultOfIQMessage();
-		Send();
+		
+		//MakeResultOfIQMessage();
+		//Send();
 		break;
 
 	default:
@@ -350,6 +351,8 @@ void CShuSIMDlg::Send()
 	if( pTxMessage->uiDataLength != 0 ) {
 		m_pConnected->Send( & m_ptxData[sizeof(STR_MESSAGE)], pTxMessage->uiDataLength );
 	}
+
+	LogTxMessage( m_ptxData );
 
 }
 
@@ -518,6 +521,24 @@ void CShuSIMDlg::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void
 		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
 		break;
 
+	case RES_SET_CONFIG:
+		*pstrTemp1 = _T("<<수집 파라메타 설정 결과 응답");
+		pstrTemp2->Format( _T("[%d]"), pstData->uiResult );
+		break;
+
+	case RES_COL_START :
+		*pstrTemp1 = _T("<<수집시작 응답");
+		pstrTemp2->Format( _T("ST[%d],Co[%d],Phase[%d]"), pstData->stColStart.uiStatus, pstData->stColStart.uiCoPulseNum, pstData->stColStart.uiPhase3Num );
+		break;
+
+	case RES_RAWDATA_PDW:
+		*pstrTemp1 = _T("<<PDW 데이터");
+		break;
+
+	case RES_RAWDATA_INTRA:
+		*pstrTemp1 = _T("<<INTRA 데이터");
+		break;
+
 	default:
 		*pstrTemp1 = _T("<<");
 		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
@@ -611,7 +632,7 @@ void CShuSIMDlg::MakeResultOfPDWMessage()
 
 }
 
-void CShuSIMDlg::MakeResultOfIQMessage()
+void CShuSIMDlg::MakeResultOfIntraMessage()
 {
 	int i;
 

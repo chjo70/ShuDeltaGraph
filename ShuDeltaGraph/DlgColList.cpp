@@ -208,6 +208,7 @@ BOOL CDlgColList::OnInitDialog()
 	HICON hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_ICON_COL_LIST));
 	this->SetIcon(hIcon, FALSE);
 
+	InitVar();
 	InitButton();
 	InitBuffer();
 	InitStatusBar();
@@ -432,43 +433,15 @@ void CDlgColList::OnConnect(int nErrorCode )
  * @date      2020/02/01 10:10:30
  * @warning   
  */
-void CDlgColList::OnReceive()
+void CDlgColList::OnReceive( char *pData )
 {
-	CString strData;
-	int iLenOfHeader, iLenOfData;
+	CString strTemp1, strTemp2;
 
-	int iSxSize;
+	MakeLogResMessage( & strTemp1, & strTemp2, (void *) pData );
 
-	CString strTemp1, strTemp2, strNum;
+	UpdateResultData( pData );
 
-	STR_MESSAGE *pstRxMessage;
-	STR_DATA_CONTENTS *pstRxData;
-
-	pstRxMessage = (STR_MESSAGE * ) m_prxData;
-	pstRxData = (STR_DATA_CONTENTS * ) & m_prxData[sizeof(STR_MESSAGE)];
-
-	// 1. 헤더 데이터 수신하기
-	iLenOfHeader = m_pConnected->Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
-
-	// 2. 데이터 수신하기
-	if( pstRxMessage->uiDataLength != 0 ) {
-		iLenOfData = m_pConnected->Receive( (char *) pstRxData, pstRxMessage->uiDataLength );
-	}
-	else {
-		iLenOfData = 0;
-	}
-
-	if (iLenOfHeader == SOCKET_ERROR) {
-		AfxMessageBox(_T("Could not Recieve"));
-	}
-	else {
-		MakeLogResMessage( & strTemp1, & strTemp2, (void *) m_prxData );
-
-		UpdateResultData( m_prxData );
-
-		InsertItem( & strTemp1, & strTemp2 );
-
-	}
+	InsertItem( & strTemp1, & strTemp2 );
 
 }
 
@@ -1094,6 +1067,8 @@ void CDlgColList::Send()
 		m_pConnected->Send( & m_ptxData[sizeof(STR_MESSAGE)], pTxMessage->uiDataLength );
 	}
 
+	LogTxMessage( m_ptxData );
+
 }
 
 /**
@@ -1141,6 +1116,24 @@ void CDlgColList::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, voi
 	case REQ_INIT:
 		*pstrTemp1 = _T(">>초기화 요구");
 		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
+		break;
+
+	case REQ_SETMODE:
+		*pstrTemp1 = _T(">>시스템모드 전환 통보");
+		*pstrTemp2 = _T("");
+		break;
+
+	case REQ_SET_CONFIG:
+		*pstrTemp1 = _T(">>수집 파라메터 설정");
+		pstrTemp2->Format( _T("M%d, %.1f[MHz], %d[개수], %.1f[ms], %.1f[dBm]"), pstData->stSetMode.uiMode, pstData->stSetMode.fTuneFreq, pstData->stSetMode.coPulseNum, pstData->stSetMode.fColTime, pstData->stSetMode.fThreshold );
+		break;
+
+	case REQ_COL_START :
+		*pstrTemp1 = _T(">>신호 수집 시작 요구");
+		break;
+
+	case REQ_RAWDATA :
+		*pstrTemp1 = _T(">>수집 데이터");
 		break;
 
 	default:
@@ -1213,8 +1206,8 @@ void CDlgColList::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *p
 // 	if( pStrTemp3 != NULL ) {
 // 		m_CListLog.SetItem(nIndex, 3, LVIF_TEXT, *pStrTemp3, NULL, NULL, NULL, NULL);
 // 	}
-// 
-// 	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, *pStrTemp1, *pStrTemp2 );
+ 
+ 	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, *pStrTemp1, *pStrTemp2 );
 
 	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_INFOBK));
 	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_3DLIGHT));
@@ -1398,7 +1391,7 @@ STR_DATA_CONTENTS *CDlgColList::GetRxData()
 {
 	STR_DATA_CONTENTS *pRxData;
 
-	pRxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_prxData + sizeof(STR_MESSAGE) );
+	pRxData = m_pConnected->GetRxData();
 
 	return pRxData;
 }

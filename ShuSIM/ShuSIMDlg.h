@@ -62,7 +62,7 @@ public:
 	void MakeResultOfColStartMessage();
 
 	void MakeResultOfPDWMessage();
-	void MakeResultOfIQMessage();
+	void MakeResultOfIntraMessage();
 
 // 생성입니다.
 public:

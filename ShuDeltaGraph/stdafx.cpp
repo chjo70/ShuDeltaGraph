@@ -17,6 +17,7 @@ void Log( int nType, const TCHAR *fmt, ... )
 	g_criticalLog.Lock();
 
 	static TCHAR szLog[5096];
+	static CHAR szLogMB[5096];
 
 	FILE *fp=NULL;
 	CTime tm=CTime::GetCurrentTime();
@@ -80,25 +81,15 @@ void Log( int nType, const TCHAR *fmt, ... )
 
 				strLog += szLog;
 
-				USES_CONVERSION;
+				WideCharToMultiByte( CP_ACP, 0, strLog, -1, szLogMB, 5096, NULL, NULL );
 
-				//fwprintf( fp, _T("%s\n") , W2A( strLog ) );
-				//UnicodeToUtf8( szbLog, strLog.GetBuffer() );
-				
-				WORD mark = 0xFEFF;
-				fwrite( & mark, sizeof(WORD), 1, fp );
+				fwrite( "\n", 1, 1, fp );
+				fwrite( szLogMB, strlen(szLogMB), 1, fp );
 
-				fwrite((LPCTSTR) strLog, strLog.GetLength() * sizeof(TCHAR), 1, fp );
-
-				mark = 0x000D;
-				fwrite( & mark, sizeof(WORD), 1, fp );
-				mark = 0x000A;
-				fwrite( & mark, sizeof(WORD), 1, fp );
-				
 				fflush( fp );
 				fclose( fp );
 				
-				TRACE( "\n%s" , W2A(szLog) );
+				TRACE( "\n%s" , szLogMB );
 			}
 			else {
 				CString strErrorMsg;

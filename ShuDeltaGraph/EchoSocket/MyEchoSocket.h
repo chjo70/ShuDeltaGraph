@@ -31,7 +31,10 @@ public:
 	bool m_bBigEndian;
 
 private:
+	UINT m_uiDataLength;
+	bool m_bHeader;
 	char *m_pData;
+	char *m_prxData;
 	UINT m_uiErrorCode;
 
 // Operations
@@ -44,6 +47,7 @@ public:
 	void AllSwapData32( void *pData, int iLength );
 
 	int GetLastError();
+	STR_DATA_CONTENTS *GetRxData();
 
 // Overrides
 public:

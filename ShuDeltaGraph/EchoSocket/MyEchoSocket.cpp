@@ -22,6 +22,10 @@ MyEchoSocket::MyEchoSocket( bool bBigEndian )
 
 	m_pData = ( char * ) malloc( sizeof(char) * MAX_LAN_BUFFER );
 
+	m_prxData = (char *) malloc(sizeof(char) * 100000 );
+
+	m_bHeader = false;
+
 	m_uiErrorCode = 0;
 
 }
@@ -29,6 +33,7 @@ MyEchoSocket::MyEchoSocket( bool bBigEndian )
 MyEchoSocket::~MyEchoSocket()
 {
 	free( m_pData );
+	free( m_prxData );
 }
 
 
@@ -49,6 +54,7 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	if(nErrorCode==0)
 	{
 		((CDlgColList*)m_pDlg)->OnAccept();
+		m_bHeader = false;
 		m_bConnected = true;
 	}
 	CAsyncSocket::OnAccept(nErrorCode);
@@ -60,6 +66,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	if(nErrorCode==0 || nErrorCode == 10053 )
 	{
 		m_bConnected = false;
+		m_bHeader = false;
 		m_uiErrorCode = CAsyncSocket::GetLastError();
 
 		((CDlgColList*)m_pDlg)->OnClose();
@@ -73,6 +80,7 @@ void MyEchoSocket::OnConnect(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode );
 	m_uiErrorCode = CAsyncSocket::GetLastError();
+	m_bHeader = false;
 	
 	CAsyncSocket::OnConnect(nErrorCode);
 }
@@ -89,9 +97,44 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CDlgColList*)m_pDlg)->OnReceive();
+		STR_MESSAGE *pstRxMessage;
+		STR_DATA_CONTENTS *pstRxData;
+
+		int iLenOfData;
+
+		pstRxMessage = (STR_MESSAGE * ) m_prxData;
+		if( m_bHeader == false ) {
+			m_bHeader = true;
+			m_uiDataLength = 0;
+			Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
+
+			m_uiDataLength = pstRxMessage->uiDataLength;
+		}
+
+		if( m_uiDataLength != 0 ) {
+			UINT nError = GetLastError();
+			pstRxData = (STR_DATA_CONTENTS * ) & m_prxData[sizeof(STR_MESSAGE)];
+			iLenOfData = Receive( (char *) pstRxData, m_uiDataLength );
+
+			// 데이터가 없기 때문에 데이터는 다음에 수신한다.
+			if( iLenOfData < 0 && nError == 0 ) {
+				return;
+			}
+			else if( iLenOfData < 0 && nError != 0 ) {
+				Log( enError, _T("랜 수신 에러[%d] 입니다.!!"), nError );
+			}
+
+			m_bHeader = false;
+
+			((CDlgColList*)m_pDlg)->OnReceive( m_prxData );
+		}
+		else {
+			m_bHeader = false;
+
+			((CDlgColList*)m_pDlg)->OnReceive( m_prxData );
+		}
 	}
-	
+
 	CAsyncSocket::OnReceive(nErrorCode);
 }
 
@@ -245,3 +288,11 @@ void MyEchoSocket::AllSwapData32( void *pData, int iLength )
 
 }
 
+STR_DATA_CONTENTS *MyEchoSocket::GetRxData()
+{
+	STR_DATA_CONTENTS *pRxData;
+
+	pRxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_prxData + sizeof(STR_MESSAGE) );
+
+	return pRxData;
+}

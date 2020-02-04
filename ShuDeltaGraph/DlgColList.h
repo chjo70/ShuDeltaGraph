@@ -102,7 +102,7 @@ public:
 	void OnAccept();
 	void OnConnect( int nErrorCode );
 	void OnClose();
-	void OnReceive();
+	void OnReceive( char *pData );
 
 	void Send();
 
