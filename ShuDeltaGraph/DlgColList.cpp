@@ -306,7 +306,7 @@ void CDlgColList::SetControl( bool bEnable )
 	GetDlgItem(IDC_BUTTON_INIT)->EnableWindow( bEnable );
 	GetDlgItem(IDC_BUTTON_SETMODE)->EnableWindow( bEnable );
 
-	GetDlgItem(IDC_BUTTON_ADD_LIST)->EnableWindow( !bEnable );
+	//GetDlgItem(IDC_BUTTON_ADD_LIST)->EnableWindow( !bEnable );
 	
 	GetDlgItem(IDC_BUTTON_COLSTART)->EnableWindow( bEnable );
 
@@ -340,6 +340,10 @@ void CDlgColList::OnClose()
 	SetControl( false );
 
 	InitSocketSetting();
+
+	m_theThread.Stop( true );
+
+	m_CButtonColStart.SetWindowText( _T("수집 시작") );
 
 	//CALL_DIALOG( enUnit, OnClose() );
 
@@ -468,6 +472,8 @@ void CDlgColList::OnReceive()
 
 }
 
+#define INIT_CODE_BYTE				(0xCC)
+#define INIT_CODE_WORD				(0xCCCCCCCC)
 #define MAX_WAIT_RESPONSE			(1000)
 /**
  * @brief     
@@ -480,17 +486,25 @@ void CDlgColList::OnReceive()
  */
 DWORD WINAPI FuncColList( LPVOID lpData )
 {
-	UINT uiIndex=0, uiTry;
+	UINT uiIndex=MAX_COL_ITEMS, uiTry;
 	CDlgColList *pDlg;
 
 	STR_MESSAGE *pTxMessage;
 	STR_DATA_CONTENTS *pTxData;
+	STR_DATA_CONTENTS *pRxData;
 
 	CThread *pParent = reinterpret_cast<CThread*>(lpData);
 	pDlg = ( CDlgColList * ) pParent->GetParam();
 
+	pRxData = pDlg->GetRxData();
+
 	while( TRUE ) {
+		uiIndex = (pDlg->m_uiCoColList-1) <= uiIndex ? 0 : ++uiIndex;
+
+		Sleep( 1000 );
 		// 1. 수집 페라미터 설정
+		memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
+
 		pDlg->MakeSetModeMessage( uiIndex );
 		pDlg->Send();
 		uiTry = 0;
@@ -502,13 +516,19 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 				break;
 			}
 
-		} while( true );
+		} while( pRxData->uiResult == INIT_CODE_WORD );
+		if( pRxData->uiResult == 1 ) {
+			Sleep( 100 );
+			continue;
+		}
 		if( uiTry > MAX_WAIT_RESPONSE ) {
 			Log( enError, _T("수집 파리미터 설정에서 에러가 발생합니다.") );
-			break;
+			continue;
 		}
 
 		// 2. 신호수집 시작 요구
+		memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
+
 		pDlg->MakeColStartMessage();
 		pDlg->Send();
 		uiTry = 0;
@@ -520,16 +540,33 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 				break;
 			}
 
-		} while( true );
-		if( uiTry > MAX_WAIT_RESPONSE ) {
-			Log( enError, _T("수집 파리미터 설정에서 에러가 발생합니다.") );
-			break;
+		} while( pRxData->stColStart.uiStatus == INIT_CODE_WORD );
+
+		// 수집 개수가 0 이면 다음 과제로 이동한다.
+		if( pRxData->stColStart.uiCoPulseNum == 0 ) {
+			continue;
 		}
+ 		if( uiTry > MAX_WAIT_RESPONSE ) {
+ 			Log( enError, _T("신호수집 시작에서 에러가 발생합니다.") );
+ 			continue;
+ 		}
 
 		//
+		// 3. 수집 데이터 전송 요구
+		memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
 
-		// 
-		uiIndex = pDlg->m_uiCoColList <= uiIndex ? 0 : ++uiIndex;
+		pDlg->MakeReqRawDataMessage();
+		pDlg->Send();
+		uiTry = 0;
+		do {
+			++ uiTry;
+			Sleep( 100 );
+
+			if( uiTry > MAX_WAIT_RESPONSE ) {
+				break;
+			}
+
+		} while( pRxData->stColStart.uiStatus == INIT_CODE_WORD );
 
 	}
 
@@ -550,6 +587,16 @@ void CDlgColList::MakeColStartMessage()
 
 	pTxMessage = (STR_MESSAGE * ) m_ptxData;
 	pTxMessage->uiOpcode = REQ_COL_START;
+	pTxMessage->uiDataLength = 0;
+
+}
+
+void CDlgColList::MakeReqRawDataMessage()
+{
+	STR_MESSAGE *pTxMessage;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = REQ_RAWDATA;
 	pTxMessage->uiDataLength = 0;
 
 }
@@ -600,11 +647,11 @@ void CDlgColList::InitListCtrl()
 	m_ColList.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
 	m_ColList.InsertColumn(0, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.12), -1 );
-	m_ColList.InsertColumn(1, _T("모드"), LVCFMT_LEFT, (int) ( rt.Width() * 0.12) , -1);
-	m_ColList.InsertColumn(2, _T("중심 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.3) , -1);
+	m_ColList.InsertColumn(1, _T("모드"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2) , -1);
+	m_ColList.InsertColumn(2, _T("중심 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2) , -1);
 	m_ColList.InsertColumn(3, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.25), -1);
 	m_ColList.InsertColumn(4, _T("임계값[dBm]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.15 ), -1);
-	m_ColList.InsertColumn(5, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.05), -1);
+	m_ColList.InsertColumn(5, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.07), -1);
 
 	m_ColList.SetGridLines(TRUE);
 	m_ColList.SetCheckboxes(TRUE);
@@ -814,7 +861,7 @@ void CDlgColList::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 	strTemp = m_ColList.GetItemText( iRow, 0 );
 	swscanf_s( strTemp.GetBuffer(), _T("%d"), & pColList->uiNo );
 
-	strTemp = m_ColList.GetItemText( m_iSelItem, 1 );
+	strTemp = m_ColList.GetItemText( iRow, 1 );
 	if( strTemp.Compare( g_stColListMode[0] ) == 0 ) {
 		pColList->stColItem.iMode = 0;
 	}
@@ -825,13 +872,13 @@ void CDlgColList::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 		pColList->stColItem.iMode = 2;
 	}
 
-	strTemp = m_ColList.GetItemText( m_iSelItem, 2 );
+	strTemp = m_ColList.GetItemText( iRow, 2 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f"), & pColList->stColItem.fCenterFreq );
 
-	strTemp = m_ColList.GetItemText( m_iSelItem, 3 );
+	strTemp = m_ColList.GetItemText( iRow, 3 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f/%d"), & pColList->stColItem.fColTime, & pColList->stColItem.uiColNumber );
 
-	strTemp = m_ColList.GetItemText( m_iSelItem, 4 );
+	strTemp = m_ColList.GetItemText( iRow, 4 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f"), & pColList->stColItem.fThreshold );
 
 }
@@ -870,7 +917,7 @@ void CDlgColList::OnBnClickedButtonModifyList()
 
 	strTemp.Format(_T("%.1f"), stColList.stColItem.fCenterFreq );
 	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%.1f/%d"), stColList.stColItem.fColTime, stColList.stColItem.uiColNumber );
+	strTemp.Format(_T("%d/%.1f"), stColList.stColItem.uiColNumber, stColList.stColItem.fColTime );
 	m_ColList.SetItem( m_iSelItem, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 	strTemp.Format(_T("%.1f"), stColList.stColItem.fThreshold );
 	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
@@ -1128,6 +1175,24 @@ void CDlgColList::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, voi
 		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
 		break;
 
+	case RES_SET_CONFIG:
+		*pstrTemp1 = _T("<<수집 파라메타 설정 결과 응답");
+		pstrTemp2->Format( _T("[%d]"), pstData->uiResult );
+		break;
+
+	case RES_COL_START :
+		*pstrTemp1 = _T("<<수집시작 응답");
+		pstrTemp2->Format( _T("ST[%d],Co[%d],Phase[%d]"), pstData->stColStart.uiStatus, pstData->stColStart.uiCoPulseNum, pstData->stColStart.uiPhase3Num );
+		break;
+
+	case RES_RAWDATA_PDW:
+		*pstrTemp1 = _T("<<PDW 데이터");
+		break;
+
+	case RES_RAWDATA_INTRA:
+		*pstrTemp1 = _T("<<INTRA 데이터");
+		break;
+
 	default:
 		*pstrTemp1 = _T("<<");
 		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
@@ -1192,6 +1257,10 @@ void CDlgColList::UpdateResultData( char *pData )
 
 		iCnt += wsprintf( & szBuffer[0], _T("Opcode[0x%x], ErrorCode[0x%x]\n") , pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
 		UpdateToolTip( szBuffer, & m_CButtonInit );
+		break;
+
+	case RES_SET_CONFIG :
+
 		break;
 
 	default :
@@ -1325,3 +1394,11 @@ void CDlgColList::OnSysCommand(UINT nID, LPARAM lParam)
 	CDialogEx::OnSysCommand(nID, lParam);
 }
 
+STR_DATA_CONTENTS *CDlgColList::GetRxData()
+{
+	STR_DATA_CONTENTS *pRxData;
+
+	pRxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_prxData + sizeof(STR_MESSAGE) );
+
+	return pRxData;
+}

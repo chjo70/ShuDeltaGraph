@@ -160,8 +160,6 @@ void CShuSIMDlg::OnAccept()
 	UINT port;
 
 	if (m_pListener->Accept( *m_pConnected )) {
-		TCHAR buffer[100];
-
 		m_pConnected->GetSockName(strIP, port);
 
 		strMsg.Format( _T("연결:%s/%d"), (char*)(LPCTSTR) strIP, port);
@@ -204,44 +202,18 @@ void CShuSIMDlg::OnClose()
 
 }
 
-void CShuSIMDlg::OnReceive()
+void CShuSIMDlg::OnReceive( char *pData )
 {
 	CString strData;
-	int iLenOfHeader, iLenOfData;
 
-	int iSxSize;
+	CString strTemp1, strTemp2;
 
-	CString strTemp1, strTemp2, strNum;
+	MakeLogReqMessage( & strTemp1, & strTemp2, (void *) pData );
 
-	STR_MESSAGE *pstRxMessage;
-	STR_DATA_CONTENTS *pstRxData;
+	ParseData( (void *) pData );
+	//(( CTabTranceiverDialog * ) ( m_pDialog[enUnit]))->UpdateData( m_prxData );
 
-	pstRxMessage = (STR_MESSAGE * ) m_prxData;
-	pstRxData = (STR_DATA_CONTENTS * ) & m_prxData[sizeof(STR_MESSAGE)];
-
-	// 1. 헤더 데이터 수신하기
-	iLenOfHeader = m_pConnected->Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
-
-	// 2. 데이터 수신하기
-	if( pstRxMessage->uiDataLength != 0 ) {
-		iLenOfData = m_pConnected->Receive( (char *) pstRxData, pstRxMessage->uiDataLength );
-	}
-	else {
-		iLenOfData = 0;
-	}
-
-	if (iLenOfHeader == SOCKET_ERROR) {
-		AfxMessageBox(_T("Could not Recieve"));
-	}
-	else {
-		MakeLogReqMessage( & strTemp1, & strTemp2, (void *) m_prxData );
-
-		ParseData( (void *) m_prxData );
-		//(( CTabTranceiverDialog * ) ( m_pDialog[enUnit]))->UpdateData( m_prxData );
-
-		InsertItem( & strTemp1, & strTemp2 );
-
-	}
+	InsertItem( & strTemp1, & strTemp2 );
 
 }
 
@@ -259,8 +231,23 @@ void CShuSIMDlg::ParseData( void *pData )
 
 	case REQ_SETMODE:
 		OnClose();
+		break;
 
-		//Connect();
+	case REQ_SET_CONFIG:
+		MakeResultOfSetConfigMessage();
+		Send();
+		break;
+
+	case REQ_COL_START:
+		MakeResultOfColStartMessage();
+		Send();
+		break;
+
+	case REQ_RAWDATA :
+		MakeResultOfPDWMessage();
+		Send();
+		MakeResultOfIQMessage();
+		Send();
 		break;
 
 	default:
@@ -271,7 +258,6 @@ void CShuSIMDlg::ParseData( void *pData )
 
 void CShuSIMDlg::OnConnect(int nErrorCode )
 {
-	TCHAR szBuffer[100];
 
 	if (nErrorCode != 0) {
 		//AfxMessageBox(_T("서버와 연결할 수 없습니다 !!!"));
@@ -498,6 +484,19 @@ void CShuSIMDlg::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 		*pstrTemp2 = _T("");
 		break;
 
+	case REQ_SET_CONFIG:
+		*pstrTemp1 = _T(">>수집 파라메터 설정");
+		pstrTemp2->Format( _T("M%d, %.1f[MHz], %d[개수], %.1f[ms], %.1f[dBm]"), pstData->stSetMode.uiMode, pstData->stSetMode.fTuneFreq, pstData->stSetMode.coPulseNum, pstData->stSetMode.fColTime, pstData->stSetMode.fThreshold );
+		break;
+
+	case REQ_COL_START :
+		*pstrTemp1 = _T(">>신호 수집 시작 요구");
+		break;
+
+	case REQ_RAWDATA :
+		*pstrTemp1 = _T(">>수집 데이터");
+		break;
+
 	default:
 		*pstrTemp1 = _T("<<");
 		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
@@ -552,4 +551,80 @@ void CShuSIMDlg::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pS
 	//m_CListCtrlLOG.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
 	//m_CListCtrlLOG.SetItemState( num, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
 	//m_CListCtrlLOG.EnsureVisible( num, FALSE); 
+}
+
+void CShuSIMDlg::MakeResultOfSetConfigMessage()
+{
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = RES_SET_CONFIG;
+	pTxMessage->uiDataLength = sizeof(int);
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+	pTxData->uiResult = 0;
+
+}
+
+#define CO_PDW_DATA	(100)
+#define CO_INTRA_DATA	(100)
+
+void CShuSIMDlg::MakeResultOfColStartMessage()
+{
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = RES_COL_START;
+	pTxMessage->uiDataLength = sizeof(STR_REQ_COL_START);
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+	pTxData->stColStart.uiStatus = 0;
+	pTxData->stColStart.uiCoPulseNum = CO_PDW_DATA;
+	pTxData->stColStart.uiPhase3Num = CO_INTRA_DATA;
+
+}
+
+void CShuSIMDlg::MakeResultOfPDWMessage()
+{
+	int i;
+
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = RES_RAWDATA_PDW;
+	pTxMessage->uiDataLength = sizeof(STR_RES_PDW_DATA) * CO_PDW_DATA;
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+
+	for( i=0 ; i < CO_PDW_DATA ; ++i ) {
+		pTxData->stPDWData[i].fFreq = 10000.0;
+		pTxData->stPDWData[i].fPA = -50.0;
+		pTxData->stPDWData[i].fPW = 1000.0;
+		pTxData->stPDWData[i].uiTOA = ( i * 500 );
+
+		pTxData->stPDWData[i].uiIndex = (i+1);
+	}
+
+
+}
+
+void CShuSIMDlg::MakeResultOfIQMessage()
+{
+	int i;
+
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = RES_RAWDATA_INTRA;
+	pTxMessage->uiDataLength = sizeof(STR_RES_INTRA_DATA) * CO_INTRA_DATA;
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+
+	for( i=0 ; i < CO_INTRA_DATA ; ++i ) {
+		pTxData->stIntraData[i].fIntraFreq = 1000.0;
+	}
 }

@@ -5,8 +5,14 @@
 #pragma once
 #include "afxcmn.h"
 
+#define _SONATA_
+
 #include "../ShuDeltaGraph/ListCtrl/ReportCtrl.h"
 #include "./EchoSocket/MyEchoSocket.h"
+
+#include "../ShuDeltaGraph/PDW/_iq.h"
+#include "../ShuDeltaGraph/PDW/_pdw.h"
+#include "../ShuDeltaGraph/PDW/_macro.h"
 
 #define SHU_PORT_NUM				(1234)
 
@@ -15,6 +21,9 @@
 class CShuSIMDlg : public CDialogEx
 {
 private:
+	bool m_bHeader;
+	UINT m_bDataLength;
+
 	CStatusBarCtrl m_StatusBar;
 
 	MyEchoSocket *m_pListener;
@@ -40,14 +49,20 @@ public:
 	void OnAccept();
 	void Connect();
 	void OnConnect(int nErrorCode );
-	void OnReceive();
+	void OnReceive( char *pData );
 	void Send();
 	void ParseData( void *pData );
 
 	void LogTxMessage( void *pData, CString *pStrEtc=NULL );
-	void CShuSIMDlg::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
+	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 	void InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pStrTemp3=NULL );
+
+	void MakeResultOfSetConfigMessage();
+	void MakeResultOfColStartMessage();
+
+	void MakeResultOfPDWMessage();
+	void MakeResultOfIQMessage();
 
 // 생성입니다.
 public:

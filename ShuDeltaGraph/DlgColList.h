@@ -88,6 +88,7 @@ private:
 	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 	void InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pStrTemp3=NULL );
 
+
 	void InitButtonST( CButtonST *pCButtonRouteSetup );
 
 	void SetControl( bool bEnable );
@@ -105,9 +106,12 @@ public:
 
 	void Send();
 
+	STR_DATA_CONTENTS *GetRxData();
+
 	// 메시지 만들기
 	void MakeSetModeMessage( UINT uiIndex );
 	void MakeColStartMessage();
+	void MakeReqRawDataMessage();
 
 	DECLARE_DYNAMIC(CDlgColList)
 
