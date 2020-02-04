@@ -1,24 +1,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 // ReportCtrl.h
 //
-// Written by Bin Liu (abinn32@163.com)
+// CReportCtrl, a CListCtrl derived class that is specialized on "Report View"
+// style. 
 //
-// Special notes: The sorting methods was inspired by Mark Jackson in his "Sort List
-//                Control" article on http://www.codeproject.com 
+// Features:
 //
-// This file is the definition of class "CReportCtrl", which is derived from MFC class
-// "CListCtrl" and specialized in the "Report" style list control manipulation.
-//
-// A bunch of methods are implemented or overloaded in this class in order to provide
-// fast, efficient and convenient access and operations. For example, it is no more
-// necessary to convert all other data types into character strings before
-// using "SetItemText", you can pass in whatever into "SetItemText" because
-// this class overloaded "SetItemText" for all common data types.
-//
-// Moreover, using heap pointers as list item data has become more safer since
-// the user defined CALLBACK function "BOOL (*) (DWORD)" will be called every time
-// _before_ a list item is actually being deleted, therefore you can perform the
-// cleanup period to the deletion of each item.
+// 1, Item sorting by clicking on column header.
+// 2, Sub-item text edit.
+// 3, Item repositioning.
+// 4, Customizing checkbox styles, including "single" and "disabled".
+// 5, Sending a message to parent window when user clicks on a checkbox.
+// 6, Convenient item insertion, deletion, moving, and sub-item text changing.
+// 7, Sub-item images and color
+// 8, And much more... 
 //
 // This code may be used in compiled form in any way you desire. This file may be
 // redistributed unmodified by any means PROVIDING it is not sold for profit without
@@ -28,183 +23,276 @@
 //
 // This file is provided "as is" with no expressed or implied warranty.
 //
-// Special notes: The sorting methods was inspired by Mark Jackson in his "Sort List
-//                Control" article on http://www.codeproject.com 
+// Written by Bin Liu (abinn32@yahoo.com)
+//
+// History
+//
+// Nov. 26, 2003 - Initial release.
+// Dec. 03, 2003 - Fixed a bug in "EndEdit" where item text were not preperly committed.
+//                 Completed the implementation of the "Sort-Separator" feature.
+// Jan. 01, 2004 - Fixed a bug in "SetItemData".
+//               - Added message "WM_EDIT_COMMITTED" which is sent to the parent window
+//                 when an item text editing is committed.
+//               - Fixed a bug in "SetItemText"(double type).
+//               - Fixed a bug where item sorting does not work properly when there
+//                 are multiple CReportCtrl objects on same window.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __REPORTCTRL_H__
 #define __REPORTCTRL_H__
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+// Sent to parent window when user clicked on the checkbox of an item:
+// wParam: The item index in the list ctrl
+// lParam: The mouse event type(WM_LBUTTONDOWN, WM_RBUTTONDOWN, etc) which generated this event. 
+// Note: This message is not sent when the checkbox states were altered programmatically
+//       by calling "SetItem", it is only sent when the user "physically" clicked the
+//       checkbox using mouse or joystick etc.
+#define WM_ON_CHKBOX	(WM_APP + 10000)
 
-// The callback function which is optionally defined by you, the programmer.
-// A very common useage of this function is to free item data if they are heap
-// pointers, before each list item is deleted. The item data will be passed in as
-// the only parameter.
-// You may return FALSE if you want to abort the deletion of current item, if you
-// want to proceed, you must return TRUE.
-typedef BOOL (CALLBACK *ITEMDATAPROC)(DWORD, LPARAM);
+// Sent to parent window when a column of items were sorted
+// wParam: The column index
+// lParam: The sort method, either 0(descending) or 1(ascending)
+#define WM_ITEM_SORTED	(WM_APP + 10001)
 
+// Sent to parent window when an item text editing was committed
+// wParam: The item index
+// lParam: The column index
+#define WM_EDIT_COMMITTED	(WM_APP + 10002)
 
-///////////////////////////////////////////////////////////////////////////
-// The CReportCtrl class definition
-///////////////////////////////////////////////////////////////////////////
+// Checkbox styles.
+#define RC_CHKBOX_NONE			0 // No checkbox displayed
+#define	RC_CHKBOX_NORMAL		1 // Normal, multiple check allowed
+#define	RC_CHKBOX_SINGLE		2 // Single check only
+#define	RC_CHKBOX_DISABLED		3 // Disabled, cannot be checked/unchecked by user input,
+// but can be by your code.
+
+// Item state flags for selection, deletion, etc.
+// Multiple flags can be combined together using the bit-or operator.
+// Note: If RC_ITEM_ALL is set, all other flags are ignored
+#define RC_ITEM_NONE		0x0000 // Void, indicates invalid items only
+#define	RC_ITEM_ALL			0x0001 // All items regardless of states
+#define	RC_ITEM_SELECTED	0x0002 // Selected items
+#define	RC_ITEM_UNSELECTED	0x0004 // Unselected items
+#define	RC_ITEM_CHECKED		0x0008 // Checked items
+#define	RC_ITEM_UNCHECKED	0x0010 // Unchecked items
+#define	RC_ITEM_FOCUSED		0x0020 // Focused item
+#define	RC_ITEM_UNFOCUSED	0x0040 // Unfocused items
+
+// Item inverting types
+#define RC_INVERT_SELECTION	0 // Invert item selection
+#define RC_INVERT_CHECKMARK	1 // Invert item check mark
+
+// Removes any custom color from item text and item backgroun
+#define COLOR_INVALID	0xffffffff
+
+//////////////////////////////////////////////////////////////////////////
+// The CReportCtrl Class Definition
+//////////////////////////////////////////////////////////////////////////
+
 class CReportCtrl : public CListCtrl
 {
-	// Construction
-public:
+public:		
+
+	//////////////////////////////////////////////////////////////////////
+	//		Constructor & Destructor
+	//////////////////////////////////////////////////////////////////////
 	CReportCtrl();
 	virtual ~CReportCtrl();
 
+	//////////////////////////////////////////////////////////////////////
+	//		Run-time Creation
+	//////////////////////////////////////////////////////////////////////
+	virtual BOOL Create(CWnd* pParentWnd, UINT nID, LPCRECT lpRect = NULL, DWORD dwStyle = WS_BORDER | WS_TABSTOP);
+
 	///////////////////////////////////////////////////////////////////////
-	//		Column attributes & operations
+	//		Column Header attributes
 	///////////////////////////////////////////////////////////////////////
 
+	BOOL SetColumnHeader(const CString& strHeadings); // Set columns and their formats.
 	int GetColumnCount() const; // Get the column count.
-	BOOL SetHeadings(UINT uiStringID); // Set columns and their formats.
-	BOOL SetHeadings(const CString& strHeadings); // Set columns and their formats.
-	int InsertColumn(int nCol, LPCTSTR lpszColumnHeading, int nFormat = LVCFMT_LEFT, int nWidth = -1, int nSubItem = -1);
-	int InsertColumn(int nCol, const LVCOLUMN* pColumn);
-		BOOL DeleteColumn(int nCol);
-BOOL DeleteAllColumns();
+	BOOL DeleteAllColumns();
+	CString GetHeaderText(int nColumn) const;
+	BOOL SetHeaderText(int nColumn, LPCTSTR lpText);	
+	BOOL HasColumnHeader() const; // FALSE if the list control has LVS_NOCOLUMNHEADER flag
+	const CHeaderCtrl* GetHeaderCtrl() const;
+
+	///////////////////////////////////////////////////////////////////////
+	//		Images & Color
+	///////////////////////////////////////////////////////////////////////
+
+	// Column header images
+	BOOL SetHeaderImage(int nColumn, int nImageIndex, BOOL bLeftSide = TRUE);
+	int GetHeaderImage(int nColumn) const;
+	CImageList* SetHeaderImageList(UINT nBitmapID, COLORREF crMask = RGB(255, 0, 255));
+	CImageList* SetHeaderImageList(CImageList* pImageList);
+
+	// Sub-item images
+	BOOL SetItemImage(int nItem, int nSubItem, int nImageIndex);
+	int GetItemImage(int nItem, int nSubItem) const;
+	CImageList* SetImageList(UINT nBitmapID, COLORREF crMask = RGB(255, 0, 255));
+	CImageList* SetImageList(CImageList* pImageList);
+	CImageList* GetImageList() const;
+
+	// Sub-item Text & Background Color
+	void SetItemTextColor(int nItem = -1, int nSubItem = -1, COLORREF color = COLOR_INVALID, BOOL bRedraw = TRUE);
+	COLORREF GetItemTextColor(int nItem, int nSubItem) const;
+	void SetItemBkColor(int nItem = -1, int nSubItem = -1, COLORREF color = COLOR_INVALID, BOOL bRedraw = TRUE);
+	COLORREF GetItemBkColor(int nItem, int nSubItem) const;
+
+	//////////////////////////////////////////////////////////////////////
+	//		Control Styles & Attributes
+	//////////////////////////////////////////////////////////////////////
+
+	void ResizeToFitParent(); // Resize the list control to occupy parent's client area
+	void SetGridLines(BOOL bSet = TRUE); // Show grid lines.
+	void SetCheckboxeStyle(int nStyle = RC_CHKBOX_NORMAL); // Set checkbox styles.	
+	int GetCheckboxStyle() const;	
+	BOOL IsSortable() const; // Is sort allowed?
+	BOOL SetSortable(BOOL bSet); // Allow/disallow sorting
+	BOOL IsEditable() const; // Is Item text editable?
+	void SetEditable(BOOL bSet = TRUE); // Allow item text editting
 
 	///////////////////////////////////////////////////////////////////////
 	//		Item attributes & operations
+	///////////////////////////////////////////////////////////////////////	
+
+	// Item states operation
+	int GetFirstItem(DWORD dwStates = RC_ITEM_ALL, int nStartAfter = -1) const;
+	int GetLastItem(DWORD dwStates = RC_ITEM_ALL, int nStartBefore = -1) const;
+	int GetItemCount(DWORD dwStates = RC_ITEM_ALL) const;	
+	DWORD GetItemStates(int nItem) const;
+	BOOL ExamItemStates(int nItem, DWORD dwStates) const;
+	BOOL SetItemStates(int nItem, DWORD dwNewStates);
+	int SetAllItemStates(DWORD dwOldStates, DWORD dwNewStates);
+	void InvertItems(int nType); // RC_INVERT_SELECTION or RC_INVERT_CHECKMARK
+
+	// Item Insertion & Deletion	
+	int InsertItemEx(int nItem, LPCTSTR lpText, ...); 	
+	BOOL DeleteItem(int nItem, BOOL bSelectNextItem = FALSE); // Delete an item.
+	int DeleteAllItems(DWORD dwStates = RC_ITEM_ALL); // Delete all qualified items.
+
+	// Item positioning	
+	int MoveUp(int nItem, int nCount = 1); // Move an item upwards by "nCount" positions.
+	int MoveDown(int nItem, int nCount = 1); // Move an item downwards by "nCount" positions.
+	int MoveToTop(int nItem); // Move an item up to the top.
+	int MoveToBottom(int nItem); // Move an item down to the bottom.
+	int MoveTo(int nItem, int nNewPosition); // Move an item to a particular position 
+	BOOL SwapItems(int nItem1, int nItem2);	// Swap two items in the list, including all attributes.
+
+	// Convenient versions of "CListCtrl::SetItemText"	
+	BOOL SetItemText(int nItem, int nSubItem, INT val);
+	BOOL SetItemText(int nItem, int nSubItem, UINT val);
+	BOOL SetItemText(int nItem, int nSubItem, LONG val);
+	BOOL SetItemText(int nItem, int nSubItem, ULONG val);
+	BOOL SetItemText(int nItem, int nSubItem, TCHAR val);
+	BOOL SetItemText(int nItem, int nSubItem, DOUBLE val, int nPrecision = -1);
+	BOOL SetItemText(int nItem, int nSubItem, const COleDateTime& dateTime, DWORD dwFlags = 0);
+
+	// Sorting	
+	BOOL IsSortAscending() const;
+	int GetSortedColumn() const;
+	void SortItems(int nColumn, BOOL bAscending); // Sort a specified column.
+	void SetSortSeparator(LPCTSTR lpSortSeparator = NULL); // Sort-separator, NULL=disabled
+	LPCTSTR GetSortSeparator() const;
+
+	// Item text edit	
+	BOOL StartEdit(int nItem, int nSubItem); // Display the editbox, previous edit are committed
+	BOOL EndEdit(BOOL bCommit = TRUE); // Commit/cancel text edit, hide the editbox
+	CEdit* GetEditControl();	
+
+	///////////////////////////////////////////////////////////////////////
+	//		Necessary overloading but Irrelevant to Users
 	///////////////////////////////////////////////////////////////////////
 
-	// List style operation
-	void SetGridLines(BOOL bSet = TRUE); // Show grid lines.
-	void SetFullRowSelect(BOOL bSet = TRUE); // Use full row selection style.
-	void SetCheckboxes(BOOL bSet = TRUE); // Show checkboxes.
-
-	// Selection related
-	BOOL IsItemSelected(int nItem) const; // Is item selected?
-	int GetSelectedItemCount() const; // How many items are selected?
-	int GetUnselectedItemCount() const; // How many items are not selected?
-	int GetFirstSelectedItem(int nStartAfter = -1) const; // Index of the first selected item.
-	int GetFirstUnselectedItem(int nStartAfter = -1) const; // Index of the first unselected item.
-	BOOL SelectItem(int nItem, BOOL bSelectAdjacentIfNotAvailable = FALSE); // Select an item
-	BOOL UnSelectItem(int nItem); // Unselect an item.	
-	BOOL SelectAllItems(); // Select all items.
-	BOOL UnSelectAllItems(); // Unselect all items.
-	BOOL InvertSelect(); // Unselect all selected items, and select those were not.	
-
-	// Checkbox related
-	BOOL IsItemChecked(int nItem) const; // Is item checked?
-	int GetCheckedItemCount() const; // How many items are checked?
-	int GetUncheckedItemCount() const; // How many items are not checked?
-		int GetFirstCheckedItem(int nStartAfter = -1) const; // Index of the first checked item.
-int GetFirstUncheckedItem(int nStartAfter = -1) const; // Index of the first unchecked item.	
-	BOOL CheckItem(int nItem); // Check an item.
-	BOOL UnCheckItem(int nItem); // Uncheck an item.
-	void CheckAllItems(); // Check all items.
-	void UnCheckAllItems(); // Uncheck all items.
-	void InvertCheck(); // Uncheck all checked items, and check those were not.
-
-	// Item Insertion	
-	int InsertItem(UINT nMask, int nItem, LPCTSTR lpszItem, UINT nState, UINT nStateMask, int nImage, LPARAM lParam);
-	int InsertItem(int nItem, LPCTSTR lpszItem, int nImage);
+	int InsertColumn(int nCol, LPCTSTR lpColumnHeading, int nFormat = LVCFMT_LEFT, int nWidth = -1, int nSubItem = -1);
+	int InsertColumn(int nCol, const LVCOLUMN* pColumn);
+	BOOL DeleteColumn(int nCol);
+	BOOL SetCheck(int nItem, BOOL bCheck = TRUE); // overloaded to guard the "single" checkbox style
+	BOOL SetItem(int nItem, int nSubItem, UINT nMask, LPCTSTR lpszItem, int nImage, UINT nState, UINT nStateMask, LPARAM lParam);
+	BOOL SetItem(const LVITEM* pItem);
+	BOOL GetItem(LVITEM* pItem) const;
+	DWORD GetItemData(int nItem) const;
+	BOOL SetItemData(int nItem, DWORD dwData);
+	DWORD SetExtendedStyle(DWORD dwNewStyle);
+	BOOL ModifyStyle(DWORD dwRemove, DWORD dwAdd, UINT nFlags = 0);
+	BOOL ModifyStyleEx(DWORD dwRemove, DWORD dwAdd, UINT nFlags = 0);
+	int InsertItem(UINT nMask, int nItem, LPCTSTR lpItem, UINT nState, UINT nStateMask, int nImage, LPARAM lParam);
+	int InsertItem(int nItem, LPCTSTR lpItem, int nImage);
 	int InsertItem(const LVITEM* pItem);
-	int InsertItem(int nIndex, LPCTSTR pszText, ...);	
+	int InsertItem(int nIndex, LPCTSTR lpText);
+	BOOL SetItemText(int nItem, int nSubItem, LPCTSTR lpText);
 
-	// Item Deletion
-		// Note: if the item data are heap pointers, make sure to free them before calling
-	//       any item deletion methods, or define and pass in callback function
-	//		 "ITEMDATAPROC" and do the memory cleanup within.
-	BOOL DeleteItem(int iItem, BOOL bSelectNextItem = FALSE, ITEMDATAPROC lpFunc = NULL, LPARAM lParam = NULL); // Delete an item.
-	int DeleteAllItems(ITEMDATAPROC lpFunc = NULL, LPARAM lParam = NULL); // Delete all items.
-	int DeleteAllSelectedItems(ITEMDATAPROC lpFunc = NULL, LPARAM lParam = NULL); // Delete all selected items.
-	int DeleteAllUnselectedItems(ITEMDATAPROC lpFunc = NULL, LPARAM lParam = NULL); // Delete all unselected items.	
-	int DeleteAllCheckedItems(ITEMDATAPROC lpFunc = NULL, LPARAM lParam = NULL); // Delete all checked items.
-	int DeleteAllUncheckedItems(ITEMDATAPROC lpFunc = NULL, LPARAM lParam = NULL); // Delete all unchecked items.
+protected:	
 
-	// Item position related	
-	BOOL SwapItems(int nItem1, int nItem2);	// Swap two items in the list, including texts and item data.
-		BOOL MoveUp(int nItem, int nCount = 1); // Move an item up by "nCount" positions.
-BOOL MoveDown(int nItem, int nCount = 1); // Move an item down by "nCount" positions.
-	BOOL MoveToTop(int nItem); // Move an item up to the top.
-	BOOL MoveToBottom(int nItem); // Move an item down to the bottom.
+	// Helper functions for internal use
+	BOOL _IsValidIndex(int nIndex) const;
+	BOOL _ItemCheckMonitor(int nIndex, BOOL bBefore, BOOL bAfter, UINT nMsg);
+	BOOL _IsEditVisible() const;
+	void _MouseClkMonitor(UINT nMsg, UINT nFlags, CPoint point, BOOL bTriggerEdit);
+	static void _StringSplit(const CString &str, CStringArray& arr, TCHAR chDelimitior);
+	void _UnsetSortedColumn();
+	BOOL _SetItemStatesNoVerify(int nItem, DWORD dwNewStates);
+	void _EnsureSingleCheck(int nItem);
+	DWORD _GetHeaderTextFormat(int nColumn) const;
+	void _UpdateColumn(int nColumn, BOOL bInsert);
+	void _AllocItemMemory(int nItem);
+	void _FreeItemMemory(int nItem);
+	BOOL _PartialSort(int nStart, int nEnd);
+	int _FindSeparator(int nStartAfter, int nColumn) const;
+	void _QuickSortRecursive(int* pArr, int nLow, int nHigh);
+	int _CompareItems(int nItem1, int nItem2);
 
-	// Convenient versions of "CListCtrl::SetItemText"
-		BOOL SetItemText(int nItem, int nSubItem, LPCTSTR lpszText); // String.
-BOOL SetItemText(int nItem, int nSubItem, DOUBLE val, int nPrecision = -1); // Double.
-	BOOL SetItemText(int nItem, int nSubItem, FLOAT val, int nPrecision = -1); // Float.
-	BOOL SetItemText(int nItem, int nSubItem, ULONG val); // Unsigned long.
-	BOOL SetItemText(int nItem, int nSubItem, LONG val); // Long.
-	BOOL SetItemText(int nItem, int nSubItem, UINT val); // Unsigned int.
-	BOOL SetItemText(int nItem, int nSubItem, INT val); // Int.
-	BOOL SetItemText(int nItem, int nSubItem, USHORT val); // Unsigned short.
-	BOOL SetItemText(int nItem, int nSubItem, SHORT val); // Short.
-	BOOL SetItemText(int nItem, int nSubItem, BYTE val); // Byte.
-	BOOL SetItemText(int nItem, int nSubItem, TCHAR val); // TCHAR.
+	// Member data	
+	CEdit* m_pWndEdit; // Edit control, for subitem edit
+	LPTSTR m_pszSeparator; // Sort separator
+	BOOL m_bAllowEdit; // Is subitem edit allowed?
+	POINT m_ptEditting; // Position of the subitem that is currently being edited
+	int m_nChkStyle; // Checkbox style
+	DWORD m_dwPrevEditFmt; // Format of previously edited subitem
+	CImageList m_imgList; // Image list for items
+	CImageList m_headerImgList; // Image list for the header control
+	int m_nSortCol; // The sorted column, -1 if none
+	BOOL m_bSortAscending; // Is sort ascending?
 
-	// Sorting
-	void Sort(int iColumn, BOOL bAscending); // Sort a specified column.
-	void Sort(); // Re-sort previously sorted column, after item insertion or modification.
+	//////////////////////////////////////////////////////////////////////
+	// Wizard Generated Stuff
+	//////////////////////////////////////////////////////////////////////
 
-	// Item data operation
-		BOOL SetItemData(int nItem, DWORD dwData); // Assign the 32-bit application defined data.
-DWORD GetItemData(int nItem) const;	// Retrieve the 32-bit application defined data.
-
-	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CReportCtrl)
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 protected:
-		virtual void PreSubclassWindow();
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void PreSubclassWindow();
 	//}}AFX_VIRTUAL
 
-protected:
+	// Generated message map functions
 
-	// Protected member methods
-	BOOL _IsValidIndex(int nIndex) const;
-	BOOL _ResetTextArray(int nItem); 
-	BOOL _AssignNewItemData(int iItem, LPCTSTR lpItem);	
-	void _FreeItemMemory(const int iItem);
-	BOOL _AssignNewItemData(int iItem, const CString* pTexts, int nSize);
-
-	// Static methods used for sorting and comparison
-	static int CALLBACK _CompareFunction(LPARAM lParam1, LPARAM lParam2, LPARAM lParamData);
-	static int _StringCompare(const CString& s1, const CString& s2);
-	static BOOL _IsNumber(LPCTSTR pszText);
-	static int _NumberCompare(LPCTSTR pszNumber1, LPCTSTR pszNumber2);
-	static BOOL _IsDate(LPCTSTR pszText);
-	static int _DateCompare(const CString& strDate1, const CString& strDate2);
-
-
-	////////////////////////////////////////////////////////////////////////////////
-	// The header control only used by CReportCtrl
-	////////////////////////////////////////////////////////////////////////////////
-	class CReportHeaderCtrl : public CHeaderCtrl			
-	{
-	public:		
-		CReportHeaderCtrl();
-		virtual ~CReportHeaderCtrl() {};	
-		void SetSortedColumn(int nCol);
-		void SetSortAscending(BOOL bAscending);
-		BOOL IsSortAscending() const;
-		int GetSortedColumn() const;
-		void UpdateSortArrow();
-
-	protected:
-		void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
-		int m_iSortColumn;
-		BOOL m_bSortAscending;
-	};
-
-	// Member data
-	CReportHeaderCtrl m_wndHeader;
-
-protected:
-	// Wizzard generated stuff
+protected:	
 
 	//{{AFX_MSG(CReportCtrl)
-	afx_msg void OnColumnClick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnColumnclick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
 };
+
+//////////////////////////////////////////////////////////////////////////
+// End of CReportCtrl Class Definition
+//////////////////////////////////////////////////////////////////////////
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // __REPORTCTRL_H__

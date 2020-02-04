@@ -10,6 +10,14 @@ DWORD WINAPI FuncColList( LPVOID lpData );
 
 TCHAR g_stColListMode[3][20] = { _T("IF2(광대역)"), _T("IF1 Course"), _T("IF1 Fine") } ;
 
+#define WAIT_RESPONSE( A, B ) 	uiTry = 0;	\
+								do {	\
+									++ uiTry;	\
+									Sleep( A );	\
+									if( uiTry > MAX_WAIT_RESPONSE ) {	\
+										break;	\
+									}	\
+								} while( B );
 
 // CDlgColList 대화 상자입니다.
 
@@ -50,6 +58,8 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 void CDlgColList::InitVar()
 {
 	m_uiLog = 1;	
+
+	m_uiCoRawData = 1;
 }
 
 /**
@@ -330,6 +340,7 @@ void CDlgColList::OnClose()
 	m_pListener->Close();
 	m_pListener->ShutDown();
 
+	m_pConnected->InitVar();
 	m_pConnected->Close();
 
 	m_StatusBar.SetText(_T("대기 상태"), 0, 0);
@@ -472,24 +483,20 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 	pRxData = pDlg->GetRxData();
 
 	while( TRUE ) {
+		pDlg->UpdateColList( uiIndex, -1 );
 		uiIndex = (pDlg->m_uiCoColList-1) <= uiIndex ? 0 : ++uiIndex;
 
-		Sleep( 1000 );
+		pDlg->UpdateColList( uiIndex, 0 );
+
+		Sleep( 100 );
 		// 1. 수집 페라미터 설정
 		memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
 
+		pDlg->UpdateColList( uiIndex, 1 );
 		pDlg->MakeSetModeMessage( uiIndex );
 		pDlg->Send();
-		uiTry = 0;
-		do {
-			++ uiTry;
-			Sleep( 100 );
 
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				break;
-			}
-
-		} while( pRxData->uiResult == INIT_CODE_WORD );
+		WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxData->uiResult == INIT_CODE_WORD )
 		if( pRxData->uiResult == 1 ) {
 			Sleep( 100 );
 			continue;
@@ -498,22 +505,14 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 			Log( enError, _T("수집 파리미터 설정에서 에러가 발생합니다.") );
 			continue;
 		}
-
+					
 		// 2. 신호수집 시작 요구
 		memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
 
+		pDlg->UpdateColList( uiIndex, 2 );
 		pDlg->MakeColStartMessage();
 		pDlg->Send();
-		uiTry = 0;
-		do {
-			++ uiTry;
-			Sleep( 100 );
-
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				break;
-			}
-
-		} while( pRxData->stColStart.uiStatus == INIT_CODE_WORD );
+		WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxData->stColStart.uiStatus == INIT_CODE_WORD )
 
 		// 수집 개수가 0 이면 다음 과제로 이동한다.
 		if( pRxData->stColStart.uiCoPulseNum == 0 ) {
@@ -528,18 +527,14 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 		// 3. 수집 데이터 전송 요구
 		memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
 
+		pDlg->UpdateColList( uiIndex, 3 );
 		pDlg->MakeReqRawDataMessage();
 		pDlg->Send();
-		uiTry = 0;
-		do {
-			++ uiTry;
-			Sleep( 100 );
-
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				break;
-			}
-
-		} while( pRxData->stColStart.uiStatus == INIT_CODE_WORD );
+		WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxData->stPDWData[0].fFreq == INIT_CODE_WORD )
+		if( uiTry > MAX_WAIT_RESPONSE ) {
+			Log( enError, _T("수집 데이터 전송 요구에서 에러가 발생합니다.") );
+			continue;
+		}
 
 	}
 
@@ -627,7 +622,8 @@ void CDlgColList::InitListCtrl()
 	m_ColList.InsertColumn(5, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.07), -1);
 
 	m_ColList.SetGridLines(TRUE);
-	m_ColList.SetCheckboxes(TRUE);
+	m_ColList.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
+	//m_ColList.SetCheckboxes(TRUE);
 
 	m_CListRawData.GetWindowRect(&rt);
 	m_CListRawData.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
@@ -640,7 +636,7 @@ void CDlgColList::InitListCtrl()
 	m_CListRawData.InsertColumn(5, _T("저장 위치"), LVCFMT_LEFT, (int) (rt.Width() * 0.29), -1);
 
 	m_CListRawData.SetGridLines(TRUE);
-	m_CListRawData.SetCheckboxes(TRUE);
+	//m_CListRawData.SetCheckboxes(TRUE);
 
 }
 
@@ -831,6 +827,7 @@ void CDlgColList::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 {
 	CString strTemp;
 
+	pColList->iRow = iRow;
 	strTemp = m_ColList.GetItemText( iRow, 0 );
 	swscanf_s( strTemp.GetBuffer(), _T("%d"), & pColList->uiNo );
 
@@ -909,7 +906,7 @@ void CDlgColList::OnBnClickedButtonModifyList()
 void CDlgColList::OnBnClickedButtonAllselect()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	m_ColList.SelectAllItems();
+	m_ColList.SetAllItemStates( RC_ITEM_ALL, RC_ITEM_SELECTED );
 	m_ColList.SetFocus();
 }
 
@@ -927,7 +924,7 @@ void CDlgColList::OnBnClickedButtonSelDelete()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString strTemp;
 
-	m_ColList.DeleteAllSelectedItems(ItemdataProc, (LPARAM)this);
+	//m_ColList.DeleteAllSelectedItems(ItemdataProc, (LPARAM)this);
 
 	SetTotalColList();
 
@@ -962,7 +959,7 @@ BOOL CDlgColList::ItemdataProc(DWORD dwData, LPARAM lParam)
 void CDlgColList::OnBnClickedButtonAllselCheckbox()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	m_ColList.CheckAllItems();
+	m_ColList.SetAllItemStates( RC_ITEM_ALL, RC_ITEM_CHECKED );
 	m_ColList.SetFocus();
 }
 
@@ -978,7 +975,7 @@ void CDlgColList::OnBnClickedButtonAllselCheckbox()
 void CDlgColList::OnBnClickedButtonAllselUncheckbox()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	m_ColList.UnCheckAllItems();
+	m_ColList.SetAllItemStates( RC_ITEM_ALL, RC_ITEM_UNCHECKED );
 	m_ColList.SetFocus();
 }
 
@@ -994,7 +991,7 @@ void CDlgColList::OnBnClickedButtonAllselUncheckbox()
 void CDlgColList::OnBnClickedButtonAllselInvcheckbox()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	m_ColList.InvertCheck();
+	m_ColList.InvertItems(RC_INVERT_CHECKMARK);
 }
 
 
@@ -1133,7 +1130,7 @@ void CDlgColList::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, voi
 		break;
 
 	case REQ_RAWDATA :
-		*pstrTemp1 = _T(">>수집 데이터");
+		*pstrTemp1 = _T(">>수집 데이터 요구");
 		break;
 
 	default:
@@ -1253,7 +1250,10 @@ void CDlgColList::UpdateResultData( char *pData )
 		break;
 
 	case RES_SET_CONFIG :
+		break;
 
+	case RES_RAWDATA_PDW :
+		InsertRawDataItem();
 		break;
 
 	default :
@@ -1394,4 +1394,41 @@ STR_DATA_CONTENTS *CDlgColList::GetRxData()
 	pRxData = m_pConnected->GetRxData();
 
 	return pRxData;
+}
+
+void CDlgColList::UpdateColList( UINT uiIndex, int nStep )
+{
+	STR_COL_LIST *pColList;
+
+	pColList = m_pColList + uiIndex;
+
+	if( nStep == -1 )
+		m_ColList.SetItemBkColor( pColList->iRow, -1, RGB(255, 255, 255) );
+	else if( nStep == 0 )
+		m_ColList.SetItemBkColor( pColList->iRow, -1, RGB(0, 50, 0) );
+	else if( nStep == 1 )
+		m_ColList.SetItemBkColor( pColList->iRow, -1, RGB(0, 100, 0) );
+	else if( nStep == 2 )
+		m_ColList.SetItemBkColor( pColList->iRow, -1, RGB(0, 250, 0) );
+	else 
+		m_ColList.SetItemBkColor( pColList->iRow, -1, RGB(250, 0, 0) );
+
+}
+
+void CDlgColList::InsertRawDataItem()
+{
+	int nIndex;
+	CString strTemp;
+
+	strTemp.Format(_T("%d"), m_uiCoRawData );
+	nIndex = m_CListRawData.InsertItem( INT_MAX, strTemp, NULL );
+
+	//strTemp.Format(_T("%s"), g_stColListMode[pColList->stColItem.iMode] );
+	//m_CListRawData.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	m_CListRawData.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+	m_CListRawData.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+	m_CListRawData.EnsureVisible( nIndex, FALSE); 
+
+	++ m_uiCoRawData;
 }

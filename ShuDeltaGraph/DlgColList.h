@@ -26,6 +26,8 @@ typedef struct {
 } STR_COL_ITEM;
 
 typedef struct {
+	int iRow;
+
 	UINT uiNo;
 	STR_COL_ITEM stColItem;;
 
@@ -42,7 +44,6 @@ private:
 	char *m_prxData;
 
 	STR_COL_ITEM m_stColItem;
-
 	
 	STR_COL_LIST *m_pColList;
 
@@ -51,6 +52,8 @@ private:
 	UINT m_uiLog;
 
 	CXInfoTip *m_pTip;
+
+	UINT m_uiCoRawData;
 
 public:
 	CThread m_theThread;
@@ -94,6 +97,8 @@ private:
 	void SetControl( bool bEnable );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
+	void InsertRawDataItem();
+
 public:
 	void InitSocketSetting();
 	void CloseSocketSetting();
@@ -112,6 +117,8 @@ public:
 	void MakeSetModeMessage( UINT uiIndex );
 	void MakeColStartMessage();
 	void MakeReqRawDataMessage();
+
+	void UpdateColList( UINT uiIndex, int nStep );
 
 	DECLARE_DYNAMIC(CDlgColList)
 

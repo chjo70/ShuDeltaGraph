@@ -48,6 +48,7 @@ public:
 
 	int GetLastError();
 	STR_DATA_CONTENTS *GetRxData();
+	void InitVar();
 
 // Overrides
 public:

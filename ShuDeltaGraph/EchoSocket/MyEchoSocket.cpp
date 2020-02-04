@@ -24,9 +24,7 @@ MyEchoSocket::MyEchoSocket( bool bBigEndian )
 
 	m_prxData = (char *) malloc(sizeof(char) * 100000 );
 
-	m_bHeader = false;
-
-	m_uiErrorCode = 0;
+	InitVar();
 
 }
 
@@ -149,6 +147,14 @@ void MyEchoSocket::SetParentDlg(CDialog *pDlg)
 {
 	m_pDlg = pDlg;
 }
+
+void MyEchoSocket::InitVar()
+{
+	m_bHeader = false;
+
+	m_uiErrorCode = 0;	
+}
+
 
 /**
  * @brief     

@@ -210,10 +210,11 @@ void CShuSIMDlg::OnReceive( char *pData )
 
 	MakeLogReqMessage( & strTemp1, & strTemp2, (void *) pData );
 
+	InsertItem( & strTemp1, & strTemp2 );
+
 	ParseData( (void *) pData );
 	//(( CTabTranceiverDialog * ) ( m_pDialog[enUnit]))->UpdateData( m_prxData );
-
-	InsertItem( & strTemp1, & strTemp2 );
+	
 
 }
 
@@ -247,7 +248,7 @@ void CShuSIMDlg::ParseData( void *pData )
 		MakeResultOfPDWMessage();
 		Send();
 		
-		//MakeResultOfIQMessage();
+		//MakeResultOfIntraMessage();
 		//Send();
 		break;
 
@@ -308,6 +309,11 @@ void CShuSIMDlg::InitSocketSetting()
 
 	Log( enNormal, _T("[%s/%d]는 서버로 실행합니다."), strIPAddress, uiPortNum );
 	m_pConnected->Create();
+
+	//
+	int buffsize;
+	int optlen = sizeof(buffsize);
+	m_pConnected->GetSockOpt(SO_SNDBUF, & buffsize, &optlen, SOL_SOCKET);
 
 	Connect();
 
@@ -497,7 +503,7 @@ void CShuSIMDlg::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 		break;
 
 	case REQ_RAWDATA :
-		*pstrTemp1 = _T(">>수집 데이터");
+		*pstrTemp1 = _T(">>수집 데이터 요구");
 		break;
 
 	default:
@@ -569,9 +575,9 @@ void CShuSIMDlg::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pS
 
 	++ m_uiLog;
 
-	//m_CListCtrlLOG.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
-	//m_CListCtrlLOG.SetItemState( num, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-	//m_CListCtrlLOG.EnsureVisible( num, FALSE); 
+	m_CListLog.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+	m_CListLog.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+	m_CListLog.EnsureVisible( nIndex, FALSE); 
 }
 
 void CShuSIMDlg::MakeResultOfSetConfigMessage()
@@ -588,7 +594,7 @@ void CShuSIMDlg::MakeResultOfSetConfigMessage()
 
 }
 
-#define CO_PDW_DATA	(100)
+#define CO_PDW_DATA		(500)
 #define CO_INTRA_DATA	(100)
 
 void CShuSIMDlg::MakeResultOfColStartMessage()
