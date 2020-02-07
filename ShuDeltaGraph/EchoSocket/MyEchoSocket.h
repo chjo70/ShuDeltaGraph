@@ -7,6 +7,11 @@
 // MyEchoSocket.h : header file
 //
 
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
 #define MAX_LAN_BUFFER			(sizeof(int)*150)			//(sizeof(int)*2000)
 
 #include "ShuICD.h"
@@ -20,6 +25,15 @@ enum EN_CONNECT_MODE {
 };
 
 
+
+typedef struct {
+	STR_MESSAGE stMsg;
+
+	STR_DATA_CONTENTS stData;
+
+} STR_QUEUE_MSG;
+
+
 /////////////////////////////////////////////////////////////////////////////
 // MyEchoSocket command target
 
@@ -29,12 +43,18 @@ class MyEchoSocket : public CAsyncSocket
 public:
 	bool m_bConnected;
 	bool m_bBigEndian;
+	
+	STR_QUEUE_MSG m_stQueueMsg;
+	queue <STR_QUEUE_MSG> m_qMsg;
+
+	char *m_prxBuffer;
 
 private:
+	int m_uiReceivedData;
 	UINT m_uiDataLength;
 	bool m_bHeader;
 	char *m_pData;
-	char *m_prxData;
+	
 	UINT m_uiErrorCode;
 
 // Operations
@@ -43,11 +63,15 @@ public:
 	virtual ~MyEchoSocket();
 
 	bool Send( void *pData, int iDataLength );
-	int Receive( void *lpBuf, int nBufLen );
+	int Receive( void *lpBuf, int nBufLen, bool bBigEndian=true );
 	void AllSwapData32( void *pData, int iLength );
 
 	int GetLastError();
-	STR_DATA_CONTENTS *GetRxData();
+
+	queue <STR_QUEUE_MSG> *GetQueueMessage();
+// 	STR_MESSAGE *GetRxMessage();
+// 	STR_DATA_CONTENTS *GetRxData();
+
 	void InitVar();
 
 // Overrides

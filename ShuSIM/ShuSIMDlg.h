@@ -14,13 +14,15 @@
 #include "../ShuDeltaGraph/PDW/_pdw.h"
 #include "../ShuDeltaGraph/PDW/_macro.h"
 
-#define SHU_PORT_NUM				(1234)
+#define SHU_PORT_NUM				(13060)
 
 
 // CShuSIMDlg 대화 상자
 class CShuSIMDlg : public CDialogEx
 {
 private:
+	int m_Count;
+
 	bool m_bHeader;
 	UINT m_bDataLength;
 
@@ -35,6 +37,8 @@ private:
 	char *m_prxData;
 
 	UINT m_uiLog;
+
+public:
 
 private:
 	void InitVar();
@@ -61,7 +65,7 @@ public:
 	void MakeResultOfSetConfigMessage();
 	void MakeResultOfColStartMessage();
 
-	void MakeResultOfPDWMessage();
+	void MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex );
 	void MakeResultOfIntraMessage();
 
 // 생성입니다.

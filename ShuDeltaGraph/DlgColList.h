@@ -12,12 +12,29 @@
 
 // CDlgColList 대화 상자입니다.
 
-#define SHU_PORT_NUM				(1234)
+#define SHU_PORT_NUM				(13060)
 
-#define MAX_COL_ITEMS			(1000)
+#define RAWDATA_DIRECTORY		_T("D://RAWDATA")
+
+#define MAX_COL_ITEMS				(1000)
+
+typedef enum {
+	enColList_MODE=0,
+	enNormal_Mode,
+
+} ENUM_MODE;
+
+typedef enum {
+	enIF2_WIDE=0,
+	enIF2_COURSE,
+	enIF1_FINE,
+
+	enIQ_WIDE,
+	enIQ_NARROW,
+} ENUM_COL_MODE;
 
 typedef struct {
-	int iMode;
+	ENUM_COL_MODE enMode;
 	float fCenterFreq;
 	float fColTime;
 	UINT uiColNumber;
@@ -26,27 +43,59 @@ typedef struct {
 } STR_COL_ITEM;
 
 typedef struct {
-	int iRow;
+	int iRowOfList;
 
 	UINT uiNo;
 	STR_COL_ITEM stColItem;;
 
 } STR_COL_LIST;
 
+#define MAX_RAW_DATA	(10000)
+
+typedef union {
+	STR_RES_PDW_DATA stPDWData[MAX_RAW_DATA];
+
+	STR_RES_IQ_DATA stIQData[MAX_RAW_DATA];
+
+	STR_RES_INTRA_DATA stIntraData[MAX_RAW_DATA];
+
+} UNI_RAW_DATA;
+
+typedef struct {
+	UINT uiItem;
+	STR_COL_LIST stColList;
+
+	UNI_RAW_DATA unRawData;
+
+} STR_RAW_DATA;
+
+
 class CDlgColList : public CDialogEx
 {
 private:
+	UINT m_uiColList;
+	ENUM_MODE m_enMode;
+
 	HICON m_hToolTipIcon;
 	CStatusBarCtrl m_StatusBar;
 	EN_CONNECT_MODE m_enConnectMode;
 
+	CDataFile m_theDataFile;
+
+	//////////////////////////////////////////////////////////////////////////
+	// 수집 목록 제어 관련 정보
+	STR_COL_LIST m_stColList;
+	STR_RES_COL_START m_stResCol;
+
+	STR_RAW_DATA *m_pRawData;
+
+	STR_SONATA_DATA *m_pSonataData;
+
+	// 송신 데이터
 	char *m_ptxData;
-	char *m_prxData;
 
 	STR_COL_ITEM m_stColItem;
 	
-	STR_COL_LIST *m_pColList;
-
 	UINT m_iSelItem;
 
 	UINT m_uiLog;
@@ -55,7 +104,17 @@ private:
 
 	UINT m_uiCoRawData;
 
+	CString m_strFilename;
+
+	bool m_bClickedOfColList;
+	bool m_bClickedOfRawDataList;
+
 public:
+	HANDLE m_hReceveLAN;
+	bool m_bCompleteOnReceive;
+
+	STR_COL_LIST *m_pColList;
+
 	CThread m_theThread;
 
 	MyEchoSocket *m_pListener;
@@ -70,7 +129,7 @@ private:
 	void InitThread();
 	void FreeBuffer();
 	void InitButton();
-	void InitListCtrl();
+	void InitListCtrl( bool bInit=true );
 	void InitStatic();
 	void InitToolTip();
 
@@ -91,15 +150,29 @@ private:
 	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 	void InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pStrTemp3=NULL );
 
-
 	void InitButtonST( CButtonST *pCButtonRouteSetup );
 
 	void SetControl( bool bEnable );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
-	void InsertRawDataItem();
+	void ConvertRAWData( int iItem, ENUM_DataType enDataType );
+	void MakeIQFile( int iItem );
+	void MakePDWFile( int iItem );
+
+
+	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
+	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
+	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
+
+	// sonaat 체계 변환 함수
+	UINT GetFreqBand( UINT uiFreqMHz );
+	UINT ConvertFreq( float fFreq, int iBc );
+	UINT ConvertPA( float fPA );
+	UINT ConvertPW( float fPW );
 
 public:
+	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
+
 	void InitSocketSetting();
 	void CloseSocketSetting();
 	void Connect();
@@ -111,14 +184,19 @@ public:
 
 	void Send();
 
-	STR_DATA_CONTENTS *GetRxData();
+	//STR_DATA_CONTENTS *GetRxData();
+	//STR_MESSAGE *GetRxMessage();
+	queue <STR_QUEUE_MSG> *GetQueueMessage();
 
 	// 메시지 만들기
 	void MakeSetModeMessage( UINT uiIndex );
+	void MakeIQMessage( UINT uiIndex );
 	void MakeColStartMessage();
 	void MakeReqRawDataMessage();
 
-	void UpdateColList( UINT uiIndex, int nStep );
+	void SetIBkColorOfColList( UINT uiIndex, int nStep );
+
+	void ReadyColStart( UINT uiIndex );
 
 	DECLARE_DYNAMIC(CDlgColList)
 

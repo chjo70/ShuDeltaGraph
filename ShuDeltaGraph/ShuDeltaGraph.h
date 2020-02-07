@@ -25,9 +25,11 @@ private:
 	CString m_strArgument;
 	CString m_strIniFile;
 
+public:
 	CDlgColList *m_pDlgColList;
 
 public:
+
 	CShuDeltaGraphApp();
 	bool IsExistFile( CString &strPathname );
 

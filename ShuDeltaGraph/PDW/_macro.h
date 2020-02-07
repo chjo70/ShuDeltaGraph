@@ -166,8 +166,8 @@ extern float _spFreqMax;
 #define F_PACNV( A, B )         F_IDIV( FPACNV(A,B), 1 )
 #define C_PACNV( A, B )         C_IDIV( FPACNV(A,B), 1 )
 
-#define PACNV( A )				(float) ( FMUL( (A), _spAMPres ) - (float) 110. )
-#define IPACNV( A )				(float) ( IDIV( (A), _spAMPres ) - (float) 110. )
+#define PACNV( A )							(float) ( FMUL( (A), _spAMPres ) - (float) 110. )
+#define IPACNV( A )							(float) ( IDIV( (A), _spAMPres ) - (float) 110. )
 
 
 //#define F_PACNV( A )            ( F_MUL( (A), _spAMPres ) - _spPAoffset )
@@ -175,7 +175,11 @@ extern float _spFreqMax;
 #define FAOACNV( A )            (float) ( (float) A * _spAOAres )
 #define FPWCNV( A )             (float) ( (float) A * _spPWres )
 //#define FPACNV( A, B )					(float) ( ( (float) (A) * gPaRes[B].res ) + gPaRes[B].offset )
+
+
 #define FPACNV( A )							(float) ( ( (float) (A) * gPaRes[0].res ) + gPaRes[0].offset )
+
+
 #define FDBCNV( A, B )					(float) ( ( (float) (A) / gPaRes[B].res ) )
 #define UDBCNV( A, B )					UDIV( (A), gPaRes[B].res )
 //#define FFRQCNV( A )						( FMUL( gFreqRes[0].res, (A) ) + gFreqRes[0].offset )

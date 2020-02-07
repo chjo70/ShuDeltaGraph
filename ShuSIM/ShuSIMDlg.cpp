@@ -11,6 +11,9 @@
 #define new DEBUG_NEW
 #endif
 
+#define PDW_BLOCK			(30)
+#define CO_PDW_DATA		(60)
+#define CO_INTRA_DATA	(100)
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -186,13 +189,13 @@ void CShuSIMDlg::OnClose()
 	m_pListener->Close();
 	m_pListener->ShutDown();
 
+	m_pConnected->InitVar();
 	m_pConnected->Close();
 
 	m_StatusBar.SetText(_T("대기 상태"), 0, 0);
 	m_StatusBar.SetBkColor( GetSysColor(CTLCOLOR_DLG) );
 
 	//AfxMessageBox(IDS_STRING_LANCLOSE, MB_OK );
-	m_pConnected->m_bConnected = false;
 
 	//OnBnClickedButtonServerrun();
 
@@ -220,6 +223,8 @@ void CShuSIMDlg::OnReceive( char *pData )
 
 void CShuSIMDlg::ParseData( void *pData )
 {
+	int i;
+
 	STR_MESSAGE *pstMessage;
 	STR_DATA_CONTENTS *pstData;
 
@@ -245,9 +250,11 @@ void CShuSIMDlg::ParseData( void *pData )
 		break;
 
 	case REQ_RAWDATA :
-		MakeResultOfPDWMessage();
-		Send();
-		
+		for( i=0 ; i < CO_PDW_DATA ; i+=PDW_BLOCK ) {
+			MakeResultOfPDWMessage( PDW_BLOCK, 0 );
+			Send();
+		}
+
 		//MakeResultOfIntraMessage();
 		//Send();
 		break;
@@ -307,7 +314,7 @@ void CShuSIMDlg::InitSocketSetting()
 
 	uiPortNum = SHU_PORT_NUM;
 
-	Log( enNormal, _T("[%s/%d]는 서버로 실행합니다."), strIPAddress, uiPortNum );
+	Log( enNormal, _T("서버[%s/%d]로 연결을 시도합니다."), strIPAddress, uiPortNum );
 	m_pConnected->Create();
 
 	//
@@ -330,19 +337,20 @@ void CShuSIMDlg::Connect()
 
 	BOOL bRet;
 
+	m_Count = 0;
+
 	//m_pCEditPortNum[id]->GetWindowText(strPortNum);
 	uiPortNum = SHU_PORT_NUM;
 
 	enPos = GetPosition();
 
-	Log( enNormal, _T("소켓에 [127.0.0.1/%d]로 연결합니다."), uiPortNum );
 	if( enOffice == enPos || enMyHome == enPos || enNoNetwork == enPos ) {
 		Log( enNormal, _T("소켓에 [127.0.0.1/%d]로 연결합니다."), uiPortNum );
 		bRet = m_pConnected->Connect(_T("127.0.0.1"), uiPortNum);
 	}
 	else {
-		Log( enNormal, _T("소켓에 [192.168.0.120/%d]로 연결합니다."), uiPortNum );		// 5010
-		bRet = m_pConnected->Connect(_T("192.168.0.120"), uiPortNum);
+		Log( enNormal, _T("소켓에 [150.150.49.214/%d]로 연결합니다."), uiPortNum );		// 5010
+		bRet = m_pConnected->Connect(_T("150.150.49.214"), uiPortNum);
 	}
 
 }
@@ -380,6 +388,7 @@ void CShuSIMDlg::InitBuffer()
 
 	m_ptxData = (char *) malloc(sizeof(char) * 100000);
 	m_prxData = (char *) malloc(sizeof(char) * 100000);
+
 }
 
 void CShuSIMDlg::FreeBuffer()
@@ -484,31 +493,31 @@ void CShuSIMDlg::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 
 	switch (pstMessage->uiOpcode) {
 	case REQ_INIT:
-		*pstrTemp1 = _T(">>초기화 요구");
+		*pstrTemp1 = _T("<<초기화 요구");
 		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
 		break;
 
 	case REQ_SETMODE:
-		*pstrTemp1 = _T(">>시스템모드 전환 통보");
+		*pstrTemp1 = _T("<<시스템모드 전환 통보");
 		*pstrTemp2 = _T("");
 		break;
 
 	case REQ_SET_CONFIG:
-		*pstrTemp1 = _T(">>수집 파라메터 설정");
+		*pstrTemp1 = _T("<<수집 파라메터 설정");
 		pstrTemp2->Format( _T("M%d, %.1f[MHz], %d[개수], %.1f[ms], %.1f[dBm]"), pstData->stSetMode.uiMode, pstData->stSetMode.fTuneFreq, pstData->stSetMode.coPulseNum, pstData->stSetMode.fColTime, pstData->stSetMode.fThreshold );
 		break;
 
 	case REQ_COL_START :
-		*pstrTemp1 = _T(">>신호 수집 시작 요구");
+		*pstrTemp1 = _T("<<신호 수집 시작 요구");
 		break;
 
 	case REQ_RAWDATA :
-		*pstrTemp1 = _T(">>수집 데이터 요구");
+		*pstrTemp1 = _T("<<수집 데이터 요구");
 		break;
 
 	default:
 		*pstrTemp1 = _T("<<");
-		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
+		pstrTemp2->Format( _T("잘못된 송신 명령[0x%x]입니다."), pstMessage->uiOpcode);
 		break;
 	}
 }
@@ -523,31 +532,31 @@ void CShuSIMDlg::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void
 
 	switch (pstMessage->uiOpcode) {
 	case RES_INIT:
-		*pstrTemp1 = _T("<<초기화요구 응답");
+		*pstrTemp1 = _T(">>초기화요구 응답");
 		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
 		break;
 
 	case RES_SET_CONFIG:
-		*pstrTemp1 = _T("<<수집 파라메타 설정 결과 응답");
+		*pstrTemp1 = _T(">>수집 파라메타 설정 결과 응답");
 		pstrTemp2->Format( _T("[%d]"), pstData->uiResult );
 		break;
 
 	case RES_COL_START :
-		*pstrTemp1 = _T("<<수집시작 응답");
+		*pstrTemp1 = _T(">>수집시작 응답");
 		pstrTemp2->Format( _T("ST[%d],Co[%d],Phase[%d]"), pstData->stColStart.uiStatus, pstData->stColStart.uiCoPulseNum, pstData->stColStart.uiPhase3Num );
 		break;
 
 	case RES_RAWDATA_PDW:
-		*pstrTemp1 = _T("<<PDW 데이터");
+		*pstrTemp1 = _T(">>PDW 데이터");
 		break;
 
 	case RES_RAWDATA_INTRA:
-		*pstrTemp1 = _T("<<INTRA 데이터");
+		*pstrTemp1 = _T(">>INTRA 데이터");
 		break;
 
 	default:
-		*pstrTemp1 = _T("<<");
-		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
+		*pstrTemp1 = _T(">>");
+		pstrTemp2->Format( _T("잘못된 수신 명령[0x%x]입니다."), pstMessage->uiOpcode);
 		break;
 	}
 }
@@ -594,9 +603,6 @@ void CShuSIMDlg::MakeResultOfSetConfigMessage()
 
 }
 
-#define CO_PDW_DATA		(500)
-#define CO_INTRA_DATA	(100)
-
 void CShuSIMDlg::MakeResultOfColStartMessage()
 {
 	STR_MESSAGE *pTxMessage;
@@ -604,16 +610,18 @@ void CShuSIMDlg::MakeResultOfColStartMessage()
 
 	pTxMessage = (STR_MESSAGE * ) m_ptxData;
 	pTxMessage->uiOpcode = RES_COL_START;
-	pTxMessage->uiDataLength = sizeof(STR_REQ_COL_START);
+	pTxMessage->uiDataLength = sizeof(STR_RES_COL_START);
 
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 	pTxData->stColStart.uiStatus = 0;
 	pTxData->stColStart.uiCoPulseNum = CO_PDW_DATA;
-	pTxData->stColStart.uiPhase3Num = CO_INTRA_DATA;
+	pTxData->stColStart.uiPhase3Num = m_Count;
+
+	++ m_Count;
 
 }
 
-void CShuSIMDlg::MakeResultOfPDWMessage()
+void CShuSIMDlg::MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex )
 {
 	int i;
 
@@ -622,17 +630,17 @@ void CShuSIMDlg::MakeResultOfPDWMessage()
 
 	pTxMessage = (STR_MESSAGE * ) m_ptxData;
 	pTxMessage->uiOpcode = RES_RAWDATA_PDW;
-	pTxMessage->uiDataLength = sizeof(STR_RES_PDW_DATA) * CO_PDW_DATA;
+	pTxMessage->uiDataLength = sizeof(STR_RES_PDW_DATA) * iCoPDW;
 
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 
-	for( i=0 ; i < CO_PDW_DATA ; ++i ) {
+	for( i=0 ; i < iCoPDW ; ++i ) {
 		pTxData->stPDWData[i].fFreq = 10000.0;
 		pTxData->stPDWData[i].fPA = -50.0;
-		pTxData->stPDWData[i].fPW = 1000.0;
-		pTxData->stPDWData[i].uiTOA = ( i * 500 );
+		pTxData->stPDWData[i].fPW = 0.014;
+		pTxData->stPDWData[i].uiTOA = ( (i+iStartTOAIndex) * 500 );
 
-		pTxData->stPDWData[i].uiIndex = (i+1);
+		pTxData->stPDWData[i].uiIndex = (i+iStartTOAIndex+1);
 	}
 
 

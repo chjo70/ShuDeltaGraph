@@ -23,17 +23,16 @@ MyEchoSocket::MyEchoSocket( bool bBigEndian )
 	m_bHeader = false;
 
 	m_pData = ( char * ) malloc( sizeof(char) * MAX_LAN_BUFFER );
+	m_prxBuffer = ( char * ) malloc( sizeof(char) * 100000 );
 
-	m_prxData = (char *) malloc(sizeof(char) * 100000 );
-
-	m_uiErrorCode = 0;
+	InitVar();
 
 }
 
 MyEchoSocket::~MyEchoSocket()
 {
 	free( m_pData );
-	free( m_prxData );
+	free( m_prxBuffer );
 }
 
 
@@ -54,9 +53,9 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	if(nErrorCode==0)
 	{
 		((CShuSIMDlg*)m_pDlg)->OnAccept();
-
-		m_bHeader = false;
-		//m_bConnected = true;
+		InitVar();	
+		
+		m_bConnected = true;
 	}
 	CAsyncSocket::OnAccept(nErrorCode);
 }
@@ -67,9 +66,8 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	if(nErrorCode==0 || nErrorCode == 10053 )
 	{
 		m_uiErrorCode = CAsyncSocket::GetLastError();
-
-		m_bHeader = false;
-
+		InitVar();	
+		
 		((CShuSIMDlg*)m_pDlg)->OnClose();
 		TRACE( "랜이 끊겼습니다 !!!" );
 	}
@@ -82,8 +80,7 @@ void MyEchoSocket::OnConnect(int nErrorCode)
 	((CShuSIMDlg*)m_pDlg)->OnConnect(nErrorCode );
 	m_uiErrorCode = CAsyncSocket::GetLastError();
 
-	m_bHeader = false;
-	m_bConnected = true;
+	InitVar();	
 	
 	CAsyncSocket::OnConnect(nErrorCode);
 }
@@ -100,41 +97,48 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
+		UINT nError;
+
+		char *pRxBuffer;
 		STR_MESSAGE *pstRxMessage;
 		STR_DATA_CONTENTS *pstRxData;
 
 		int iLenOfData;
+		UINT uiReceivedData=0, uiDataLength = 0, uiReceivedMessage;
 
-		pstRxMessage = (STR_MESSAGE * ) m_prxData;
+		pRxBuffer = ( char * ) & m_stQueueMsg;
+
+		DWORD dwSize;
+		IOCtl( FIONREAD, & dwSize );
+
+		pstRxMessage = ( STR_MESSAGE * ) & m_stQueueMsg.stMsg;
+		pstRxData = ( STR_DATA_CONTENTS * ) & m_stQueueMsg.stData;
+
+		TRACE( "\n IOCTL dwSize[%d]" , dwSize );
+
 		if( m_bHeader == false ) {
+			uiReceivedMessage = Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
+
 			m_bHeader = true;
-			m_uiDataLength = 0;
-			Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
-
 			m_uiDataLength = pstRxMessage->uiDataLength;
-		}
+			m_uiReceivedData = 0;
 
-		if( m_uiDataLength != 0 ) {
-			UINT nError = GetLastError();
-			pstRxData = (STR_DATA_CONTENTS * ) & m_prxData[sizeof(STR_MESSAGE)];
-			iLenOfData = Receive( (char *) pstRxData, m_uiDataLength );
-
-			// 데이터가 없기 때문에 데이터는 다음에 수신한다.
-			if( iLenOfData < 0 && nError == 0 ) {
-				return;
-			}
-			else if( iLenOfData < 0 && nError != 0 ) {
-				Log( enError, _T("랜 수신 에러[%d] 입니다.!!"), nError );
-			}
-
-			m_bHeader = false;
-
-			((CShuSIMDlg*)m_pDlg)->OnReceive( m_prxData );
+			TRACE( "\n 헤더[%d]" , uiReceivedMessage );
 		}
 		else {
-			m_bHeader = false;
+			m_uiReceivedData = Receive((char *) pstRxData, m_uiDataLength );
+			TRACE( "\n 데이터[%d]" , m_uiReceivedData );
+		}
 
-			((CShuSIMDlg*)m_pDlg)->OnReceive( m_prxData );
+		if( m_uiDataLength == 0 || m_uiReceivedData > 0 ) {
+			m_bHeader = false;
+			uiDataLength = 0;
+
+			//m_qMsg.push( m_stQueueMsg );
+			//SetEvent( ((CShuSIMDlg*)m_pDlg)->m_hReceveLAN );
+			((CShuSIMDlg*)m_pDlg)->OnReceive( (char *) & m_stQueueMsg );
+
+			m_uiReceivedData = 0;
 		}
 	}
 	
@@ -153,6 +157,20 @@ void MyEchoSocket::SetParentDlg(CDialog *pDlg)
 	m_pDlg = pDlg;
 }
 
+void MyEchoSocket::InitVar()
+{
+	m_bConnected = false;
+	m_bHeader = false;
+	m_uiErrorCode = CAsyncSocket::GetLastError();
+
+	m_uiReceivedData = 0;
+
+	while( ! m_qMsg.empty() ) {
+		m_qMsg.pop();
+	}
+}
+
+
 /**
  * @brief     
  * @return    void
@@ -170,12 +188,13 @@ bool MyEchoSocket::Send( void *pData, int iDataLength )
 		int iIndex=0, iLength;
 
 		do {
-			if( iDataLength-iIndex < MAX_LAN_BUFFER ) {
-				iLength = iDataLength - iIndex;
-			}
-			else {
-				iLength = MAX_LAN_BUFFER;
-			}
+			iLength = iDataLength - iIndex;
+// 			if( iDataLength-iIndex < MAX_LAN_BUFFER ) {
+// 				iLength = iDataLength - iIndex;
+// 			}
+// 			else {
+// 				iLength = MAX_LAN_BUFFER;
+// 			}
 
 			memcpy( m_pData, (char *) ( pData ) + iIndex, iLength );
 			AllSwapData32( m_pData, iLength );

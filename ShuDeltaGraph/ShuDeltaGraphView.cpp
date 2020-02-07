@@ -2277,12 +2277,19 @@ void CShuDeltaGraphView::SetFreqRange()
 		_spFreqMax = 8000;
 	}
 
-
 }
-
-
 
 void CShuDeltaGraphView::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp* )AfxGetApp();
+	BOOL chk = pApp->m_pDlgColList->IsWindowVisible();
+
+	if(chk) {
+		pApp->m_pDlgColList->ShowWindow(SW_HIDE);
+	}
+	else {
+		pApp->m_pDlgColList->ShowWindow(SW_SHOW);
+	}
+
 }

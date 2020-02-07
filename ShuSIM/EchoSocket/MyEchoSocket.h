@@ -7,7 +7,14 @@
 // MyEchoSocket.h : header file
 //
 
-#define MAX_LAN_BUFFER			(sizeof(int)*150)			//(sizeof(int)*2000)
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+#define MAX_LAN_BUFFER			(sizeof(int)*600)			//(sizeof(int)*2000)
+
+
 
 #include "../../ShuDeltaGraph/EchoSocket/ShuICD.h"
 
@@ -19,22 +26,34 @@ enum EN_CONNECT_MODE {
 
 };
 
+typedef struct {
+	STR_MESSAGE stMsg;
+
+	STR_DATA_CONTENTS stData;
+
+} STR_QUEUE_MSG;
 
 /////////////////////////////////////////////////////////////////////////////
 // MyEchoSocket command target
 
 class MyEchoSocket : public CAsyncSocket
 {
-// Attributes
 public:
+// Attributes
 	bool m_bConnected;
 	bool m_bBigEndian;
 
+	STR_QUEUE_MSG m_stQueueMsg;
+	queue <STR_QUEUE_MSG> m_qMsg;
+
+	char *m_prxBuffer;
+
 private:
+	int m_uiReceivedData;
 	UINT m_uiDataLength;
 	bool m_bHeader;
 	char *m_pData;
-	char *m_prxData;
+
 	UINT m_uiErrorCode;
 
 // Operations
@@ -50,6 +69,7 @@ public:
 
 // Overrides
 public:
+	void InitVar();
 	void SetParentDlg(CDialog *pDlg);
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(MyEchoSocket)

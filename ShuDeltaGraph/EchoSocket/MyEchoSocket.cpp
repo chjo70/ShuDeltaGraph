@@ -21,8 +21,10 @@ MyEchoSocket::MyEchoSocket( bool bBigEndian )
 	m_bBigEndian = bBigEndian;
 
 	m_pData = ( char * ) malloc( sizeof(char) * MAX_LAN_BUFFER );
+	m_prxBuffer = ( char * ) malloc( sizeof(char) * 100000 );
 
-	m_prxData = (char *) malloc(sizeof(char) * 100000 );
+	//int rcvbuf=128*1024;
+	//SetSockOpt( SO_RCVBUF, (char*) & rcvbuf,(int)sizeof(rcvbuf) );
 
 	InitVar();
 
@@ -30,8 +32,9 @@ MyEchoSocket::MyEchoSocket( bool bBigEndian )
 
 MyEchoSocket::~MyEchoSocket()
 {
+	free( m_prxBuffer );
 	free( m_pData );
-	free( m_prxData );
+
 }
 
 
@@ -52,7 +55,8 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	if(nErrorCode==0)
 	{
 		((CDlgColList*)m_pDlg)->OnAccept();
-		m_bHeader = false;
+		InitVar();
+
 		m_bConnected = true;
 	}
 	CAsyncSocket::OnAccept(nErrorCode);
@@ -63,12 +67,9 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0 || nErrorCode == 10053 )
 	{
-		m_bConnected = false;
-		m_bHeader = false;
-		m_uiErrorCode = CAsyncSocket::GetLastError();
+		InitVar();
 
 		((CDlgColList*)m_pDlg)->OnClose();
-		TRACE( "랜이 끊겼습니다 !!!" );
 	}
 	CAsyncSocket::OnClose(nErrorCode);
 }
@@ -95,42 +96,49 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
+		UINT nError;
+
+		char *pRxBuffer;
 		STR_MESSAGE *pstRxMessage;
 		STR_DATA_CONTENTS *pstRxData;
 
 		int iLenOfData;
+		UINT uiReceivedData=0, uiDataLength = 0, uiReceivedMessage;
 
-		pstRxMessage = (STR_MESSAGE * ) m_prxData;
+		pRxBuffer = ( char * ) & m_stQueueMsg;
+
+		DWORD dwSize;
+		IOCtl( FIONREAD, & dwSize );
+
+		pstRxMessage = ( STR_MESSAGE * ) & m_stQueueMsg.stMsg;
+		pstRxData = ( STR_DATA_CONTENTS * ) & m_stQueueMsg.stData;
+
+		TRACE( "\n IOCTL dwSize[%d]" , dwSize );
+
 		if( m_bHeader == false ) {
+			uiReceivedMessage = Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
+
 			m_bHeader = true;
-			m_uiDataLength = 0;
-			Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
-
 			m_uiDataLength = pstRxMessage->uiDataLength;
-		}
+			m_uiReceivedData = 0;
 
-		if( m_uiDataLength != 0 ) {
-			UINT nError = GetLastError();
-			pstRxData = (STR_DATA_CONTENTS * ) & m_prxData[sizeof(STR_MESSAGE)];
-			iLenOfData = Receive( (char *) pstRxData, m_uiDataLength );
-
-			// 데이터가 없기 때문에 데이터는 다음에 수신한다.
-			if( iLenOfData < 0 && nError == 0 ) {
-				return;
-			}
-			else if( iLenOfData < 0 && nError != 0 ) {
-				Log( enError, _T("랜 수신 에러[%d] 입니다.!!"), nError );
-			}
-
-			m_bHeader = false;
-
-			((CDlgColList*)m_pDlg)->OnReceive( m_prxData );
+			TRACE( "\n 헤더[%d]" , uiReceivedMessage );
 		}
 		else {
-			m_bHeader = false;
-
-			((CDlgColList*)m_pDlg)->OnReceive( m_prxData );
+			m_uiReceivedData = Receive((char *) pstRxData, m_uiDataLength );
+			TRACE( "\n 데이터[%d]" , m_uiReceivedData );
 		}
+		
+		if( m_uiDataLength == 0 || m_uiReceivedData > 0 ) {
+			m_bHeader = false;
+			uiDataLength = 0;
+
+			m_qMsg.push( m_stQueueMsg );
+			SetEvent( ((CDlgColList*)m_pDlg)->m_hReceveLAN );
+
+			m_uiReceivedData = 0;
+		}
+
 	}
 
 	CAsyncSocket::OnReceive(nErrorCode);
@@ -150,9 +158,15 @@ void MyEchoSocket::SetParentDlg(CDialog *pDlg)
 
 void MyEchoSocket::InitVar()
 {
+	m_bConnected = false;
 	m_bHeader = false;
+	m_uiErrorCode = CAsyncSocket::GetLastError();
 
-	m_uiErrorCode = 0;	
+	m_uiReceivedData = 0;
+
+	while( ! m_qMsg.empty() ) {
+		m_qMsg.pop();
+	}
 }
 
 
@@ -183,6 +197,11 @@ bool MyEchoSocket::Send( void *pData, int iDataLength )
 			memcpy( m_pData, (char *) ( pData ) + iIndex, iLength );
 			AllSwapData32( m_pData, iLength );
 			iSend = CAsyncSocket::Send( m_pData, iLength );
+
+			int nErrorCode = CAsyncSocket::GetLastError();
+			if( nErrorCode != 0 ) {
+				TRACE( "\n Send[%d] 에러코드:%d" , iLength, nErrorCode );
+			}
 
 			if( iSend != iDataLength || iSend == SOCKET_ERROR ) {
 				m_uiErrorCode = CAsyncSocket::GetLastError();
@@ -216,7 +235,7 @@ int MyEchoSocket::GetLastError()
 	int nCode;
 
 	nCode = CAsyncSocket::GetLastError();
-	return m_uiErrorCode;
+	return nCode;
 }
 
 /**
@@ -227,15 +246,15 @@ int MyEchoSocket::GetLastError()
  * @date      2019/11/09 20:54:15
  * @warning   
  */
-int MyEchoSocket::Receive( void *pData, int iDataLength )
+int MyEchoSocket::Receive( void *pData, int iDataLength, bool bBigEndian )
 {
 	int nRecvByte;
 
 	nRecvByte = CAsyncSocket::Receive( pData, iDataLength );
 
-	if( m_bBigEndian == false ) {
+	if( m_bBigEndian == false && bBigEndian == true ) {
 		if( iDataLength % sizeof(int) != 0 ) {
-			//AfxMessageBox( "엔디안 데이터가 4바이트 배수가 아닙니다." );
+			//TRACE( "엔디안 데이터가 4바이트 배수가 아닙니다." );
 		}
 		AllSwapData32( pData, iDataLength );
 	}
@@ -294,11 +313,26 @@ void MyEchoSocket::AllSwapData32( void *pData, int iLength )
 
 }
 
-STR_DATA_CONTENTS *MyEchoSocket::GetRxData()
+queue <STR_QUEUE_MSG> *MyEchoSocket::GetQueueMessage()
 {
-	STR_DATA_CONTENTS *pRxData;
 
-	pRxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_prxData + sizeof(STR_MESSAGE) );
-
-	return pRxData;
+	return & m_qMsg;
 }
+// STR_DATA_CONTENTS *MyEchoSocket::GetRxData()
+// {
+// 	STR_DATA_CONTENTS *pRxData;
+// 
+// 	pRxData = ;
+// 
+// 	return pRxData;
+// }
+// 
+// 
+// STR_MESSAGE *MyEchoSocket::GetRxMessage()
+// {
+// 	STR_MESSAGE *pRxMessage;
+// 
+// 	pRxMessage = ( STR_MESSAGE * ) ( ( char *) m_prxData );
+// 
+// 	return pRxMessage;
+// }

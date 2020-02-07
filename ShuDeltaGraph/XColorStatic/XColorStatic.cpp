@@ -48,7 +48,7 @@ CXColorStatic::CXColorStatic()
 // dtor
 CXColorStatic::~CXColorStatic()
 {
-	TRACE(_T("in CXColorStatic::~CXColorStatic\n"));
+	//TRACE(_T("in CXColorStatic::~CXColorStatic\n"));
 
 	if (m_font.GetSafeHandle())
 		m_font.DeleteObject();

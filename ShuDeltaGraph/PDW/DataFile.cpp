@@ -81,12 +81,14 @@ void CPDW::ConvertArray()
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
-	UINT uiToa, firstToa, preToa;
+	UINT uiToa, preToa, uiDToa;
 	UINT uiTemp;
 
 	TNEW_PDW temp;
 
 	TNEW_PDW *pPDW = (TNEW_PDW *)gstpRawDataBuffer;
+
+	m_bPhaseData = false;
 
 	_spOneSec = 20000000.;
 	_spOneMilli = FDIV( _spOneSec, 1000. );
@@ -103,24 +105,18 @@ void CPDW::ConvertArray()
 		temp.bpdw[0][2] = pPDW->item.toa_3;
 		temp.bpdw[0][3] = pPDW->item.toa_4;
 
+		uiToa = temp.wpdw[0];
+		*pfTOA = FDIV(uiToa, _spOneMicrosec );
+
 		if (i == 0) {
-			firstToa = temp.wpdw[0];
-			*pfTOA = 0;
-
-			uiToa = 0;
-
 			*pfDTOA = 0;
-			preToa = temp.wpdw[0];
+			preToa = uiToa;
 		}
 		else {
-			uiToa = temp.wpdw[0] - firstToa;
-			*pfTOA = FDIV(uiToa, _spOneMicrosec );
-
-			uiToa = uiToa - preToa;
-			*pfDTOA = FDIV( uiToa, _spOneMicrosec );
-			preToa = temp.wpdw[0] - firstToa;
+			uiDToa = uiToa - preToa;
+			*pfDTOA = FDIV( uiDToa, _spOneMicrosec );
+			preToa = uiToa;
 		}
-
 
 		*pfllTOA = uiToa;
 
@@ -709,6 +705,39 @@ void CDataFile::Free()
 
 }
 
+
+void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc, int iSizeOfEtc )
+{
+	CFileException ex;
+
+	if( enUnitType == en_SONATA ) {
+		if( enDataType == en_PDW_DATA) {
+			
+			if( ! m_RawDataFile.Open( strPathname, CFile::modeWrite | CFile::shareExclusive | CFile::modeCreate, &ex ) ) {
+				Log( enError, _T("PDW 데이터 파일[%s]을 생성하지 못합니다 !") , strPathname );
+			}
+			else {
+				m_RawDataFile.Write( pData, iNumData );
+				m_RawDataFile.Close();
+			}
+		}
+		else if( enDataType == en_IQ_DATA ) {
+			if( ! m_RawDataFile.Open( strPathname, CFile::modeWrite | CFile::shareExclusive | CFile::modeCreate, &ex ) ) {
+				Log( enError, _T("IQ 데이터 파일[%s]을 생성하지 못합니다 !") , strPathname );
+			}
+			else {
+				// IQ 헤더 정보 저장
+				if( pDataEtc != NULL ) {
+					m_RawDataFile.Write( pDataEtc, iSizeOfEtc );
+				}
+
+				m_RawDataFile.Write( pData, iNumData );
+				m_RawDataFile.Close();
+			}
+		}
+	}
+
+}
 
 /**
   * @brief		RAW 데이터 파일 읽기

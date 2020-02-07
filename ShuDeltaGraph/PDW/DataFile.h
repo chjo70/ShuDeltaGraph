@@ -26,6 +26,23 @@ typedef enum {
 
 } ENUM_UnitType;
 
+#ifdef _SONATA_
+#define MAX_SONATA_DATA		(10000)
+typedef union {
+	TNEW_PDW stPDWData[MAX_SONATA_DATA];
+	TNEW_IQ stIQData[MAX_SONATA_DATA];
+
+} UNI_SONATA_DATA;
+
+typedef struct {
+	UINT uiItem;
+
+	UNI_SONATA_DATA unRawData;
+
+} STR_SONATA_DATA;
+#else
+#endif
+
 typedef struct {
 	UINT uiByte;
 	void *pDataBuffer;
@@ -216,6 +233,7 @@ public:
 	virtual ~CDataFile(void);
 
 	void ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	void SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc=NULL, int iSizeOfEtc=0 );
 	void Alloc();
 	void Free();
 	void *GetData();

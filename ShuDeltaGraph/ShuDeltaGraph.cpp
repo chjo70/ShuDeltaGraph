@@ -160,8 +160,6 @@ BOOL CShuDeltaGraphApp::InitInstance()
 		//cmdInfo.m_nShellCommand = CCommandLineInfo::FileOpen;
 	}
 
-	
-
 
 	// 명령줄에 지정된 명령을 디스패치합니다.
 	// 응용 프로그램이 /RegServer, /Register, /Unregserver 또는 /Unregister로 시작된 경우 FALSE를 반환합니다.
@@ -576,7 +574,7 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
-	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->iMode );
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->enMode );
 	::WritePrivateProfileString( L"COL_LIST", L"MODE", szBuffer, m_strIniFile );
 
 	swprintf( szBuffer, sizeof(szBuffer), L"%f", pstColList->fCenterFreq );
@@ -625,9 +623,9 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 	TCHAR szBuffer[100];
 
 	::GetPrivateProfileString( L"COL_LIST", L"MODE", L"0", szBuffer, 100, m_strIniFile );
-	pstColList->iMode = _wtoi(szBuffer);
+	pstColList->enMode = (ENUM_COL_MODE) _wtoi(szBuffer);
 
-	::GetPrivateProfileString( L"COL_LIST", L"CENTER_FRQ", L"8000.0", szBuffer, 100, m_strIniFile );
+	::GetPrivateProfileString( L"COL_LIST", L"CENTER_FREQ", L"8000.0", szBuffer, 100, m_strIniFile );
 	pstColList->fCenterFreq = (float) _wtof(szBuffer);
 
 	::GetPrivateProfileString( L"COL_LIST", L"THRESHOLD", L"-30.0", szBuffer, 100, m_strIniFile );
