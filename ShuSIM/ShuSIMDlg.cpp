@@ -251,7 +251,7 @@ void CShuSIMDlg::ParseData( void *pData )
 
 	case REQ_RAWDATA :
 		for( i=0 ; i < CO_PDW_DATA ; i+=PDW_BLOCK ) {
-			MakeResultOfPDWMessage( PDW_BLOCK, 0 );
+			MakeResultOfPDWMessage( PDW_BLOCK, i );
 			Send();
 		}
 
@@ -637,7 +637,7 @@ void CShuSIMDlg::MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex )
 	for( i=0 ; i < iCoPDW ; ++i ) {
 		pTxData->stPDWData[i].fFreq = 10000.0;
 		pTxData->stPDWData[i].fPA = -50.0;
-		pTxData->stPDWData[i].fPW = 0.014;
+		pTxData->stPDWData[i].fPW = 1.00;
 		pTxData->stPDWData[i].uiTOA = ( (i+iStartTOAIndex) * 500 );
 
 		pTxData->stPDWData[i].uiIndex = (i+iStartTOAIndex+1);

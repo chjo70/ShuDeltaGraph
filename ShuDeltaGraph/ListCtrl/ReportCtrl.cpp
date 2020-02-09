@@ -221,11 +221,13 @@ void CReportCtrl::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 	else if (lplvcd->nmcd.dwDrawStage == (CDDS_ITEMPREPAINT | CDDS_SUBITEM))
 	{
 		CItemData* p = (CItemData*)(CListCtrl::GetItemData(lplvcd->nmcd.dwItemSpec));
-		ASSERT(p != NULL);
-		ASSERT(lplvcd->iSubItem >= 0 && lplvcd->iSubItem < p->aTextColors.GetSize());
-		lplvcd->clrText = p->aTextColors[lplvcd->iSubItem];
-		lplvcd->clrTextBk = p->aBkColors[lplvcd->iSubItem];
-		*pResult = CDRF_DODEFAULT;
+		if( p!= NULL ) {
+			ASSERT(p != NULL);
+			ASSERT(lplvcd->iSubItem >= 0 && lplvcd->iSubItem < p->aTextColors.GetSize());
+			lplvcd->clrText = p->aTextColors[lplvcd->iSubItem];
+			lplvcd->clrTextBk = p->aBkColors[lplvcd->iSubItem];
+			*pResult = CDRF_DODEFAULT;
+		}
 	}
 }
 

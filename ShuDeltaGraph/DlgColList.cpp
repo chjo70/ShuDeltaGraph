@@ -500,8 +500,6 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 	//
 	if( m_enMode == enColList_MODE ) {
-		m_uiColList = (m_uiCoColList-1) <= m_uiColList ? 0 : ++m_uiColList;
-
 		pColList = m_pColList + m_uiColList;
 		if( pColList->stColItem.enMode >= enIQ_WIDE ) {
 			TRACE( "\n IQ 자동 과제 입니다.");
@@ -510,14 +508,14 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					SetIBkColorOfColList( m_uiColList, 2 );
 					MakeIQMessage( m_uiColList );
 					Send();
-
-					++ m_uiColList;
 					break;
 
 				case RES_COL_START :
 					SetIBkColorOfColList( m_uiColList, 3 );
 
-					++ m_uiColList;
+					m_uiColList = (m_uiCoColList-1) <= m_uiColList ? 0 : ++m_uiColList;
+
+					TRACE( "\n 과제 번호 : %d", m_uiColList );
 					break;
 
 				default :
@@ -532,8 +530,6 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					SetIBkColorOfColList( m_uiColList, 2 );
 					MakeColStartMessage();
 					Send();
-
-					++ m_uiColList;
 					break;
 
 				case RES_COL_START :
@@ -544,13 +540,11 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 					memcpy( & m_stResCol, & pQueueMsg->stData.stColStart, sizeof(STR_RES_COL_START) );
 					m_pRawData->uiItem = 0;
-
-					++ m_uiColList;
 					break;
 
 				case RES_RAWDATA_PDW :
 					//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
-					SetIBkColorOfColList( m_uiColList, 3 );
+					SetIBkColorOfColList( m_uiColList, 4 );
 
 					memcpy( & m_pRawData->unRawData.stPDWData[m_pRawData->uiItem], & pQueueMsg->stData.stPDWData[0], sizeof(STR_RES_PDW_DATA)*30 );
 					m_pRawData->uiItem = ( m_pRawData->uiItem+30 > m_stResCol.uiCoPulseNum ? m_stResCol.uiCoPulseNum : m_pRawData->uiItem+30 );
@@ -561,9 +555,15 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 						ReadyColStart( m_uiColList );
 						MakeSetModeMessage( m_uiColList );
 						Send();
+
+						SetIBkColorOfColList( m_uiColList, -1 );
+
+						m_uiColList = (m_uiCoColList-1) <= m_uiColList ? 0 : ++m_uiColList;
+
+						TRACE( "\n 과제 번호 : %d", m_uiColList );
 					}
 
-					++ m_uiColList;
+					
 					break;
 
 				default :
@@ -1319,7 +1319,6 @@ void CDlgColList::OnBnClickedButtonColstart()
 		m_pConnected->InitVar();
 		InitListCtrl( false );
 		
-
 		Log( enNormal, _T("수집 시작을 취소했습니다." ) );
 		m_theThread.Stop( true );
 		//Close();
@@ -1781,33 +1780,33 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 	MakePDWFile( m_pRawData->uiItem );
 
 	// 목록창 추가
-// 	strTemp.Format(_T("%d"), m_uiCoRawData );
-// 	nIndex = m_CListRawData.InsertItem( INT_MAX, strTemp, NULL );
-// 
-// 	strTemp.Format(_T("%d"), m_stColList.uiNo );
-// 	m_CListRawData.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-// 
-// 	strTemp = _T("PDW" );
-// 	m_CListRawData.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-// 
-// 	strTemp.Format(_T("%s"), g_stColListMode[m_stColList.stColItem.enMode] );
-// 	m_CListRawData.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-// 
-// 	strTemp.Format(_T("%.1f"), m_stColList.stColItem.fCenterFreq );
-// 	m_CListRawData.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-// 
-// 	strTemp.Format(_T("%d/%.1f"), m_stColList.stColItem.uiColNumber, m_stColList.stColItem.fColTime ); 
-// 	m_CListRawData.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-// 
-// 	m_CListRawData.SetItem( nIndex, 6, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
-// 
-// 	if( m_bClickedOfColList == false ) {
-// 		m_CListRawData.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
-// 		m_CListRawData.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-// 		m_CListRawData.EnsureVisible( nIndex, FALSE); 
-// 	}
-// 
-// 	++ m_uiCoRawData;
+ 	strTemp.Format(_T("%d"), m_uiCoRawData );
+ 	nIndex = m_CListRawData.InsertItem( INT_MAX, strTemp, NULL );
+
+	strTemp.Format(_T("%d"), m_stColList.uiNo );
+	m_CListRawData.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	strTemp = _T("PDW" );
+	m_CListRawData.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	strTemp.Format(_T("%s"), g_stColListMode[m_stColList.stColItem.enMode] );
+	m_CListRawData.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	strTemp.Format(_T("%.1f"), m_stColList.stColItem.fCenterFreq );
+	m_CListRawData.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	strTemp.Format(_T("%d/%.1f"), m_stColList.stColItem.uiColNumber, m_stColList.stColItem.fColTime ); 
+	m_CListRawData.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	m_CListRawData.SetItem( nIndex, 6, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
+
+	if( m_bClickedOfColList == false ) {
+		m_CListRawData.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+		m_CListRawData.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+		m_CListRawData.EnsureVisible( nIndex, FALSE); 
+	}
+
+	++ m_uiCoRawData;
 
 }
 
@@ -1850,7 +1849,7 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType )
 			pNEW_PDW = & m_pSonataData->unRawData.stPDWData[0];
 			memset( pNEW_PDW, 0, sizeof(TNEW_PDW) * iItem );
 			for( i=0 ; i < iItem ; ++i ) {
-				pNEW_PDW->item.stat = 1;
+				pNEW_PDW->item.stat = PDW_NORMAL;
 
 				pNEW_PDW->item.pmop = 0;
 				pNEW_PDW->item.freq_diff = 0;
