@@ -134,8 +134,8 @@ class CData
 public:
 	STR_RAWDATA *m_pRawData;
 
-	ENUM_DataType m_enDataType;
-	ENUM_UnitType m_enUnitType;
+	//ENUM_DataType m_enDataType;
+	//ENUM_UnitType m_enUnitType;
 	//UINT m_uiDataItems;
 
 	UINT m_uiWindowNumber;
@@ -240,8 +240,8 @@ public:
 	void SetData( CData *pData );
 
 	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_pRawData->uiDataItems; else return 0; }
-	inline ENUM_UnitType GetUnitType() { return m_pData->m_enUnitType; }
-	inline ENUM_DataType GetDataType() { return m_pData->m_enDataType; }
+	inline ENUM_UnitType GetUnitType() { return m_pData->m_pRawData->enUnitType; }
+	inline ENUM_DataType GetDataType() { return m_pData->m_pRawData->enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
 

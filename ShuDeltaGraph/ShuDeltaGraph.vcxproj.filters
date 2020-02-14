@@ -43,6 +43,9 @@
     <Filter Include="소스 파일\ToolTip">
       <UniqueIdentifier>{55965a80-d77b-42de-89e1-ceb113b3814a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Excel">
+      <UniqueIdentifier>{2288c25c-a89c-48ea-8f5b-cc256f442619}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -251,6 +254,12 @@
     <ClInclude Include="ToolTip\XInfoTip.h">
       <Filter>소스 파일\ToolTip</Filter>
     </ClInclude>
+    <ClInclude Include="Excel\XLAutomation.h">
+      <Filter>소스 파일\Excel</Filter>
+    </ClInclude>
+    <ClInclude Include="Excel\XLEzAutomation.h">
+      <Filter>소스 파일\Excel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -336,6 +345,12 @@
     </ClCompile>
     <ClCompile Include="ToolTip\XInfoTip.cpp">
       <Filter>소스 파일\ToolTip</Filter>
+    </ClCompile>
+    <ClCompile Include="Excel\XLAutomation.cpp">
+      <Filter>소스 파일\Excel</Filter>
+    </ClCompile>
+    <ClCompile Include="Excel\XLEzAutomation.cpp">
+      <Filter>소스 파일\Excel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

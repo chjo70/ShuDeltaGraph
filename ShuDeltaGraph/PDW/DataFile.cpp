@@ -173,6 +173,7 @@ CEPDW::CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(p
 	if( pstFilterSetup != NULL ) {
 		memcpy( & m_stFilterSetup, pstFilterSetup, sizeof(STR_FILTER_SETUP) );
 	}
+
 }
 
 CEPDW::~CEPDW(void)
@@ -628,9 +629,6 @@ void CIQ::ConvertArray()
 CData::CData( STR_RAWDATA *pRawData )
 {
 	m_pRawData = pRawData;
-
-	m_enDataType = pRawData->enDataType;
-	//m_uiDataItems = pRawData->uiDataItems;
 
 	m_uiWindowNumber = 1;
 

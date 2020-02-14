@@ -7,9 +7,13 @@
 #include "afxdialogex.h"
 
 
+
+
 DWORD WINAPI FuncColList( LPVOID lpData );
 
 TCHAR g_stColListMode[6][20] = { _T("IF2(광대역)"), _T("IF1 Course"), _T("IF1 Fine"), _T("광대역IQ"), _T("협대역IQ"), _T("널입니다.") } ;
+
+TCHAR g_stRawListType[6][20] = { _T("PDW"), _T("IQ") } ;
 
 #define WAIT_RESPONSE( A, B ) 	uiTry = 0;	\
 								do {	\
@@ -43,7 +47,7 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_COL_LIST, m_ColList);
-	DDX_Control(pDX, IDC_LIST2_RAWDATA, m_CListRawData);
+	DDX_Control(pDX, IDC_LIST2_RAWDATA, m_RawList);
 	DDX_Control(pDX, IDC_SPIN_FRQ_LOW, m_CSpinCenterFreq);
 	DDX_Control(pDX, IDC_SPIN_FRQ_HIGH, m_CSpinThreshold);
 	DDX_Control(pDX, IDC_SPIN_COL_TIME, m_CSpinColTime);
@@ -54,6 +58,7 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_SETMODE, m_CButtonSetMode);
 	DDX_Control(pDX, IDC_BUTTON_COLSTART, m_CButtonColStart);
 	DDX_Control(pDX, IDC_COMBO_MODE, m_CComboMode);
+	DDX_Control(pDX, IDC_STATIC_TOTAL_RAW_LIST, m_CStaticTotalRawList);
 }
 
 void CDlgColList::InitVar()
@@ -70,6 +75,8 @@ void CDlgColList::InitVar()
 	m_strFilename = _T("");
 
 	m_enMode = enNormal_Mode;
+
+	m_iClickedItem = -1;
 
 }
 
@@ -143,6 +150,12 @@ BEGIN_MESSAGE_MAP(CDlgColList, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_INIT, &CDlgColList::OnBnClickedButtonInit)
 	ON_BN_CLICKED(IDC_BUTTON_SETMODE, &CDlgColList::OnBnClickedButtonSetmode)
 	ON_WM_SYSCOMMAND()
+	ON_BN_CLICKED(IDC_BUTTON_OIPEN, &CDlgColList::OnBnClickedButtonOpen)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CDlgColList::OnBnClickedButtonSave)
+	ON_NOTIFY(LVN_ITEMACTIVATE, IDC_LIST_RAWDATA, &CDlgColList::OnLvnItemActivateListRawdata)
+	ON_NOTIFY(HDN_ITEMCLICK, 0, &CDlgColList::OnHdnItemclickListRawdata)
+	ON_NOTIFY(NM_CLICK, IDC_LIST_RAWDATA, &CDlgColList::OnNMClickListRawdata)
+	ON_NOTIFY(LVN_ENDSCROLL, IDC_LIST_RAWDATA, &CDlgColList::OnLvnEndScrollListRawdata)
 END_MESSAGE_MAP()
 
 
@@ -181,8 +194,13 @@ void CDlgColList::InitToolTip()
 void CDlgColList::InitStatic()
 {
 	m_CStaticTotalColList.SetTextColor(RGB(0,0,255), FALSE);
-	m_CStaticTotalColList.SetBackgroundColor(RGB(255,255,255), FALSE);
+	m_CStaticTotalColList.SetBackgroundColor( ::GetSysColor(COLOR_WINDOW), FALSE);
 	m_CStaticTotalColList.SetBold(TRUE, FALSE);
+	//m_CStaticTotalColList.SetFont(_T("Comic Sans MS"), 20, FALSE);
+
+	m_CStaticTotalRawList.SetTextColor(RGB(0,255,0), FALSE);
+	m_CStaticTotalRawList.SetBackgroundColor(::GetSysColor(COLOR_WINDOW), FALSE);
+	m_CStaticTotalRawList.SetBold(TRUE, FALSE);
 	//m_CStaticTotalColList.SetFont(_T("Comic Sans MS"), 20, FALSE);
 }
 
@@ -404,7 +422,7 @@ void CDlgColList::InitSocketSetting()
 {
 	UINT uiPortNum;
 	CString strPortNum;
-
+													  
 	CString strIPAddress=GetIpAddress();
 
 	uiPortNum = SHU_PORT_NUM;
@@ -596,11 +614,8 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
  */
 DWORD WINAPI FuncColList( LPVOID lpData )
 {
-	UINT uiIndex=MAX_COL_ITEMS, uiTry;
+	UINT uiIndex=MAX_COL_ITEMS;
 	CDlgColList *pDlg;
-
-	STR_MESSAGE *pRxMessage;
-	STR_DATA_CONTENTS *pRxData;
 
 	STR_QUEUE_MSG stQueueMsg;
 	queue<STR_QUEUE_MSG> *pQueueMsg;
@@ -618,8 +633,6 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 	pDlg->Send();
 
 	while( TRUE ) {
-		STR_COL_LIST *pColList;
-
 		DWORD dRet;
 
 		dRet = WaitForSingleObject( pDlg->m_hReceveLAN, INFINITE);
@@ -889,18 +902,18 @@ void CDlgColList::InitListCtrl( bool bInit )
 		m_ColList.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
 		//m_ColList.SetCheckboxes(TRUE);
 
-		m_CListRawData.GetWindowRect(&rt);
-		m_CListRawData.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
+		m_RawList.GetWindowRect(&rt);
+		m_RawList.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-		m_CListRawData.InsertColumn(0, _T("순번"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
-		m_CListRawData.InsertColumn(1, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
-		m_CListRawData.InsertColumn(2, _T("종류"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
-		m_CListRawData.InsertColumn(3, _T("모드"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
-		m_CListRawData.InsertColumn(4, _T("주파수 범위[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2 ), -1);
-		m_CListRawData.InsertColumn(5, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2 ), -1);
-		m_CListRawData.InsertColumn(6, _T("파일명"), LVCFMT_LEFT, (int) (rt.Width() * 0.19), -1);
+		m_RawList.InsertColumn(0, _T("순번"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
+		m_RawList.InsertColumn(1, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
+		m_RawList.InsertColumn(2, _T("종류"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
+		m_RawList.InsertColumn(3, _T("모드"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
+		m_RawList.InsertColumn(4, _T("주파수 범위[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2 ), -1);
+		m_RawList.InsertColumn(5, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2 ), -1);
+		m_RawList.InsertColumn(6, _T("파일명"), LVCFMT_LEFT, (int) (rt.Width() * 0.19), -1);
 
-		m_CListRawData.SetGridLines(TRUE);
+		m_RawList.SetGridLines(TRUE);
 		//m_CListRawData.SetCheckboxes(TRUE);
 	}
 	else {
@@ -924,7 +937,7 @@ void CDlgColList::InitListCtrl( bool bInit )
  */
 void CDlgColList::GetColList( STR_COL_LIST *pstColList )
 {
-	pstColList->uiNo = (UINT) m_CSpinNum.GetPos();
+	pstColList->stColItem.uiNo = (UINT) m_CSpinNum.GetPos();
 
 	GetColItem( & pstColList->stColItem );
 }
@@ -959,7 +972,7 @@ void CDlgColList::GetColItem( STR_COL_ITEM *pstColItem )
  */
 void CDlgColList::PutColList( STR_COL_LIST *pstColList )
 {
-	pstColList->uiNo = (UINT) m_CSpinNum.GetPos();
+	pstColList->stColItem.uiNo = (UINT) m_CSpinNum.GetPos();
 	pstColList->stColItem.fCenterFreq = (float) m_CSpinCenterFreq.GetPos();
 	pstColList->stColItem.fThreshold = (float) m_CSpinThreshold.GetPos();
 	pstColList->stColItem.fColTime = (float) m_CSpinColTime.GetPos();
@@ -989,11 +1002,11 @@ void CDlgColList::OnBnClickedButtonAddList()
 
 	//
 	pColList = m_pColList + m_uiCoColList;
-	stColList.uiNo = m_uiCoColList + 1;
+	stColList.stColItem.uiNo = m_uiCoColList + 1;
 	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
 
 	//
-	strTemp.Format(_T("%d"), pColList->uiNo );
+	strTemp.Format(_T("%d"), pColList->stColItem.uiNo );
  	nIndex = m_ColList.InsertItem( INT_MAX, strTemp, NULL );
 
 	strTemp.Format(_T("%s"), g_stColListMode[pColList->stColItem.enMode] );
@@ -1031,7 +1044,22 @@ void CDlgColList::SetTotalColList()
 	strTemp.Format( _T("%d"), m_ColList.GetItemCount() );
 	m_CStaticTotalColList.SetWindowText( strTemp );
 
-	Invalidate();
+	//Invalidate();
+
+	//m_CStaticTotalColList.SetTextColor(RGB(0,0,255), FALSE);
+	//m_CStaticTotalColList.SetBackgroundColor(RGB(255,255,255), FALSE);
+	//m_CStaticTotalColList.SetBold(TRUE, FALSE);
+
+}
+
+void CDlgColList::SetTotalRawList()
+{
+	CString strTemp;
+
+	strTemp.Format( _T("%d"), m_RawList.GetItemCount() );
+	m_CStaticTotalRawList.SetWindowText( strTemp );
+
+	//Invalidate();
 
 	//m_CStaticTotalColList.SetTextColor(RGB(0,0,255), FALSE);
 	//m_CStaticTotalColList.SetBackgroundColor(RGB(255,255,255), FALSE);
@@ -1078,13 +1106,11 @@ void CDlgColList::OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult)
 
 	m_iSelItem = pNMItemActivate->iItem;
 	if( m_iSelItem >= 0 ) {
-		int iMode;
-
 		GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( TRUE );
 
 		GetColListFromList( m_iSelItem, & stColList );
 
-		m_CSpinNum.SetPos( (double) stColList.uiNo );
+		m_CSpinNum.SetPos( (double) stColList.stColItem.uiNo );
 		m_CComboMode.SetCurSel( stColList.stColItem.enMode );
 		m_CSpinCenterFreq.SetPos( (double) stColList.stColItem.fCenterFreq );
 
@@ -1103,7 +1129,7 @@ void CDlgColList::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 
 	pColList->iRowOfList = iRow;
 	strTemp = m_ColList.GetItemText( iRow, 0 );
-	swscanf_s( strTemp.GetBuffer(), _T("%d"), & pColList->uiNo );
+	swscanf_s( strTemp.GetBuffer(), _T("%d"), & pColList->stColItem.uiNo );
 
 	strTemp = m_ColList.GetItemText( iRow, 1 );
 
@@ -1113,7 +1139,6 @@ void CDlgColList::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 			pColList->stColItem.enMode = ( ENUM_COL_MODE ) i;
 		}
 	}
-
 
 	strTemp = m_ColList.GetItemText( iRow, 2 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f"), & pColList->stColItem.fCenterFreq );
@@ -1137,7 +1162,7 @@ void CDlgColList::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 void CDlgColList::OnBnClickedButtonModifyList()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	CString strTemp;
+	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
 
 	STR_COL_LIST stColList;
 	STR_COL_LIST *pColList;
@@ -1147,23 +1172,33 @@ void CDlgColList::OnBnClickedButtonModifyList()
 
 	GetColList( & stColList );
 
-	//
-	pColList = m_pColList + ( stColList.uiNo - 1 );
+	// 수집 목록 버퍼에 복사
+	pColList = m_pColList + ( stColList.stColItem.uiNo - 1 );
 	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
 
-	//
-	strTemp.Format(_T("%d"), stColList.uiNo );
-	m_ColList.SetItem( m_iSelItem, 0, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	// 목록창에 전시
+	MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+	
+	m_ColList.SetItem( m_iSelItem, 0, LVIF_TEXT, strNumber, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
 
-	strTemp.Format(_T("%s"), g_stColListMode[stColList.stColItem.enMode] );
-	m_ColList.SetItem( m_iSelItem, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+}
 
-	strTemp.Format(_T("%.1f"), stColList.stColItem.fCenterFreq );
-	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%d/%.1f"), stColList.stColItem.uiColNumber, stColList.stColItem.fColTime );
-	m_ColList.SetItem( m_iSelItem, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%.1f"), stColList.stColItem.fThreshold );
-	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+void CDlgColList::MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList )
+{
+	pstrNum->Format(_T("%d"), pstColList->stColItem.uiNo );
+
+	pstrMode->Format(_T("%s"), g_stColListMode[pstColList->stColItem.enMode] );
+
+	pstrCenterFreq->Format(_T("%.1f"), pstColList->stColItem.fCenterFreq );
+
+	pstrColTime->Format(_T("%d/%.1f"), pstColList->stColItem.uiColNumber, pstColList->stColItem.fColTime );
+
+	pstrThreshold->Format(_T("%.1f"), pstColList->stColItem.fThreshold );
+
 
 }
 
@@ -1781,30 +1816,32 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 
 	// 목록창 추가
  	strTemp.Format(_T("%d"), m_uiCoRawData );
- 	nIndex = m_CListRawData.InsertItem( INT_MAX, strTemp, NULL );
+ 	nIndex = m_RawList.InsertItem( INT_MAX, strTemp, NULL );
 
-	strTemp.Format(_T("%d"), m_stColList.uiNo );
-	m_CListRawData.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	strTemp.Format(_T("%d"), m_stColList.stColItem.uiNo );
+	m_RawList.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp = _T("PDW" );
-	m_CListRawData.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	strTemp = g_stRawListType[enPDW_DataType];
+	m_RawList.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	strTemp.Format(_T("%s"), g_stColListMode[m_stColList.stColItem.enMode] );
-	m_CListRawData.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	strTemp.Format(_T("%.1f"), m_stColList.stColItem.fCenterFreq );
-	m_CListRawData.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	strTemp.Format(_T("%d/%.1f"), m_stColList.stColItem.uiColNumber, m_stColList.stColItem.fColTime ); 
-	m_CListRawData.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	m_CListRawData.SetItem( nIndex, 6, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 6, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
 
-	if( m_bClickedOfColList == false ) {
-		m_CListRawData.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
-		m_CListRawData.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-		m_CListRawData.EnsureVisible( nIndex, FALSE); 
+	if( m_bClickedOfRawDataList == false ) {
+		m_RawList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+		m_RawList.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+		m_RawList.EnsureVisible( nIndex, FALSE); 
 	}
+
+	SetTotalRawList();
 
 	++ m_uiCoRawData;
 
@@ -1921,7 +1958,7 @@ UINT CDlgColList::ConvertFreq( float fFreq, int iBc )
 	fCFreq = fFreq - gFreqRes[iBc].min;
 	fCFreq /= gFreqRes[iBc].res;
 
-	return ( fCFreq + 0.5 );
+	return (UINT) ( fCFreq + 0.5 );
 
 }
 
@@ -1984,31 +2021,223 @@ void CDlgColList::InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 
 	// 목록창 추가
 	strTemp.Format(_T("%d"), m_uiCoRawData );
-	nIndex = m_CListRawData.InsertItem( INT_MAX, strTemp, NULL );
+	nIndex = m_RawList.InsertItem( INT_MAX, strTemp, NULL );
 
-	strTemp.Format(_T("%d"), m_stColList.uiNo );
-	m_CListRawData.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	strTemp.Format(_T("%d"), m_stColList.stColItem.uiNo );
+	m_RawList.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp = _T("IQ" );
-	m_CListRawData.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	strTemp = g_stRawListType[enIQ_DataType];
+	m_RawList.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	strTemp.Format(_T("%s"), g_stColListMode[m_stColList.stColItem.enMode-1] );
-	m_CListRawData.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	strTemp.Format(_T("%.1f"), m_stColList.stColItem.fCenterFreq );
-	m_CListRawData.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	strTemp.Format(_T("%d/%.1f"), m_stColList.stColItem.uiColNumber, m_stColList.stColItem.fColTime ); 
-	m_CListRawData.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	m_CListRawData.SetItem( nIndex, 6, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
+	m_RawList.SetItem( nIndex, 6, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
 
 	if( m_bClickedOfRawDataList == false ) {
-		m_CListRawData.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
-		m_CListRawData.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-		m_CListRawData.EnsureVisible( nIndex, FALSE); 
+		m_RawList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+		m_RawList.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+		m_RawList.EnsureVisible( nIndex, FALSE); 
 	}
 	
 	++ m_uiCoRawData;
 	
+}
+
+void CDlgColList::OnBnClickedButtonOpen()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strPathName;
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenXLS ) ) {
+		long l, lMaxRow;
+
+		CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+
+		m_ColList.DeleteAllItems();
+
+		// 엑셀 수집 파일 로딩하기...
+		CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
+
+		XL.OpenExcelFile(strPathName);
+		lMaxRow = XL.GetRowNum();
+		for( l=2 ; l <= lMaxRow; ++l ) {
+			int nIndex;
+
+			strNumber = XL.GetCellValue( 1, l );
+			strMode = XL.GetCellValue( 2, l );
+			strCenterFreq = XL.GetCellValue( 3, l );
+			strColTime = XL.GetCellValue( 4, l );
+			strThreshold = XL.GetCellValue( 4, l );
+
+			//GetCellValue( & XL, uiCol, l, & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold );
+
+			nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
+
+			m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
+			m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
+			m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
+			m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
+		}
+
+		XL.ReleaseExcel();
+	}
+
+}
+
+void CDlgColList::OnBnClickedButtonSave()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strPathName;
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
+		int i;
+
+		CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+
+		STR_COL_LIST stColList;
+
+		// 엑셀 수집 파일 로딩하기...
+		CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
+
+		XL.SetCellValue( 1, 1, _T("과제 번호") );
+		XL.SetCellValue( 2, 1, _T("모드") ); 
+		XL.SetCellValue( 3, 1, _T("중심 주파수[MHz]") ); 
+		XL.SetCellValue( 4, 1, _T("수집 개수/시간[ms]") ); 
+		XL.SetCellValue( 5, 1, _T("임계값[dBm]") ); 
+		XL.SetCellValue( 6, 1, _T("기타") ); 
+
+		for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+			if( TRUE == m_ColList.GetCheck(i) || true ) {
+				GetColListFromList( i, & stColList );
+
+				MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+
+				//SetCellValue( & XL, i+1, & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold );
+				XL.SetCellValue( 1, i+2, strNumber ); 
+				XL.SetCellValue( 2, i+2, strMode ); 
+				XL.SetCellValue( 3, i+2, strCenterFreq ); 
+				XL.SetCellValue( 4, i+2, strColTime ); 
+				XL.SetCellValue( 5, i+2, strThreshold ); 
+
+			}
+		}
+
+		XL.SaveFileAs(strPathName);
+
+		XL.ReleaseExcel();
+	
+	}
+
+}
+
+
+void CDlgColList::OnLvnItemActivateListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMIA = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
+
+	m_bClickedOfRawDataList = true;
+
+	STR_RAW_LIST stRawItem;
+	CString strPathFileName;
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	GetRawListFromList( pNMIA->iItem, & stRawItem );
+
+	int iYear, iMon, iDay;
+	swscanf_s( stRawItem.stRawItem.szFilename, _T("%d_%d_%d"), & iYear, & iMon, & iDay );
+
+	strPathFileName.Format( _T("%s//%04d_%02d_%02d//PDW//%s"), RAWDATA_DIRECTORY, iYear, iMon, iDay, stRawItem.stRawItem.szFilename ); 
+
+	pApp->RawDataOpen( & strPathFileName );
+
+}
+
+void CDlgColList::GetRawListFromList( int iRow, STR_RAW_LIST *pRawList )
+{
+	int i;
+	CString strTemp;
+
+	strTemp = m_RawList.GetItemText( iRow, 0 );
+	swscanf_s( strTemp.GetBuffer(), _T("%d"), & pRawList->stRawItem.uiNo );
+
+	strTemp = m_RawList.GetItemText( iRow, 1 );
+	swscanf_s( strTemp.GetBuffer(), _T("%d"), & pRawList->stRawItem.uiColTaskNum );
+
+	strTemp = m_RawList.GetItemText( iRow, 2 );
+	pRawList->stRawItem.enRawDataType = enPDW_DataType;
+	for( i=0 ; i <= enIQ_DataType ; ++i ) {
+		if( strTemp.Compare( g_stRawListType[i] ) == 0 ) {
+			pRawList->stRawItem.enRawDataType = ( ENUM_RAWDATA_TYPE ) i;
+			break;
+		}
+	}
+
+	strTemp = m_RawList.GetItemText( iRow, 3 );
+	pRawList->stRawItem.enMode = enIF2_WIDE;
+	for( i=0 ; i <= enIQ_NARROW ; ++i ) {
+		if( strTemp.Compare( g_stColListMode[i] ) == 0 ) {
+			pRawList->stRawItem.enMode = ( ENUM_COL_MODE ) i;
+			break;
+		}
+	}
+
+	strTemp = m_RawList.GetItemText( iRow, 4 );
+	swscanf_s( strTemp.GetBuffer(), _T("%f"), & pRawList->stRawItem.fCenterFreq );
+
+	strTemp = m_RawList.GetItemText( iRow, 5 );
+	swscanf_s( strTemp.GetBuffer(), _T("%d/%f"), & pRawList->stRawItem.uiColNumber, & pRawList->stRawItem.fColTime );
+
+	strTemp = m_RawList.GetItemText( iRow, 6 );
+	_tcscpy_s( pRawList->stRawItem.szFilename, MAX_PATH, strTemp.GetBuffer(0) );
+	strTemp.ReleaseBuffer();
+	
+}
+
+void CDlgColList::OnHdnItemclickListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMHEADER phdr = reinterpret_cast<LPNMHEADER>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
+
+	m_bClickedOfRawDataList = true;
+}
+
+
+void CDlgColList::OnNMClickListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
+
+	// 자동 스크롤 기능 OFF
+	m_bClickedOfRawDataList = true;
+
+	if( m_iClickedItem >= 0 ) {
+		m_RawList.SetItemBkColor( m_iClickedItem, -1, ::GetSysColor(COLOR_WINDOW), FALSE );
+	}
+
+	m_iClickedItem = pNMItemActivate->iItem;
+
+	m_RawList.SetItemBkColor( pNMItemActivate->iItem, -1, ::GetSysColor(COLOR_WINDOWFRAME) );
+}
+
+
+void CDlgColList::OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// 이 기능을 사용하려면 Internet Explorer 5.5 이상이 필요합니다.
+	// _WIN32_IE 기호는 0x0560보다 크거나 같아야 합니다.
+	LPNMLVSCROLL pStateChanged = reinterpret_cast<LPNMLVSCROLL>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
 }

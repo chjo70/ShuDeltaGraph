@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>C:\ProEssentials9\VC;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\ProEssentials5\VC;C:\ProEssentials9\VC;$(SolutionDir)ShuDeltaGraph\FFTW;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\ProEssentials5\VC;C:\ProEssentials9\VC;$(SolutionDir)ShuDeltaGraph\FFTW;$(SolutionDir)Debug;$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,6 +157,8 @@
     <ClInclude Include="DlgColList.h" />
     <ClInclude Include="DlgFilterSetup.h" />
     <ClInclude Include="EchoSocket\MyEchoSocket.h" />
+    <ClInclude Include="Excel\XLAutomation.h" />
+    <ClInclude Include="Excel\XLEzAutomation.h" />
     <ClInclude Include="FFTW\fftw3.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="ListCtrl\ComboItem.h" />
@@ -193,6 +195,8 @@
     <ClCompile Include="DlgColList.cpp" />
     <ClCompile Include="DlgFilterSetup.cpp" />
     <ClCompile Include="EchoSocket\MyEchoSocket.cpp" />
+    <ClCompile Include="Excel\XLAutomation.cpp" />
+    <ClCompile Include="Excel\XLEzAutomation.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="ListCtrl\ComboItem.cpp" />
     <ClCompile Include="ListCtrl\EditItem.cpp" />

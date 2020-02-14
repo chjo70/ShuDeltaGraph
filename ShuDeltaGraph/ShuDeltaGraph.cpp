@@ -296,23 +296,11 @@ void CShuDeltaGraphApp::OnFileNew()
 void CShuDeltaGraphApp::OnFileOpen()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	bool bRet=false;
 	CString strPathName;
-	CDocTemplate *pDocTemplate=nullptr;	
-	TCHAR warningMessage[100];
-
-	int i;
-	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
-	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;
-
-	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
-	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
-
-	OnMenuCloseAll();
 
 	if( m_strArgument.IsEmpty() == true ) {
-		if( false == OpenFile( strPathName ) ) {
-			bRet = true;
+		if( true == OpenFile( strPathName, _T("PDW 및 IQ 파일 읽어오기...") ) ) {
+			RawDataOpen( & strPathName );
 		}
 	}
 	else {
@@ -320,76 +308,92 @@ void CShuDeltaGraphApp::OnFileOpen()
 		m_strArgument.Empty();
 	}
 
-	if( bRet == false ) {
-		POSITION pos;
-		CMainFrame *pMainFrame=( CMainFrame * ) AfxGetMainWnd();
-		CShuDeltaGraphDoc *pDoc;
-		CShuDeltaGraphView *pView;
-		CChildFrame *pChild;
+}
 
-		if( GetDataType(strPathName) == en_PDW_DATA ) {
-			if( true == IsExistFile( strPathName ) ) {
+void CShuDeltaGraphApp::RawDataOpen( CString *pStrPathname )
+{
+	int i;
 
-				for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
-					pos = GetFirstDocTemplatePosition();
+	CDocTemplate *pDocTemplate=nullptr;	
+	TCHAR warningMessage[100];
 
-					pDocTemplate = GetNextDocTemplate( pos );
+	POSITION pos;
+	CMainFrame *pMainFrame=( CMainFrame * ) AfxGetMainWnd();
+	CShuDeltaGraphDoc *pDoc;
+	CShuDeltaGraphView *pView;
+	CChildFrame *pChild;
 
-					pDoc = ( CShuDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
+	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;
 
-					pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
-					pView = (CShuDeltaGraphView *) pChild->GetActiveView();
+	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
+	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
 
-					if( true == pDoc->OpenFile( strPathName ) ) {
-						if( pView != NULL && pDoc->GetDataItems() != 0 ) {
-							pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
-						}
-						else {
-							wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , strPathName );
-							AfxMessageBox( warningMessage );
-							break;
-						}
+
+	OnMenuCloseAll();
+
+	if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
+		if( true == IsExistFile( *pStrPathname ) ) {
+
+			for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
+				pos = GetFirstDocTemplatePosition();
+
+				pDocTemplate = GetNextDocTemplate( pos );
+
+				pDoc = ( CShuDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+
+				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+				pView = (CShuDeltaGraphView *) pChild->GetActiveView();
+
+				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
+						pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
+					}
+					else {
+						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+						AfxMessageBox( warningMessage );
+						break;
 					}
 				}
-			}
-			else {
-				wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , strPathName );
-				AfxMessageBox( warningMessage );
 			}
 		}
 		else {
+			wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+			AfxMessageBox( warningMessage );
+		}
+	}
+	else {
 
-			if( true == IsExistFile( strPathName ) ) {
-				for( i=0 ; i < IQ_MULTI_WINDOWS ; ++i ) {
-					pos = GetFirstDocTemplatePosition();
+		if( true == IsExistFile( *pStrPathname ) ) {
+			for( i=0 ; i < IQ_MULTI_WINDOWS ; ++i ) {
+				pos = GetFirstDocTemplatePosition();
 
-					pDocTemplate = GetNextDocTemplate( pos );
+				pDocTemplate = GetNextDocTemplate( pos );
 
-					pDoc = ( CShuDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+				pDoc = ( CShuDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
 
-					pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
-					pView = (CShuDeltaGraphView *) pChild->GetActiveView();
+				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+				pView = (CShuDeltaGraphView *) pChild->GetActiveView();
 
-					if( true == pDoc->OpenFile( strPathName ) ) {
-						if( pView != NULL && pDoc->GetDataItems() != 0 ) {
-							pView->ShowGraph( viewIQGraph[i], viewIQSubGraph[i] );
-						}
-						else {
-							wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , strPathName );
-							AfxMessageBox( warningMessage );
-							break;
-						}
+				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
+						pView->ShowGraph( viewIQGraph[i], viewIQSubGraph[i] );
+					}
+					else {
+						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+						AfxMessageBox( warningMessage );
+						break;
 					}
 				}
 			}
-			else {
-				wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , strPathName );
-				AfxMessageBox( warningMessage );
-			}
 		}
-
-		::PostMessage( m_pMainWnd->m_hWnd, WM_COMMAND, ID_WINDOW_TILE_HORZ, NULL );
+		else {
+			wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+			AfxMessageBox( warningMessage );
+		}
 	}
+
+	::PostMessage( m_pMainWnd->m_hWnd, WM_COMMAND, ID_WINDOW_TILE_HORZ, NULL );
 
 }
 
@@ -425,16 +429,50 @@ bool CShuDeltaGraphApp::IsExistFile( CString &strPathname )
  * @date      2020/02/01 16:31:37
  * @warning   
  */
-bool CShuDeltaGraphApp::OpenFile( CString &strPathname )
+bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYPE enOpenType )
 {
 	bool bRet = true;
 	CFileDialog *pWndFile;
+	TCHAR szinitDir[MAX_PATH];
+
+	CString strFilepath;
+
+	strFilepath = GetFilePath();
 
 	// 로그 파일을 오픈할 FILE Dialog창을 생성한다.
-	pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw)|*.pdw;*.npw;*.spdw;*.epdw|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+	switch( enOpenType ) {
+		case enOpenPDW :
+			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw)|*.pdw;*.npw;*.spdw;*.epdw|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+			szinitDir[0] = NULL;
+			break;
+
+		case enOpenXLS :
+			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("수집 목록 파일들 (*.xls)|*.xls*|All Files (*.*)|*.*||") );
+			
+			_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
+			strFilepath.ReleaseBuffer();
+			break;
+
+		case enSavePDW :
+			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw)|*.pdw;*.npw;*.spdw;*.epdw|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+			szinitDir[0] = NULL;
+			break;
+
+		case enSaveXLS :
+			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("수집 목록 파일들 (*.xls)|*.xls*|All Files (*.*)|*.*||") );
+
+			_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
+			strFilepath.ReleaseBuffer();
+			break;
+
+		default :
+			break;
+	}
+
 
 	// Initializes m_ofn structure
-	pWndFile->m_ofn.lpstrTitle = _T("PDW 및 IQ 파일 읽어오기...");
+	pWndFile->m_ofn.lpstrTitle = pTitle;			// 타이틀명
+	pWndFile->m_ofn.lpstrInitialDir = szinitDir;			// 타이틀명
 
 	// Call DoModal
 	if (pWndFile->DoModal() == IDOK) {

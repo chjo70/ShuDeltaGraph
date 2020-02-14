@@ -40,8 +40,11 @@ public:
 	void LoadProfile( STR_COL_ITEM *pstColList );
 	void SaveProfile( STR_COL_ITEM *pstColList );
 
+	bool OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYPE enOpenType=enOpenPDW );
+
+	void RawDataOpen( CString *pStrPathname );
+
 private:
-	bool OpenFile( CString &strPathname );
 	void OnWindowCloseAll();
 
 	ENUM_DataType GetDataType(CString & strPathName);

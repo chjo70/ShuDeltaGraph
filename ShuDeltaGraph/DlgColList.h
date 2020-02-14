@@ -10,6 +10,9 @@
 #include "./ButtonST/BtnST.h"
 #include "./ToolTip/XInfoTip.h"
 
+#include "./Excel/XLEzAutomation.h"
+
+
 // CDlgColList 대화 상자입니다.
 
 #define SHU_PORT_NUM				(13060)
@@ -17,6 +20,13 @@
 #define RAWDATA_DIRECTORY		_T("D://RAWDATA")
 
 #define MAX_COL_ITEMS				(1000)
+typedef enum {
+	enOpenPDW = 0,
+	enOpenXLS,
+	enSavePDW,
+	enSaveXLS
+
+} ENUM_OPENTYPE;
 
 typedef enum {
 	enColList_MODE=0,
@@ -33,7 +43,17 @@ typedef enum {
 	enIQ_NARROW,
 } ENUM_COL_MODE;
 
+typedef enum {
+	enPDW_DataType=0,
+	enIQ_DataType,
+
+} ENUM_RAWDATA_TYPE;
+
 typedef struct {
+	BOOL bCkecked;
+
+	UINT uiNo;
+
 	ENUM_COL_MODE enMode;
 	float fCenterFreq;
 	float fColTime;
@@ -44,11 +64,31 @@ typedef struct {
 
 typedef struct {
 	int iRowOfList;
-
-	UINT uiNo;
 	STR_COL_ITEM stColItem;;
 
 } STR_COL_LIST;
+
+typedef struct {
+	UINT uiNo;
+	UINT uiColTaskNum;
+	
+	ENUM_RAWDATA_TYPE enRawDataType;
+	ENUM_COL_MODE enMode;
+
+	float fCenterFreq;
+	float fColTime;
+	UINT uiColNumber;
+	float fThreshold;
+
+	TCHAR szFilename[MAX_PATH];
+
+} STR_RAW_ITEM;
+
+typedef struct {
+	int iRowOfList;
+
+	STR_RAW_ITEM stRawItem;
+} STR_RAW_LIST;
 
 #define MAX_RAW_DATA	(10000)
 
@@ -109,6 +149,8 @@ private:
 	bool m_bClickedOfColList;
 	bool m_bClickedOfRawDataList;
 
+	int m_iClickedItem;
+
 public:
 	HANDLE m_hReceveLAN;
 	bool m_bCompleteOnReceive;
@@ -134,12 +176,14 @@ private:
 	void InitToolTip();
 
 	void SetTotalColList();
+	void SetTotalRawList();
 
 	void LoadColList();
 	void GetColList( STR_COL_LIST *pstColList );
 	void GetColItem( STR_COL_ITEM *pstColItem );
 	void PutColList( STR_COL_LIST *pstColList );
 	void GetColListFromList( int iRow, STR_COL_LIST *pColList );
+	void GetRawListFromList( int iRow, STR_RAW_LIST *pRawList );
 	static BOOL CALLBACK ItemdataProc(DWORD dwData, LPARAM lParam);
 
 	void UpdateResultData( char *pData );
@@ -159,6 +203,8 @@ private:
 	void MakeIQFile( int iItem );
 	void MakePDWFile( int iItem );
 
+	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
+
 
 	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
@@ -169,6 +215,9 @@ private:
 	UINT ConvertFreq( float fFreq, int iBc );
 	UINT ConvertPA( float fPA );
 	UINT ConvertPW( float fPW );
+
+	//void GetCellValue( CXlSimpleAutomation *pXL, UINT uiCol, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
+	//void SetCellValue( CXlSimpleAutomation *pXL, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
 
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
@@ -214,7 +263,7 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	CReportCtrl m_ColList;
-	CReportCtrl m_CListRawData;
+	CReportCtrl m_RawList;
 	CNumSpinCtrl m_CSpinCenterFreq;
 	CNumSpinCtrl m_CSpinThreshold;
 	CNumSpinCtrl m_CSpinColTime;
@@ -239,4 +288,11 @@ public:
 	CButtonST m_CButtonColStart;
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	CComboBox m_CComboMode;
+	afx_msg void OnBnClickedButtonOpen();
+	afx_msg void OnBnClickedButtonSave();
+	afx_msg void OnLvnItemActivateListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
+	CXColorStatic m_CStaticTotalRawList;
+	afx_msg void OnHdnItemclickListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnNMClickListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 };
