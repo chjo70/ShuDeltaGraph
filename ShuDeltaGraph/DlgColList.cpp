@@ -2072,12 +2072,11 @@ void CDlgColList::OnBnClickedButtonOpen()
 			int nIndex;
 
 			strNumber = XL.GetCellValue( 1, l );
+			strNumber.Replace( _T("00000"), _T("") );
 			strMode = XL.GetCellValue( 2, l );
 			strCenterFreq = XL.GetCellValue( 3, l );
 			strColTime = XL.GetCellValue( 4, l );
 			strThreshold = XL.GetCellValue( 4, l );
-
-			//GetCellValue( & XL, uiCol, l, & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold );
 
 			nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
 
