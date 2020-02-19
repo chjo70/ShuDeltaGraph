@@ -205,7 +205,7 @@ private:
 
 	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
 
-
+	void ViewGraph();
 	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );

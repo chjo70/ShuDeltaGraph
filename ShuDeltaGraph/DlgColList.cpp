@@ -569,6 +569,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 					if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
 						InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem  );
+						ViewGraph();
 
 						ReadyColStart( m_uiColList );
 						MakeSetModeMessage( m_uiColList );
@@ -659,137 +660,6 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 
 		}
 	}
-
-/*
-		pDlg->SetIBkColorOfColList( uiIndex, -1 );
-		uiIndex = (pDlg->m_uiCoColList-1) <= uiIndex ? 0 : ++uiIndex;
-
-		Sleep( 500 );
-
-		pDlg->SetIBkColorOfColList( uiIndex, 0 );
-
-		// IQ 데이터 수집
-		pColList = pDlg->m_pColList + uiIndex;
-		if( pColList->stColItem.iMode >= 3 ) {
-			// 1. 수집 페라미터 설정
-			TRACE( "\n 1. 수집 페라미터 설정" );
-			memset( pRxMessage, INIT_CODE_BYTE, sizeof(STR_MESSAGE) );
-			memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
-
-			pDlg->ReadyColStart( uiIndex );
-			pDlg->SetIBkColorOfColList( uiIndex, 1 );
-			pDlg->MakeSetModeMessage( uiIndex );
-			pDlg->Send();
-
-			//WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxData->uiResult == INIT_CODE_WORD )
-			uiTry = 0;
-			do {
-				++ uiTry;
-				Sleep( MAX_WAIT_RESPONSE );
-				if( uiTry > MAX_WAIT_RESPONSE ) {
-					break;
-				}
-			} while( pRxMessage->uiOpcode != RES_SET_CONFIG && pRxData->uiResult == INIT_CODE_WORD && pDlg->m_bCompleteOnReceive == false );
-
-			if( pRxData->uiResult == 1 ) {
-				Sleep( 100 );
-				continue;
-			}
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				Log( enError, _T("IQ 수집 파리미터 설정에서 에러가 발생합니다.") );
-				continue;
-			}
-
-			// 2. IQ 데이터 요청
-			TRACE( "\n 2. IQ 데이터 요청" );
-			memset( pRxMessage, INIT_CODE_BYTE, sizeof(STR_MESSAGE) );
-			memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
-
-			pDlg->SetIBkColorOfColList( uiIndex, 2 );
-			pDlg->MakeIQMessage( uiIndex );
-			pDlg->Send();
-			
-			Sleep( 1000 );
-			WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxMessage->uiOpcode != RES_IQ_DATA && pRxData->stIQData[16*1024-1].sI == INIT_CODE_WORD && pDlg->m_bCompleteOnReceive == false )
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				Log( enError, _T("IQ 데이터 전송 요구에서 에러가 발생합니다.") );
-				continue;
-			}
-
-		}
-		// PDW + 인트라 수집
-		else {
-			// 1. 수집 페라미터 설정
-			TRACE( "\n 1. 수집 페라미터 설정" );
-			memset( pRxMessage, INIT_CODE_BYTE, sizeof(STR_MESSAGE) );
-			memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
-
-			pDlg->SetIBkColorOfColList( uiIndex, 1 );
-			pDlg->MakeSetModeMessage( uiIndex );
-			pDlg->Send();
-
-			//WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxData->uiResult == INIT_CODE_WORD )
-			uiTry = 0;
-			do {
-				++ uiTry;
-				Sleep( MAX_WAIT_RESPONSE );
-				if( uiTry > MAX_WAIT_RESPONSE ) {
-					break;
-				}
-			} while( pRxMessage->uiOpcode != RES_SET_CONFIG && pRxData->uiResult == INIT_CODE_WORD && pDlg->m_bCompleteOnReceive == false );
-			if( pRxData->uiResult == 1 ) {
-				Sleep( 100 );
-				continue;
-			}
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				Log( enError, _T("수집 파리미터 설정에서 에러가 발생합니다.") );
-				continue;
-			}
-					
-			// 2. 신호수집 시작 요구
-			TRACE( "\n 2. 신호수집 시작 요구" );
-			memset( pRxMessage, INIT_CODE_BYTE, sizeof(STR_MESSAGE) );
-			memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
-
-			pDlg->ReadyColStart( uiIndex );
-			pDlg->SetIBkColorOfColList( uiIndex, 2 );
-			pDlg->MakeColStartMessage();
-			pDlg->Send();
-			//WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxData->stColStart.uiStatus == INIT_CODE_WORD )
-			uiTry = 0;
-			do {
-				++ uiTry;
-				Sleep( MAX_WAIT_RESPONSE );
-				if( uiTry > MAX_WAIT_RESPONSE ) {
-					break;
-				}
-			} while( pRxMessage->uiOpcode != RES_COL_START && pRxData->stColStart.uiStatus == INIT_CODE_WORD && pDlg->m_bCompleteOnReceive == false );
-
-			// 수집 개수가 0 이면 다음 과제로 이동한다.
-			if( pRxData->stColStart.uiCoPulseNum == 0 ) {
-				continue;
-			}
- 			if( uiTry > MAX_WAIT_RESPONSE ) {
- 				Log( enError, _T("신호수집 시작에서 에러가 발생합니다.") );
- 				continue;
- 			}
-
-			//
-			// 3. 수집 데이터 전송 요구
-			TRACE( "\n 3. 수집 데이터 전송 요구" );
-			memset( pRxMessage, INIT_CODE_BYTE, sizeof(STR_MESSAGE) );
-			memset( pRxData->buffer, INIT_CODE_BYTE, sizeof(pRxData->buffer) );
-
-			pDlg->SetIBkColorOfColList( uiIndex, 3 );
-			pDlg->MakeReqRawDataMessage();
-			pDlg->Send();
-			WAIT_RESPONSE( MAX_WAIT_RESPONSE, pRxMessage->uiOpcode != RES_RAWDATA_PDW && pRxData->stPDWData[0].fFreq == INIT_CODE_WORD )
-			if( uiTry > MAX_WAIT_RESPONSE ) {
-				Log( enError, _T("수집 데이터 전송 요구에서 에러가 발생합니다.") );
-				continue;
-			}
-
-*/
 
 	return 0;
 }
@@ -1791,6 +1661,18 @@ void CDlgColList::InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem 
 
 }
 
+void CDlgColList::ViewGraph()
+{
+	UINT uiItem;
+
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	uiItem = m_pSonataData->uiItem;
+
+	pApp->m_pDlg2DHisto->UpdateData( m_pSonataData );
+
+}
+
 void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 {
 	int nIndex;
@@ -1808,8 +1690,6 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 // 		m_pRawData->uiItem = m_stResCol.uiCoPulseNum;
 
 	Log( enNormal, _T("PDW 데이터를 완료 처리합니다." ) );
-
-	
 
 	// 데이터를 체계용 PDW 파일로 변환하여 저장합니다.
 	MakePDWFile( m_pRawData->uiItem );
@@ -1864,7 +1744,7 @@ void CDlgColList::MakePDWFile( int iItem )
 
 	ConvertRAWData( iItem, en_PDW_DATA );
 
-	m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+	//m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
 
 }
 

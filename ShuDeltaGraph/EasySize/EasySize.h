@@ -36,16 +36,18 @@
 
 #ifndef __EASYSIZE_H_
 #define __EASYSIZE_H_
+
 #define ES_BORDER 0xffffffff
 #define ES_KEEPSIZE 0xfffffffe
 #define ES_HCENTER 0x00000001
 #define ES_VCENTER 0x00000002
-#define DECLARE_EASYSIZE \
-void __ES__RepositionControls(BOOL bInit);\
-void __ES__CalcBottomRight(CWnd *pThis, BOOL bBottom, int &bottomright, int &topleft, UINT id, UINT br, int es_br, CRect &rect, int clientbottomright);
-#define INIT_EASYSIZE __ES__RepositionControls(TRUE); __ES__RepositionControls(FALSE)
-#define UPDATE_EASYSIZE if(GetWindow(GW_CHILD)!=NULL) __ES__RepositionControls(FALSE)
-#define EASYSIZE_MINSIZE(mx,my,s,r) if(r->right-r->left < mx) { if((s == WMSZ_BOTTOMLEFT)||(s == WMSZ_LEFT)||(s == WMSZ_TOPLEFT)) r->left = r->right-mx; else r->right = r->left+mx; } if(r->bottom-r->top < my) { if((s == WMSZ_TOP)||(s == WMSZ_TOPLEFT)||(s == WMSZ_TOPRIGHT)) r->top = r->bottom-my; else r->bottom = r->top+my; }
+
+#define DECLARE_EASYSIZE	void __ES__RepositionControls(BOOL bInit);	\
+							void __ES__CalcBottomRight(CWnd *pThis, BOOL bBottom, int &bottomright, int &topleft, UINT id, UINT br, int es_br, CRect &rect, int clientbottomright);		\
+//#define INIT_EASYSIZE __ES__RepositionControls(TRUE), __ES__RepositionControls(FALSE);
+//#define UPDATE_EASYSIZE if(GetWindow(GW_CHILD)!=NULL) { __ES__RepositionControls(FALSE);  }
+//#define EASYSIZE_MINSIZE(mx,my,s,r) if(r->right-r->left < mx) { if((s == WMSZ_BOTTOMLEFT)||(s == WMSZ_LEFT)||(s == WMSZ_TOPLEFT)) r->left = r->right-mx; else r->right = r->left+mx; } if(r->bottom-r->top < my) { if((s == WMSZ_TOP)||(s == WMSZ_TOPLEFT)||(s == WMSZ_TOPRIGHT)) r->top = r->bottom-my; else r->bottom = r->top+my; }
+
 #define BEGIN_EASYSIZE_MAP(class) \
 void class::__ES__CalcBottomRight(CWnd *pThis, BOOL bBottom, int &bottomright, int &topleft, UINT id, UINT br, int es_br, CRect &rect, int clientbottomright) {\
 if(br==ES_BORDER) bottomright = clientbottomright-es_br;\
