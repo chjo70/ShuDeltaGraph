@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CShuDeltaGraphApp, CWinAppEx)
 	ON_COMMAND(ID_Menu_CloseALL, &CShuDeltaGraphApp::OnMenuCloseAll)
 	ON_COMMAND(ID_DLG_COLLIST, &CShuDeltaGraphApp::OnDlgCollist)
 	ON_COMMAND(ID_APP_EXIT, &CShuDeltaGraphApp::OnAppExit)
+	ON_COMMAND(ID_GRAPH_COLLIST, &CShuDeltaGraphApp::OnGraphCollist)
 END_MESSAGE_MAP()
 
 
@@ -173,6 +174,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	m_pDlgColList = new CDlgColList();
 	m_pDlgColList->Create( IDD_DIALOG_COL_LIST );
 
+	m_pDlg2DHisto = new CDlg2DHisto();
+	m_pDlg2DHisto->Create( IDD_DIALOG_2DHISTO );
+
 	return TRUE;
 }
 
@@ -184,6 +188,7 @@ int CShuDeltaGraphApp::ExitInstance()
 	AfxOleTerm(FALSE);
 
 	delete m_pDlgColList;
+	delete m_pDlg2DHisto;
 
 	return CWinAppEx::ExitInstance();
 }
@@ -707,4 +712,20 @@ void CShuDeltaGraphApp::OnDlgCollist()
 void CShuDeltaGraphApp::OnAppExit()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+}
+
+
+void CShuDeltaGraphApp::OnGraphCollist()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	BOOL chk = m_pDlg2DHisto->IsWindowVisible();
+
+	if(chk)
+	{
+		m_pDlg2DHisto->ShowWindow(SW_HIDE);
+	}
+	else
+	{
+		m_pDlg2DHisto->ShowWindow(SW_SHOW);
+	}	
 }

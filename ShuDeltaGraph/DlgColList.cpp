@@ -253,7 +253,7 @@ BOOL CDlgColList::OnInitDialog()
 	HICON hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_ICON_COL_LIST));
 	this->SetIcon(hIcon, FALSE);
 
-	Log( enNormal, _T("+++++++++++++++++++++++++++++++++++++++++++") );
+	Log( enNormal, _T("CDlgColList+++++++++++++++++++++++++++++++++++++++++++") );
 
 	InitVar();
 	InitButton();
