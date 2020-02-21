@@ -219,6 +219,8 @@ private:
 	//void GetCellValue( CXlSimpleAutomation *pXL, UINT uiCol, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
 	//void SetCellValue( CXlSimpleAutomation *pXL, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
 
+	void ActivateGraph( BOOL bEanble );
+
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
 
@@ -246,6 +248,8 @@ public:
 	void SetIBkColorOfColList( UINT uiIndex, int nStep );
 
 	void ReadyColStart( UINT uiIndex );
+
+	inline STR_SONATA_DATA *GetSONATAData() { return m_pSonataData; }
 
 	DECLARE_DYNAMIC(CDlgColList)
 

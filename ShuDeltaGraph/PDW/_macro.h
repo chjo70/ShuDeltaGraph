@@ -17,6 +17,9 @@
 #define	_spSONATAAOAmax				(0x1FF)	
 #define	_spSONATAAmpmax				(0xFF)	
 
+#define	FREQ_MIN			(500)			// 최소 주파수
+#define	FREQ_MAX			(18000)
+
 
 typedef struct {
 	// frequency band code를 위한 구조체 
@@ -64,9 +67,6 @@ float _spOneSec;
 float _spOneMilli;
 float _spOneMicrosec;
 float _spOneNanosec;
-
-// #define	FREQ_MIN			(500)			// 최소 주파수
-// #define	FREQ_MAX			(18000)
 
 float _spFreqMin;
 float _spFreqMax;

@@ -177,6 +177,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	m_pDlg2DHisto = new CDlg2DHisto();
 	m_pDlg2DHisto->Create( IDD_DIALOG_2DHISTO );
 
+	m_pDlgMulti = new CDlgMulti();
+	m_pDlgMulti->Create( IDD_DIALOG_MULTI );
+
 	return TRUE;
 }
 
@@ -189,6 +192,7 @@ int CShuDeltaGraphApp::ExitInstance()
 
 	delete m_pDlgColList;
 	delete m_pDlg2DHisto;
+	delete m_pDlgMulti;
 
 	return CWinAppEx::ExitInstance();
 }
@@ -531,6 +535,14 @@ ENUM_DataType CShuDeltaGraphApp::GetDataType(CString &strPathName)
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 9:21:19
+ * @warning   
+ */
 void CShuDeltaGraphApp::OnMenuCloseAll()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
@@ -613,6 +625,15 @@ void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
 	::WritePrivateProfileString( L"FilterSetup", L"FRQ_MAX", szBuffer, m_strIniFile );
 }
 
+/**
+ * @brief     
+ * @param     STR_COL_ITEM * pstColList
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 9:21:14
+ * @warning   
+ */
 void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
@@ -661,6 +682,15 @@ void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
 
 }
 
+/**
+ * @brief     
+ * @param     STR_COL_ITEM * pstColList
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 9:21:09
+ * @warning   
+ */
 void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
@@ -709,16 +739,33 @@ void CShuDeltaGraphApp::OnDlgCollist()
 }
 
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 9:21:04
+ * @warning   
+ */
 void CShuDeltaGraphApp::OnAppExit()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }
 
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 9:21:05
+ * @warning   
+ */
 void CShuDeltaGraphApp::OnGraphCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	BOOL chk = m_pDlg2DHisto->IsWindowVisible();
+	BOOL chk;
+	chk = m_pDlg2DHisto->IsWindowVisible();
 
 	if(chk)
 	{
@@ -727,5 +774,46 @@ void CShuDeltaGraphApp::OnGraphCollist()
 	else
 	{
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
-	}	
+	}
+
+	chk = m_pDlgMulti->IsWindowVisible();
+
+	if(chk)
+	{
+		m_pDlgMulti->ShowWindow(SW_HIDE);
+	}
+	else
+	{
+		m_pDlgMulti->ShowWindow(SW_SHOW);
+	}
 }
+
+
+/**
+ * @brief     
+ * @param     BOOL bEnable
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 9:21:00
+ * @warning   
+ */
+void CShuDeltaGraphApp::ActivateGraph( BOOL bEnable )
+{
+	if( bEnable == true ) {
+		m_pDlg2DHisto->InitVar();
+		m_pDlg2DHisto->ViewGraph();
+
+		m_pDlg2DHisto->ShowWindow(SW_SHOW);
+		m_pDlgMulti->ShowWindow(SW_SHOW);
+
+		m_pDlg2DHisto->SetTimer( CLK_TIMER, 1000, 0 );
+	}
+	else {
+		m_pDlg2DHisto->KillTimer( CLK_TIMER );
+	}
+
+	
+
+}
+

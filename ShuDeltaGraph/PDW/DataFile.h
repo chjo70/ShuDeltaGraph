@@ -36,6 +36,7 @@ typedef union {
 
 typedef struct {
 	UINT uiItem;
+	ENUM_DataType enDataType;
 
 	UNI_SONATA_DATA unRawData;
 

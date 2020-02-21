@@ -1403,7 +1403,19 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	i = 0;
 	// Set first axis parameters //
-	PEnset(m_hPE, PEP_nWORKINGAXIS, i);
+	PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, PERGB( 255,198,0,0));
+
+	PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, PERGB( 255,0,198,198));
+
+	PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, PERGB( 255,198,198,0));
+
+	PEnset(m_hPE, PEP_nWORKINGAXIS, 3);
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, PERGB( 255,0,198,0));
+
+
 	if( enSubGraph == enSubMenu_2 ) {
 		// PEnset(m_hPE, PEP_nRYAXISCOMPARISONSUBSETS, 1);
 	}

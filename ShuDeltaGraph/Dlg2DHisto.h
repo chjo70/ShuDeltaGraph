@@ -4,6 +4,14 @@
 
 // CDlg2DHisto 대화 상자입니다.
 
+#define CLK_TIMER		(1000)
+
+typedef enum {
+	en_ReceiveData= 0,
+	en_Timer
+
+} ENUM_HandleType;
+
 class CDlg2DHisto : public CDialogEx
 {
 public:
@@ -21,11 +29,12 @@ private:
 	CThread m_theThread;
 
 public:
-	HANDLE m_hHisto;
-	
+	HANDLE m_hHisto[en_Timer+1];
+
+	STR_SONATA_DATA *m_pSonataData;
+	UINT m_nFreqX[FREQ_MAX+1];
 
 private:
-	void InitVar();
 	void InitButton();
 	void InitBuffer();
 	void InitStatusBar();
@@ -34,9 +43,13 @@ private:
 	void InitToolTip();
 	void InitThread();
 	void FreeBuffer();
+	void InitGraph();
 
 public:
-	void UpdateData( STR_SONATA_DATA *pSonataData );
+	void InitVar();
+
+	void ViewGraph();
+	void UpdateHisto( BOOL bData );
 
 	DECLARE_DYNAMIC(CDlg2DHisto)
 
@@ -57,4 +70,7 @@ public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
 	CStatic m_CGraph;
+	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

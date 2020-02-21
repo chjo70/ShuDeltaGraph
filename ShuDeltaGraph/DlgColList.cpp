@@ -1210,6 +1210,8 @@ void CDlgColList::OnBnClickedButtonColstart()
 		}
 
 		if( m_uiCoColList != 0 ) {
+			ActivateGraph( TRUE );
+
 			//
 			m_theThread.Attach( FuncColList );
 			m_theThread.Start( this );
@@ -1226,11 +1228,20 @@ void CDlgColList::OnBnClickedButtonColstart()
 		
 		Log( enNormal, _T("수집 시작을 취소했습니다." ) );
 		m_theThread.Stop( true );
-		//Close();
+
+		ActivateGraph( FALSE );
+
 
 		m_CButtonColStart.SetWindowText( _T("수집 시작") );
 	}
 
+}
+
+void CDlgColList::ActivateGraph( BOOL bEnable )
+{
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	pApp->ActivateGraph( bEnable );
 }
 
 /**
@@ -1663,13 +1674,9 @@ void CDlgColList::InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem 
 
 void CDlgColList::ViewGraph()
 {
-	UINT uiItem;
-
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
-	uiItem = m_pSonataData->uiItem;
-
-	pApp->m_pDlg2DHisto->UpdateData( m_pSonataData );
+	SetEvent( pApp->m_pDlg2DHisto->m_hHisto[en_ReceiveData] );
 
 }
 
@@ -1800,11 +1807,13 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType )
 				++ pPDWData;
 			}
 			m_pSonataData->uiItem = iItem;
+			m_pSonataData->enDataType = en_PDW_DATA;
 			break;
 
 		case en_IQ_DATA :
 			//memcpy( m_pSonataData->unRawData.stIQData, & pstData->stIQData, iItem*sizeof(TNEW_IQ) );
 			m_pSonataData->uiItem = iItem;
+			m_pSonataData->enDataType = en_IQ_DATA;
 			break;
 
 		default :
@@ -1818,7 +1827,7 @@ UINT CDlgColList::ConvertPA( float fPA )
 	UINT uiPA;
 
 	fPA = ( fPA - gPaRes[0].offset ) / gPaRes[0].res;
-	uiPA = ( fPA + 0.5 );
+	uiPA = UADD( fPA, 0.5 );
 
 	return uiPA;
 }
@@ -1994,7 +2003,7 @@ void CDlgColList::OnBnClickedButtonSave()
 		XL.SetCellValue( 5, 1, _T("임계값[dBm]") ); 
 		XL.SetCellValue( 6, 1, _T("기타") ); 
 
-		for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+		for ( i = 0; i < m_ColList.GetItemCount(); i++) {
 			if( TRUE == m_ColList.GetCheck(i) || true ) {
 				GetColListFromList( i, & stColList );
 

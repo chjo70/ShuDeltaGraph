@@ -263,6 +263,9 @@
     <ClInclude Include="Dlg2DHisto.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="DlgMulti.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -356,6 +359,9 @@
       <Filter>소스 파일\Excel</Filter>
     </ClCompile>
     <ClCompile Include="Dlg2DHisto.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgMulti.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
