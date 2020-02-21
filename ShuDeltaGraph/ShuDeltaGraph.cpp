@@ -802,7 +802,7 @@ void CShuDeltaGraphApp::OnGraphCollist()
  */
 void CShuDeltaGraphApp::ActivateGraph( BOOL bEnable )
 {
-	if( bEnable == true ) {
+	if( bEnable == TRUE ) {
 		m_pDlg2DHisto->InitVar();
 		m_pDlg2DHisto->ViewGraph();
 
