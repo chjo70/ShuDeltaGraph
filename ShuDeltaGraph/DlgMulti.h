@@ -37,6 +37,8 @@ private:
 	void FreeBuffer();
 	void InitGraph();
 
+	void GetNumberFormat( TCHAR *pSZ, double dValue );
+
 	DECLARE_DYNAMIC(CDlgMulti)
 
 public:

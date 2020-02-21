@@ -525,12 +525,12 @@ DWORD WINAPI Func2DHisto( LPVOID lpData )
 		}
 		else if( dRet == WAIT_OBJECT_0 ) {
 			ResetEvent( pDlg->m_hHisto[en_ReceiveData] );
-			pDlg->UpdateHisto( FALSE );
+			pDlg->UpdateHisto( TRUE );
 			pDlg->ViewGraph();
 		}
 		else if( dRet == WAIT_OBJECT_0+1 ) {
 			ResetEvent( pDlg->m_hHisto[en_Timer] );
-			pDlg->UpdateHisto( TRUE );
+			pDlg->UpdateHisto( FALSE );
 			pDlg->ViewGraph();
 		}
 		else {

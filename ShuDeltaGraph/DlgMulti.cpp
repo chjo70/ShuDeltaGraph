@@ -164,7 +164,7 @@ void CDlgMulti::InitStatic()
 void CDlgMulti::InitGraph()
 {
 	RECT rect;
-	double d;
+	//double d;
 
 	GetClientRect( &rect );
 
@@ -256,7 +256,7 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_bSIMPLEPOINTLEGEND, TRUE);
 	PEnset(m_hPE, PEP_bSIMPLELINELEGEND, TRUE);
 	PEnset(m_hPE, PEP_nLEGENDSTYLE, PELS_1_LINE);
-	//PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
+	PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
 
 	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
 	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
@@ -316,8 +316,10 @@ void CDlgMulti::InitGraph()
 
 	// Set first axis parameters //
 	PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-	PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("주파수[MHz]"));
+	PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("주파수"));
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
+	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,| Hz") );
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[0] );
 // 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 // 	d = 500;
 // 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -326,8 +328,10 @@ void CDlgMulti::InitGraph()
 
 	// Set second axis parameters //
 	PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
-	PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("신호세기[dBm]"));
+	PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("신호세기"));
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
+	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,| dBm") );
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
 // 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 // 	d = -60;
 // 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -338,6 +342,8 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
 	PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("DTOA"));
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE );
+	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,00| 초") );
+	PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 // 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 // 	d = 0;
 // 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -635,7 +641,7 @@ void CDlgMulti::ViewGraph()
 {
 	UINT i, uiItem, uiTemp32;
 
-	UINT uiToa, preToa, uiDToa;
+	UINT uiToa;
 
 	float fFreq, fPA, fTOA, fFirstToa, fDtoa, fPreviousToa;
 
@@ -648,11 +654,8 @@ void CDlgMulti::ViewGraph()
 
 	PEnset(m_hPE, PEP_nPOINTS, uiItem );
 
-	PEszset( m_hPE, PEP_szAXISFORMATX, _T("|,|초") );
-	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,| MHz") );
-
 	for( i=0 ; i < uiItem ; ++i ) {
-		UINT uiIndex;
+		//UINT uiIndex;
 
 		temp.bpdw[0][0] = pPDW->item.toa_1;
 		temp.bpdw[0][1] = pPDW->item.toa_2;
@@ -674,6 +677,7 @@ void CDlgMulti::ViewGraph()
 
 		uiTemp32 = BIT_MERGE( pPDW->item.frequency_h, pPDW->item.frequency_l);
 		fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
+		fFreq = (float) ( fFreq * 1000.0 );
 
 		uiTemp32 = pPDW->item.amplitude;
 		fPA = FPACNV(uiTemp32);
@@ -704,18 +708,22 @@ void CDlgMulti::ViewGraph()
 
 }
 
+#define GET_NUMBER_FORMAT_SIZE		(200)
+
 BOOL CDlgMulti::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
 	if( (HIWORD(wParam) == PEWN_CUSTOMTRACKINGDATATEXT )) {
+		TCHAR  szTOA[GET_NUMBER_FORMAT_SIZE], szY[GET_NUMBER_FORMAT_SIZE]; 
+
 		// v9 features 
 		TCHAR  szBuffer[200]; 
 
 		int nA;
 		int nX;
 		int nY;
-		double fX;
-		double fY;
+		double dX;
+		double dY;
 		POINT pt;
 
 		// get last mouse location within control //
@@ -724,29 +732,73 @@ BOOL CDlgMulti::OnCommand(WPARAM wParam, LPARAM lParam)
 		nA = 0;      // Initialize axis, non-zero only if using MultiAxesSubsets
 		nX = pt.x;   // Initialize nX and nY with mouse location
 		nY = pt.y;
-		PEconvpixeltograph(m_hPE, &nA, &nX, &nY, &fX, &fY, 0, 0, 0);
+		PEconvpixeltograph(m_hPE, &nA, &nX, &nY, &dX, &dY, 0, 0, 0);
 
-		if( nA == 0 ) {
-			_stprintf(szBuffer, _T("%.3f초\n%.1fMHz"), fX, fY);
-			PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("주  파  수"));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-		}
-		else if( nA == 1 ) {
-			_stprintf(szBuffer, _T("%.3f초\n%.1f dBm"), fX, fY);
-			PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("신 호 세 기"));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));	
-		}
-		else {	
-			_stprintf(szBuffer, _T("%.3f초\n%.1fs"), fX, fY);
-			PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("D  T  O  A"));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-		}
+		if( nA >= 0 ) {
 
-		PEszset(m_hPE, PEP_szTRACKINGTEXT, szBuffer );
+			GetNumberFormat( szTOA, dX );
+
+			if( nA == 0 ) {
+				GetNumberFormat( szY, dY );
+				_stprintf_s(szBuffer, 200, _T("%ss\n%sHz"), szTOA, szY);
+				PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("주  파  수   "));
+				PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
+				PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+			}
+			else if( nA == 1 ) {
+				GetNumberFormat( szY, dY );
+				_stprintf_s(szBuffer, 200, _T("%ss\n%sdBm"), szTOA, szY);
+				PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("신 호 세 기   "));
+				PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
+				PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));	
+			}
+			else {	
+				GetNumberFormat( szY, dY );
+				_stprintf_s(szBuffer, 200, _T("%ss\n%ss"), szTOA, szY );
+				PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("D  T  O  A "));
+				PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
+				PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+			}
+
+			PEszset(m_hPE, PEP_szTRACKINGTEXT, szBuffer );
+		}
 	}
 
 	return CDialogEx::OnCommand(wParam, lParam);
+}
+
+static NUMBERFMT nFmt = { 3, 1, 3, _T("."), _T(","), 1 };
+void CDlgMulti::GetNumberFormat( TCHAR *pSZ, double dValue )
+{
+	int i;
+	double dTemp;
+
+	char szUnit[7] = { ' ', 'm', 'u', 'n', 'K', 'M', 'G' } ;
+
+	_stprintf_s( pSZ, GET_NUMBER_FORMAT_SIZE, _T("%.1f%1c"), dValue, szUnit[0] );
+
+	dTemp = dValue;
+	for( i=0 ; i <= 3 ; ++i ) {
+		if( dTemp >= 1.0 && dTemp < 1000.0 || dTemp > -1000.0 && dTemp <= -1.0 ) {
+			_stprintf_s( pSZ, GET_NUMBER_FORMAT_SIZE, _T("%.2f %1c"), dTemp, szUnit[i] );
+			break;
+		}
+		dTemp = ( dTemp * 1000.0 );
+	}
+
+	if( i == 4 ) {
+		dTemp = dValue;
+		for( i=4 ; i <= 7 ; ++i ) {
+			dTemp = (float) ( dTemp / 1000.0 );
+			if( dTemp >= 1.0 && dTemp < 1000.0 || dTemp > -1000.0 && dTemp <= -1.0 ) {
+				_stprintf_s( pSZ, GET_NUMBER_FORMAT_SIZE, _T("%.2f %1c"), dTemp, szUnit[i] );
+				break;
+			}
+		}
+	}
+
+	//_stprintf( szVal, _T("%f"), fValue );
+	//::GetNumberFormat ( NULL, NULL, szVal, &nFmt, pSZ, GET_NUMBER_FORMAT_SIZE );
+
+	return;
 }
