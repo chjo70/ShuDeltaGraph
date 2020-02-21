@@ -1677,6 +1677,7 @@ void CDlgColList::ViewGraph()
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	SetEvent( pApp->m_pDlg2DHisto->m_hHisto[en_ReceiveData] );
+	SetEvent( pApp->m_pDlgMulti->m_hMulti );
 
 }
 

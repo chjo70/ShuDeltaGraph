@@ -500,11 +500,7 @@ void CDlg2DHisto::InitThread()
  */
 DWORD WINAPI Func2DHisto( LPVOID lpData )
 {
-	UINT uiIndex=MAX_COL_ITEMS;
 	CDlg2DHisto *pDlg;
-
-	STR_QUEUE_MSG stQueueMsg;
-	queue<STR_QUEUE_MSG> *pQueueMsg;
 
 	CThread *pParent = reinterpret_cast<CThread*>(lpData);
 	pDlg = ( CDlg2DHisto * ) pParent->GetParam();
@@ -723,6 +719,15 @@ BOOL CDlg2DHisto::OnCommand(WPARAM wParam, LPARAM lParam)
 }
 
 
+/**
+ * @brief     
+ * @param     UINT_PTR nIDEvent
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/21 16:49:17
+ * @warning   
+ */
 void CDlg2DHisto::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
@@ -737,3 +742,4 @@ void CDlg2DHisto::OnTimer(UINT_PTR nIDEvent)
 
 	CDialogEx::OnTimer(nIDEvent);
 }
+

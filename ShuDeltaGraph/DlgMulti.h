@@ -19,11 +19,14 @@ private:
 
 	HWND m_hPE;			// the proessentials control object
 
+	CThread m_theThread;
+
 public:
 	HANDLE m_hMulti;
 
+	STR_SONATA_DATA *m_pSonataData;
+
 private:
-	void InitVar();
 	void InitButton();
 	void InitBuffer();
 	void InitStatusBar();
@@ -40,6 +43,10 @@ public:
 	CDlgMulti(CWnd* pParent = NULL);   // 표준 생성자입니다.
 	virtual ~CDlgMulti();
 
+	void InitVar();
+	void UpdateMulti();
+	void ViewGraph();
+
 // 대화 상자 데이터입니다.
 	enum { IDD = IDD_DIALOG_MULTI };
 
@@ -54,4 +61,5 @@ public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 };

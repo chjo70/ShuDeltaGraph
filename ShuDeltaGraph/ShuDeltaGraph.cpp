@@ -765,25 +765,27 @@ void CShuDeltaGraphApp::OnGraphCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	BOOL chk;
-	chk = m_pDlg2DHisto->IsWindowVisible();
 
-	if(chk)
+	chk = m_pDlg2DHisto->IsWindowVisible();
+	if(chk & false )
 	{
+		//m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_HIDE);
 	}
 	else
 	{
+		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
 	}
 
 	chk = m_pDlgMulti->IsWindowVisible();
-
-	if(chk)
+	if(chk & false )
 	{
 		m_pDlgMulti->ShowWindow(SW_HIDE);
 	}
 	else
 	{
+		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
 	}
 }
@@ -804,7 +806,10 @@ void CShuDeltaGraphApp::ActivateGraph( BOOL bEnable )
 		m_pDlg2DHisto->InitVar();
 		m_pDlg2DHisto->ViewGraph();
 
+		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
+
+		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
 
 		m_pDlg2DHisto->SetTimer( CLK_TIMER, 1000, 0 );
