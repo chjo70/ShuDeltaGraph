@@ -155,6 +155,7 @@
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="Dlg2DHisto.h" />
+    <ClInclude Include="Dlg3DBar.h" />
     <ClInclude Include="DlgColList.h" />
     <ClInclude Include="DlgFilterSetup.h" />
     <ClInclude Include="DlgMulti.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="Dlg2DHisto.cpp" />
+    <ClCompile Include="Dlg3DBar.cpp" />
     <ClCompile Include="DlgColList.cpp" />
     <ClCompile Include="DlgFilterSetup.cpp" />
     <ClCompile Include="DlgMulti.cpp" />

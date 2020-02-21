@@ -46,7 +46,6 @@ public:
 	virtual ~CDlgMulti();
 
 	void InitVar();
-	void UpdateMulti();
 	void ViewGraph();
 
 // 대화 상자 데이터입니다.

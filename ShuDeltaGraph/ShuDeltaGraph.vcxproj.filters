@@ -266,6 +266,9 @@
     <ClInclude Include="DlgMulti.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Dlg3DBar.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -362,6 +365,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="DlgMulti.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Dlg3DBar.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

@@ -151,16 +151,40 @@ void CDlgMulti::InitListCtrl()
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/22 1:39:37
+ * @warning   
+ */
 void CDlgMulti::InitStatusBar()
 {
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/22 1:39:35
+ * @warning   
+ */
 void CDlgMulti::InitStatic()
 {
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/22 1:39:34
+ * @warning   
+ */
 void CDlgMulti::InitGraph()
 {
 	RECT rect;
@@ -612,7 +636,6 @@ DWORD WINAPI FuncMulti( LPVOID lpData )
 		}
 		else {
 			ResetEvent( pDlg->m_hMulti );
-			pDlg->UpdateMulti();
 			pDlg->ViewGraph();
 
 		}
@@ -628,15 +651,9 @@ DWORD WINAPI FuncMulti( LPVOID lpData )
  * @return    void
  * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
  * @version   0.0.1
- * @date      2020/02/21 15:30:11
+ * @date      2020/02/22 1:39:04
  * @warning   
  */
-void CDlgMulti::UpdateMulti()
-{
-
-
-}
-
 void CDlgMulti::ViewGraph()
 {
 	UINT i, uiItem, uiTemp32;

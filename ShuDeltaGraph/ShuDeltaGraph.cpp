@@ -180,6 +180,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	m_pDlgMulti = new CDlgMulti();
 	m_pDlgMulti->Create( IDD_DIALOG_MULTI );
 
+	m_pDlg3DBar = new CDlg3DBar();
+	m_pDlg3DBar->Create( IDD_DIALOG_3DBAR );
+
 	return TRUE;
 }
 
@@ -193,6 +196,7 @@ int CShuDeltaGraphApp::ExitInstance()
 	delete m_pDlgColList;
 	delete m_pDlg2DHisto;
 	delete m_pDlgMulti;
+	delete m_pDlg3DBar;
 
 	return CWinAppEx::ExitInstance();
 }
@@ -788,6 +792,17 @@ void CShuDeltaGraphApp::OnGraphCollist()
 		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
 	}
+
+	chk = m_pDlg3DBar->IsWindowVisible();
+	if(chk & false )
+	{
+		m_pDlg3DBar->ShowWindow(SW_HIDE);
+	}
+	else
+	{
+		m_pDlg3DBar->ShowWindow(SW_RESTORE);
+		m_pDlg3DBar->ShowWindow(SW_SHOW);
+	}
 }
 
 
@@ -808,13 +823,19 @@ void CShuDeltaGraphApp::ActivateGraph( BOOL bEnable )
 
 		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
+		m_pDlg2DHisto->SetTimer( CLK_TIMER, 1000, 0 );
 
 		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
 
-		m_pDlg2DHisto->SetTimer( CLK_TIMER, 1000, 0 );
+		m_pDlg3DBar->ShowWindow(SW_RESTORE);
+		m_pDlg3DBar->ShowWindow(SW_SHOW);
+		m_pDlg3DBar->SetTimer( CLK_TIMER, 1000, 0 );
+		
 	}
 	else {
+		m_pDlg3DBar->KillTimer( CLK_TIMER );
+
 		m_pDlg2DHisto->KillTimer( CLK_TIMER );
 	}
 

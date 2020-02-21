@@ -396,6 +396,21 @@ void CDlg2DHisto::InitToolTip()
  * @return    void
  * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
  * @version   0.0.1
+ * @date      2020/02/20 21:43:51
+ * @warning   
+ */
+void CDlg2DHisto::InitThread()
+{
+	m_theThread.Attach( Func2DHisto );
+	m_theThread.Start( this );
+}
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
  * @date      2020/02/20 21:43:03
  * @warning   
  */
@@ -475,19 +490,6 @@ void CDlg2DHisto::OnSizing(UINT fwSide, LPRECT pRect)
 	EASYSIZE_MINSIZE(m_rectCurDlg.right - m_rectCurDlg.left,m_rectCurDlg.bottom - m_rectCurDlg.top,fwSide,pRect);
 }
 
-/**
- * @brief     
- * @return    void
- * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
- * @version   0.0.1
- * @date      2020/02/20 21:43:51
- * @warning   
- */
-void CDlg2DHisto::InitThread()
-{
-	m_theThread.Attach( Func2DHisto );
-	m_theThread.Start( this );
-}
 
 /**
  * @brief     
@@ -687,7 +689,7 @@ BOOL CDlg2DHisto::OnCommand(WPARAM wParam, LPARAM lParam)
 		double dY;
 		PEvget(m_hPE, PEP_fCURSORVALUEY, &dY);
 
-		_stprintf(szBuffer, _T("%.3fMHz\n%.1f%%"), dX, dY);
+		_stprintf_s(szBuffer, 200, _T("%.3fMHz\n%.1f%%"), dX, dY);
 		//wsprintf( & szBuffer[0], _T("X Axis: %.3f  \nY Axis: %.3f"), (float) dX, (float)  dY);
 
 		if (dX < 2000.F) {

@@ -16,6 +16,7 @@
 #include "DlgColList.h"
 #include "Dlg2DHisto.h"
 #include "DlgMulti.h"
+#include "Dlg3DBar.h"
 
 // CShuDeltaGraphApp:
 // 이 클래스의 구현에 대해서는 ShuDeltaGraph.cpp을 참조하십시오.
@@ -31,6 +32,7 @@ public:
 	CDlgColList *m_pDlgColList;
 	CDlg2DHisto *m_pDlg2DHisto;
 	CDlgMulti *m_pDlgMulti;
+	CDlg3DBar *m_pDlg3DBar;
 
 public:
 
