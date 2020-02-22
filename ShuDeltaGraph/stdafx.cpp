@@ -43,7 +43,7 @@ void Log( int nType, const TCHAR *fmt, ... )
 
 		if( TRUE == CreateDir( strPath.GetBuffer() ) ) {
 			//strTemp.Format( "\\%s" , tm.Format("%Y_%m_%d_%H.log" ) );
-			strTemp.Format( _T("\\%s") , tm.Format("%Y_%m_%d.log" ) );
+			strTemp.Format( _T("\\%s") , (char*)(LPCTSTR) tm.Format("%Y_%m_%d.log" ) );
 			strPath = strPath + strTemp;
 
 			//_wfopen_s( & fp, (LPSTR) (LPCTSTR) strPath, _T("a+") );

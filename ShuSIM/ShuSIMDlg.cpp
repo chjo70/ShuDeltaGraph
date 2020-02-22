@@ -278,7 +278,7 @@ void CShuSIMDlg::OnConnect(int nErrorCode )
 
 		m_pConnected->GetPeerName( strIPAddress, uiPortNum );
 
-		//Log( enNormal, "%s/%d 에 연결되었습니다.", strIPAddress, uiPortNum );
+		//Log( enNormal, "%s/%d 에 연결되었습니다.", (char*)(LPCTSTR)strIPAddress, uiPortNum );
 
 		strMsg.Format( _T("연결:%s/%d"), strIPAddress, uiPortNum );
 		//wprintf_s( _T("연결[%s/%d]"), strIPAddress, uiPortNum );
@@ -314,7 +314,7 @@ void CShuSIMDlg::InitSocketSetting()
 
 	uiPortNum = SHU_PORT_NUM;
 
-	Log( enNormal, _T("서버[%s/%d]로 연결을 시도합니다."), strIPAddress, uiPortNum );
+	Log( enNormal, _T("서버[%s/%d]로 연결을 시도합니다."), (char*)(LPCTSTR)strIPAddress, uiPortNum );
 	m_pConnected->Create();
 
 	//
@@ -505,6 +505,7 @@ void CShuSIMDlg::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 	case REQ_SET_CONFIG:
 		*pstrTemp1 = _T("<<수집 파라메터 설정");
 		pstrTemp2->Format( _T("M%d, %.1f[MHz], %d[개수], %.1f[ms], %.1f[dBm]"), pstData->stSetMode.uiMode, pstData->stSetMode.fTuneFreq, pstData->stSetMode.coPulseNum, pstData->stSetMode.fColTime, pstData->stSetMode.fThreshold );
+		m_fTuneFreq = pstData->stSetMode.fTuneFreq;
 		break;
 
 	case REQ_COL_START :
@@ -575,7 +576,7 @@ void CShuSIMDlg::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pS
 		m_CListLog.SetItem(nIndex, 3, LVIF_TEXT, *pStrTemp3, NULL, NULL, NULL, NULL);
 	}
 
-	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, *pStrTemp1, *pStrTemp2 );
+	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, (char*)(LPCTSTR)*pStrTemp1, (char*)(LPCTSTR)*pStrTemp2 );
 
 	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_INFOBK));
 	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_3DLIGHT));
@@ -635,7 +636,7 @@ void CShuSIMDlg::MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex )
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 
 	for( i=0 ; i < iCoPDW ; ++i ) {
-		pTxData->stPDWData[i].fFreq = 10000.0;
+		pTxData->stPDWData[i].fFreq = m_fTuneFreq;
 		pTxData->stPDWData[i].fPA = -50.0;
 		pTxData->stPDWData[i].fPW = 1.00;
 		pTxData->stPDWData[i].uiTOA = ( (i+iStartTOAIndex) * 500 );

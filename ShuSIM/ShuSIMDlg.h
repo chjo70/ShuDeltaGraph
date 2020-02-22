@@ -38,6 +38,8 @@ private:
 
 	UINT m_uiLog;
 
+	float m_fTuneFreq;
+
 public:
 
 private:
