@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CShuDeltaGraphView, CFormView)
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_DLG_COLLIST, &CShuDeltaGraphView::OnDlgCollist)
+	ON_WM_SYSCOMMAND()
 END_MESSAGE_MAP()
 
 // CShuDeltaGraphView 생성/소멸
@@ -2304,4 +2305,12 @@ void CShuDeltaGraphView::OnDlgCollist()
 		pApp->m_pDlgColList->ShowWindow(SW_SHOW);
 	}
 
+}
+
+
+void CShuDeltaGraphView::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	CFormView::OnSysCommand(nID, lParam);
 }

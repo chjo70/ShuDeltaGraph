@@ -14,6 +14,10 @@
 #include "revision.h"
 #include "afxwin.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -166,6 +170,7 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	// 응용 프로그램이 /RegServer, /Register, /Unregserver 또는 /Unregister로 시작된 경우 FALSE를 반환합니다.
  	//if (!ProcessShellCommand(cmdInfo))
  	//	return FALSE;
+	//AfxSetAllocStop( 8253 );
 
 	// 주 창이 초기화되었으므로 이를 표시하고 업데이트합니다.
 	pMainFrame->ShowWindow( SW_SHOWMAXIMIZED /* m_nCmdShow */ );
@@ -189,6 +194,8 @@ BOOL CShuDeltaGraphApp::InitInstance()
 int CShuDeltaGraphApp::ExitInstance()
 {
 	//TODO: 추가한 추가 리소스를 처리합니다.
+	TRACE( "\n ExitInstance..호출" );
+	
 	CShuDeltaGraphDoc::CloseMapData();
 
 	AfxOleTerm(FALSE);
@@ -839,8 +846,6 @@ void CShuDeltaGraphApp::ActivateGraph( BOOL bEnable )
 
 		m_pDlg2DHisto->KillTimer( CLK_TIMER );
 	}
-
-	
 
 }
 

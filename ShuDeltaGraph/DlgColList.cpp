@@ -121,6 +121,10 @@ void CDlgColList::InitBuffer()
  */
 void CDlgColList::FreeBuffer()
 {
+	m_theThread.Stop();
+
+	m_ColList.DeleteAllItems();
+	m_RawList.DeleteAllItems();
 
 	delete m_pListener;
 	delete m_pConnected;
@@ -129,6 +133,8 @@ void CDlgColList::FreeBuffer()
 	free( m_pColList );
 	free( m_pRawData );
 	free( m_pSonataData );
+
+	CloseHandle( m_hReceveLAN );
 
 	m_pTip->DestroyWindow();
 	delete m_pTip;
@@ -381,6 +387,7 @@ void CDlgColList::SetControl( bool bEnable )
  */
 void CDlgColList::OnClose()
 {
+	m_theThread.Stop( true );
 
 	Log( enError, _T("소켓을 닫습니다.") );
 
@@ -402,7 +409,7 @@ void CDlgColList::OnClose()
 
 	InitSocketSetting();
 
-	m_theThread.Stop( true );
+	//m_theThread.Stop( true );
 
 	m_CButtonColStart.SetWindowText( _T("수집 시작") );
 
@@ -427,7 +434,7 @@ void CDlgColList::InitSocketSetting()
 
 	uiPortNum = SHU_PORT_NUM;
 
-	Log( enNormal, _T("[%s/%d]는 서버로 실행합니다."), strIPAddress, uiPortNum );
+	Log( enNormal, _T("[%s/%d]는 서버로 실행합니다."), (char*)(LPCTSTR) strIPAddress, uiPortNum );
 
 	m_pListener->Create( uiPortNum, SOCK_STREAM);
 	m_pListener->Listen();
@@ -473,9 +480,9 @@ void CDlgColList::OnConnect(int nErrorCode )
 
 		m_pConnected->GetPeerName( strIPAddress, uiPortNum );
 
-		//Log( enNormal, "%s/%d 에 연결되었습니다.", strIPAddress, uiPortNum );
+		//Log( enNormal, "%s/%d 에 연결되었습니다.", (char*)(LPCTSTR)strIPAddress, uiPortNum );
 
-		wprintf_s( szBuffer, sizeof(szBuffer), _T("연결[%s/%d]"), strIPAddress, uiPortNum );
+		wprintf_s( szBuffer, sizeof(szBuffer), _T("연결[%s/%d]"), (char*)(LPCTSTR)strIPAddress, uiPortNum );
 		m_StatusBar.SetText(szBuffer, 0, 0);
 
 		//GetDlgItem(IDC_BUTTON_CLIENT)->SetWindowText(_T("서버 연결끊기"));
@@ -1383,14 +1390,17 @@ void CDlgColList::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, voi
 
 	case RES_RAWDATA_PDW:
 		*pstrTemp1 = _T(">>PDW 데이터");
+		*pstrTemp2 = _T(" ");
 		break;
 
 	case RES_RAWDATA_INTRA:
 		*pstrTemp1 = _T(">>FMOP 데이터");
+		*pstrTemp2 = _T(" ");
 		break;
 
 	case RES_IQ_DATA :
 		pstrTemp1->Format( _T(">>IQ 데이터[%d]"), pstMessage->uiDataLength );
+		*pstrTemp2 = _T(" ");
 		break;
 
 	default:
@@ -1414,7 +1424,7 @@ void CDlgColList::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *p
 // 		m_CListLog.SetItem(nIndex, 3, LVIF_TEXT, *pStrTemp3, NULL, NULL, NULL, NULL);
 // 	}
  
- 	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, *pStrTemp1, *pStrTemp2 );
+ 	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, (char*)(LPCTSTR)*pStrTemp1, (char*)(LPCTSTR)*pStrTemp2 );
 
 	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_INFOBK));
 	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_3DLIGHT));

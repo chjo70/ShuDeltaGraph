@@ -486,6 +486,8 @@ void CDlgMulti::InitGraph()
  */
 void CDlgMulti::FreeBuffer()
 {
+	m_theThread.Stop();
+
 	CloseHandle( m_hMulti );
 
 	if (m_hPE)

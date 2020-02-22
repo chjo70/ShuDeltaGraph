@@ -158,6 +158,7 @@ public:
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
 	afx_msg void OnUpdateDlgCollist(CCmdUI *pCmdUI);
 	afx_msg void OnDlgCollist();
+	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 };
 
 #ifndef _DEBUG  // ShuDeltaGraphView.cpp의 디버그 버전

@@ -351,6 +351,8 @@ void CDlg3DBar::InitThread()
  */
 void CDlg3DBar::FreeBuffer()
 {
+	//KillTimer( CLK_TIMER );
+
 	CloseHandle( m_h3DBar );
 
 	if (m_hPE)

@@ -416,7 +416,7 @@ void CDlg2DHisto::InitThread()
  */
 void CDlg2DHisto::FreeBuffer()
 {
-	KillTimer( CLK_TIMER );
+	//KillTimer( CLK_TIMER );
 
 	CloseHandle( m_hHisto[en_ReceiveData] );
 	CloseHandle( m_hHisto[en_Timer] );
