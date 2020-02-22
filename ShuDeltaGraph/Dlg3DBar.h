@@ -23,6 +23,8 @@ private:
 
 	int m_nSubset;
 
+	float *m_pfFreqX;
+
 private:
 	void InitButton();
 	void InitBuffer();
@@ -41,7 +43,7 @@ public:
 public:
 	HANDLE m_h3DBar;
 
-	STR_SONATA_DATA *m_pSonataData;
+	UINT *m_pFreqXFromHisto;
 
 public:
 	CDlg3DBar(CWnd* pParent = NULL);   // 표준 생성자입니다.

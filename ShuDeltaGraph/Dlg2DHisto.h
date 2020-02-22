@@ -51,6 +51,8 @@ public:
 	void ViewGraph();
 	void UpdateHisto( BOOL bData );
 
+	inline UINT *GetFreqX() { return m_nFreqX; }
+
 	DECLARE_DYNAMIC(CDlg2DHisto)
 
 public:

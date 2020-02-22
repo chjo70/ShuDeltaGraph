@@ -12,6 +12,12 @@
 
 DWORD WINAPI Func3DBar( LPVOID lpData );
 
+// 3D Bar 그래프를 그리기 위한 범위
+#define START_OF_FREQ_MHZ		(FREQ_MIN)
+#define END_OF_FREQ_MHZ			(FREQ_MAX)
+#define STEP_OF_FREQ_MHZ		(500)
+#define THREED_BAR_DEPPTH		(26)
+
 
 // CDlg3DBar 대화 상자입니다.
 
@@ -75,9 +81,9 @@ BOOL CDlg3DBar::OnInitDialog()
 	Log( enNormal, _T("CDlg3DBar +++++++++++++++++++++++++++++++++++++++++++") );
 
 	// 초기 설정
-	InitVar();
 	InitButton();
 	InitBuffer();
+	InitVar();
 	InitStatusBar();
 	InitListCtrl();
 	InitStatic();
@@ -103,7 +109,7 @@ BOOL CDlg3DBar::OnInitDialog()
  */
 void CDlg3DBar::InitVar()
 {
-	//memset( m_nFreqX, 0, sizeof(m_nFreqX) );
+	memset( m_pfFreqX, 0, sizeof(float)*m_nSubset );
 }
 
 /**
@@ -131,9 +137,13 @@ void CDlg3DBar::InitBuffer()
 {
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
-	m_pSonataData = pApp->m_pDlgColList->GetSONATAData();
+	m_pFreqXFromHisto = pApp->m_pDlg2DHisto->GetFreqX();
 
 	m_h3DBar = CreateEvent( NULL, TRUE, FALSE, NULL );
+
+	m_nSubset = (END_OF_FREQ_MHZ-START_OF_FREQ_MHZ)/STEP_OF_FREQ_MHZ + 1;
+
+	m_pfFreqX = ( float * ) malloc( sizeof(float ) * m_nSubset );
 }
 
 /**
@@ -175,11 +185,6 @@ void CDlg3DBar::InitStatic()
 
 }
 
-#define START_OF_FREQ_MHZ		(500)
-#define END_OF_FREQ_MHZ			(18000)
-#define STEP_OF_FREQ_MHZ		(500)
-#define THREED_BAR_DEPPTH		(26)
-
 /**
  * @brief     
  * @return    void
@@ -205,7 +210,6 @@ void CDlg3DBar::InitGraph()
 
 	// Define quantity of data //
 	
-	m_nSubset = (END_OF_FREQ_MHZ-START_OF_FREQ_MHZ)/STEP_OF_FREQ_MHZ + 1;
 	PEnset(m_hPE, PEP_nSUBSETS, m_nSubset);
 	PEnset(m_hPE, PEP_nPOINTS, THREED_BAR_DEPPTH );
 
@@ -354,6 +358,8 @@ void CDlg3DBar::FreeBuffer()
 		PEdestroy(m_hPE);
 		m_hPE = 0; 
 	}
+
+	free( m_pfFreqX );
 	
 }
 
@@ -516,10 +522,8 @@ void CDlg3DBar::OnTimer(UINT_PTR nIDEvent)
  */
 void CDlg3DBar::ViewGraph()
 {
-	int i;
-	float NewData[40];
+	int i, iIndex;
 
-	int r1, r2;
 	CTime t;
 	CString strTime;
 
@@ -529,15 +533,15 @@ void CDlg3DBar::ViewGraph()
 	// Graph Real Time Feed //
 	PEvset(m_hPE, PEP_szaAPPENDPOINTLABELDATA, (void *) (LPCTSTR) strTime, 1);
 
-	for( i=0 ; i<m_nSubset ; i++ )	{
-		// make some random data //
-		r1 = 10;
-		r2 = 20;
-		NewData[i] = 10.0F + r1 + (r2 * .0001F);
+	InitVar();
+
+	for( i=FREQ_MIN ; i < FREQ_MAX ; i++ )	{
+		iIndex = ( i - FREQ_MIN ) / STEP_OF_FREQ_MHZ;
+		m_pfFreqX[iIndex] += m_pFreqXFromHisto[i];
 	}
 
 	// transfer new YData //
-	PEvset(m_hPE, PEP_faAPPENDYDATA, NewData, 1);
+	PEvset(m_hPE, PEP_faAPPENDYDATA, m_pfFreqX, 1);
 
 	// causes 3D object to reconstruct polygon data //
 	PEreconstruct3dpolygons(m_hPE);

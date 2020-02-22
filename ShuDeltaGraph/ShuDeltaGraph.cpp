@@ -823,11 +823,12 @@ void CShuDeltaGraphApp::ActivateGraph( BOOL bEnable )
 
 		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
-		m_pDlg2DHisto->SetTimer( CLK_TIMER, 1000, 0 );
+		m_pDlg2DHisto->SetTimer( CLK_TIMER, 1500, 0 );
 
 		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
 
+		m_pDlg3DBar->InitVar();
 		m_pDlg3DBar->ShowWindow(SW_RESTORE);
 		m_pDlg3DBar->ShowWindow(SW_SHOW);
 		m_pDlg3DBar->SetTimer( CLK_TIMER, 1000, 0 );
