@@ -128,8 +128,8 @@ void CDlg2DHisto::InitBuffer()
 
 	m_pSonataData = pApp->m_pDlgColList->GetSONATAData();
 
-	m_hHisto[0] = CreateEvent( NULL, FALSE, FALSE, NULL );
-	m_hHisto[1] = CreateEvent( NULL, FALSE, FALSE, NULL );
+	m_hHisto[0] = CreateEvent( NULL, TRUE, FALSE, NULL );
+	m_hHisto[1] = CreateEvent( NULL, TRUE, FALSE, NULL );
 }
 
 /**
@@ -417,6 +417,9 @@ void CDlg2DHisto::InitThread()
 void CDlg2DHisto::FreeBuffer()
 {
 	KillTimer( CLK_TIMER );
+
+	CloseHandle( m_hHisto[en_ReceiveData] );
+	CloseHandle( m_hHisto[en_Timer] );
 
 	if (m_hPE)
 	{

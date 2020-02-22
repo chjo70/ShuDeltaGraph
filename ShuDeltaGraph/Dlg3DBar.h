@@ -21,6 +21,8 @@ private:
 	HWND m_hPE;			// the proessentials control object
 	CThread m_theThread;
 
+	int m_nSubset;
+
 private:
 	void InitButton();
 	void InitBuffer();

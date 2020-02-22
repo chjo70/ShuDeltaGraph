@@ -129,7 +129,7 @@ void CDlgMulti::InitBuffer()
 
 	m_pSonataData = pApp->m_pDlgColList->GetSONATAData();
 
-	m_hMulti = CreateEvent( NULL, FALSE, FALSE, NULL );
+	m_hMulti = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 	_spOneSec = 20000000.;
 	_spOneMilli = FDIV( _spOneSec, 1000. );
@@ -221,17 +221,18 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_nSUBSETS, 3);	
 	PEnset(m_hPE, PEP_nPOINTS, 10 );	
 
-	// 	for( int s=0; s<=3; s++ )
-	// 	{
-	// 		int nOffset = GetRandom(1, 250);
-	// 		for( int p=0; p<=119; p++ )
-	// 		{										  
-	// 			fX = ((float) (p+1)) * 100.0F + ((float) GetRandom(2, 250)) / 50.0F;
-	// 			PEvsetcellEx (m_hPE, PEP_faXDATA, s, p, &fX);
-	// 			fY = ((float) (p+1) * 1.0F) + GetRandom(1, 250) + (sin ((nOffset + p)*.03F) * 700.0F)    - ((float) (s * 140.0F)) + ((float) GetRandom(2, 250)) / 250.0F;
-	// 			PEvsetcellEx (m_hPE, PEP_faYDATA, s, p, &fY);
-	// 		}
-	// 	}
+	double fX, fY;
+	for( int s=0; s< 3; s++ )
+	{
+		//int nOffset = GetRandom(1, 250);
+		for( int p=0; p<10 ; p++ )
+		{										  
+			fX = p;
+			PEvsetcellEx (m_hPE, PEP_faXDATA, s, p, &fX);
+			fY = 0.0;
+			PEvsetcellEx (m_hPE, PEP_faYDATA, s, p, &fY);
+		}
+	}
 
 	// Enable MouseWheel Zoom Smoothness
 	PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
@@ -485,6 +486,8 @@ void CDlgMulti::InitGraph()
  */
 void CDlgMulti::FreeBuffer()
 {
+	CloseHandle( m_hMulti );
+
 	if (m_hPE)
 	{
 		PEdestroy(m_hPE);

@@ -131,7 +131,7 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 			uiDataLength = 0;
 
 			m_qMsg.push( m_stQueueMsg );
-			SetEvent( ((CDlgColList*)m_pDlg)->m_hReceveLAN );
+			BOOL bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_hReceveLAN );
 
 			m_uiReceivedData = 0;
 		}

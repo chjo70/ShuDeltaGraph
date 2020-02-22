@@ -107,7 +107,7 @@ void CDlgColList::InitBuffer()
 
 	m_pSonataData = ( STR_SONATA_DATA * ) malloc( sizeof(STR_SONATA_DATA) );
 
-	m_hReceveLAN = CreateEvent( NULL, FALSE, FALSE, NULL );
+	m_hReceveLAN = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 }
 

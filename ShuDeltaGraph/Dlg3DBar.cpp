@@ -133,7 +133,7 @@ void CDlg3DBar::InitBuffer()
 
 	m_pSonataData = pApp->m_pDlgColList->GetSONATAData();
 
-	m_h3DBar = CreateEvent( NULL, FALSE, FALSE, NULL );
+	m_h3DBar = CreateEvent( NULL, TRUE, FALSE, NULL );
 }
 
 /**
@@ -175,6 +175,11 @@ void CDlg3DBar::InitStatic()
 
 }
 
+#define START_OF_FREQ_MHZ		(500)
+#define END_OF_FREQ_MHZ			(18000)
+#define STEP_OF_FREQ_MHZ		(500)
+#define THREED_BAR_DEPPTH		(26)
+
 /**
  * @brief     
  * @return    void
@@ -199,27 +204,29 @@ void CDlg3DBar::InitGraph()
 	PEvset(m_hPE, PEP_struct3DXLIGHT0, &p3d, 1);
 
 	// Define quantity of data //
-	PEnset(m_hPE, PEP_nSUBSETS, 18);
-	PEnset(m_hPE, PEP_nPOINTS, 25);
+	
+	m_nSubset = (END_OF_FREQ_MHZ-START_OF_FREQ_MHZ)/STEP_OF_FREQ_MHZ + 1;
+	PEnset(m_hPE, PEP_nSUBSETS, m_nSubset);
+	PEnset(m_hPE, PEP_nPOINTS, THREED_BAR_DEPPTH );
 
 	// Set all data to start with zero //
 	int s;
 	int p;
-	float fZero = 0.0F;
-	for(s=0; s<18; s++)
-	{
-		_stprintf_s(szBuffer, 200, _T("%.1f"), (float) s );
+	float fZero = 0.0F, fFreq;
+	for( s=0, fFreq=START_OF_FREQ_MHZ ; fFreq <= END_OF_FREQ_MHZ ; fFreq += STEP_OF_FREQ_MHZ ) {
+		_stprintf_s(szBuffer, 200, _T("%.1f"), (float) fFreq/1000. );
 		PEvsetcell(m_hPE, PEP_szaSUBSETLABELS, s, szBuffer );
 
-		for (p=0; p<25; p++)
+		for (p=0; p<THREED_BAR_DEPPTH; p++)
 		{
 			PEvsetcellEx(m_hPE, PEP_faYDATA, s, p, &fZero);
 		}
+		++ s;
 	}
 
 	// Set initial point labels for x axis //
 	TCHAR szEmpty[] = TEXT(" ");
-	for (p=0; p<25; p++)
+	for (p=0; p < THREED_BAR_DEPPTH ; p++)
 		PEvsetcell(m_hPE, PEP_szaPOINTLABELS, p, szEmpty);
 
 	// Manually scale y axis //
@@ -298,14 +305,6 @@ void CDlg3DBar::InitGraph()
 	PEresetimage(m_hPE, 0, 0);
 	::InvalidateRect(m_hPE, 0, 0);
 
-	// Set Demo's RenderEngine // 
-	//CMDIFrameWnd* pWnd = (CMDIFrameWnd*) AfxGetApp()->GetMainWnd();
-	//pWnd->SendMessage(WM_CHANGE_DEMO_RENDERENGINE, RENDER_3DX );
-
-	//m_nTimer = SetTimer( TIMER1, 15, NULL );
-
-
-
 }
 
 /**
@@ -348,6 +347,7 @@ void CDlg3DBar::InitThread()
  */
 void CDlg3DBar::FreeBuffer()
 {
+	CloseHandle( m_h3DBar );
 
 	if (m_hPE)
 	{
@@ -506,10 +506,18 @@ void CDlg3DBar::OnTimer(UINT_PTR nIDEvent)
 	CDialogEx::OnTimer(nIDEvent);
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/22 17:21:53
+ * @warning   
+ */
 void CDlg3DBar::ViewGraph()
 {
 	int i;
-	float NewData[27];
+	float NewData[40];
 
 	int r1, r2;
 	CTime t;
@@ -521,8 +529,7 @@ void CDlg3DBar::ViewGraph()
 	// Graph Real Time Feed //
 	PEvset(m_hPE, PEP_szaAPPENDPOINTLABELDATA, (void *) (LPCTSTR) strTime, 1);
 
-	for (i=0; i<18; i++)
-	{
+	for( i=0 ; i<m_nSubset ; i++ )	{
 		// make some random data //
 		r1 = 10;
 		r2 = 20;
@@ -532,7 +539,6 @@ void CDlg3DBar::ViewGraph()
 	// transfer new YData //
 	PEvset(m_hPE, PEP_faAPPENDYDATA, NewData, 1);
 
-	// causes 3D object to reconstruct polygon data //
 	// causes 3D object to reconstruct polygon data //
 	PEreconstruct3dpolygons(m_hPE);
 	::InvalidateRect(m_hPE, NULL, FALSE);

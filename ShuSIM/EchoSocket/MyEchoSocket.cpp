@@ -97,8 +97,6 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		UINT nError;
-
 		char *pRxBuffer;
 		STR_MESSAGE *pstRxMessage;
 		STR_DATA_CONTENTS *pstRxData;
