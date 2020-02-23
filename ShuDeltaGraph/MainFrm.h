@@ -60,6 +60,8 @@ public:
 	afx_msg void OnFileOpen();
 	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 	afx_msg void OnFileNew();
+	virtual BOOL OnCloseDockingPane(CDockablePane* pWnd);
+	afx_msg void OnClose();
 };
 
 

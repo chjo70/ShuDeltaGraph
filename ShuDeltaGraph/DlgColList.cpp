@@ -123,8 +123,8 @@ void CDlgColList::FreeBuffer()
 {
 	m_theThread.Stop();
 
-	m_ColList.DeleteAllItems();
-	m_RawList.DeleteAllItems();
+	//m_ColList.DeleteAllItems();
+	//m_RawList.DeleteAllItems();
 
 	delete m_pListener;
 	delete m_pConnected;
@@ -406,14 +406,6 @@ void CDlgColList::OnClose()
 
 	//OnBnClickedButtonServerrun();
 	SetControl( false );
-
-	InitSocketSetting();
-
-	//m_theThread.Stop( true );
-
-	m_CButtonColStart.SetWindowText( _T("¼öÁý ½ÃÀÛ") );
-
-	//CALL_DIALOG( enUnit, OnClose() );
 
 }
 
@@ -1583,6 +1575,14 @@ void CDlgColList::OnBnClickedButtonSetmode()
 
 	OnClose();
 
+	InitSocketSetting();
+
+	//m_theThread.Stop( true );
+
+	m_CButtonColStart.SetWindowText( _T("¼öÁý ½ÃÀÛ") );
+
+	//CALL_DIALOG( enUnit, OnClose() );
+
 }
 
 
@@ -1682,6 +1682,14 @@ void CDlgColList::InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem 
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/23 11:55:09
+ * @warning   
+ */
 void CDlgColList::ViewGraph()
 {
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
@@ -1691,6 +1699,16 @@ void CDlgColList::ViewGraph()
 
 }
 
+/**
+ * @brief     
+ * @param     STR_DATA_CONTENTS * pstData
+ * @param     int iItem
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/23 11:55:12
+ * @warning   
+ */
 void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 {
 	int nIndex;
@@ -1745,6 +1763,15 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 
 }
 
+/**
+ * @brief     
+ * @param     int iItem
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/23 11:55:17
+ * @warning   
+ */
 void CDlgColList::MakePDWFile( int iItem )
 {
 	CString strPathname, strFolderName;
@@ -1768,6 +1795,16 @@ void CDlgColList::MakePDWFile( int iItem )
 
 
 
+/**
+ * @brief     
+ * @param     int iItem
+ * @param     ENUM_DataType enDataType
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/23 11:55:24
+ * @warning   
+ */
 void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType )
 {
 	int i;
