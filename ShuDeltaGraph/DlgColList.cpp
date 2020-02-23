@@ -123,9 +123,6 @@ void CDlgColList::FreeBuffer()
 {
 	m_theThread.Stop();
 
-	//m_ColList.DeleteAllItems();
-	//m_RawList.DeleteAllItems();
-
 	delete m_pListener;
 	delete m_pConnected;
 

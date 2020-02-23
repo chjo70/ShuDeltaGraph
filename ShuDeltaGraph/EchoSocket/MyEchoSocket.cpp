@@ -35,6 +35,10 @@ MyEchoSocket::~MyEchoSocket()
 	free( m_prxBuffer );
 	free( m_pData );
 
+	while( ! m_qMsg.empty() ) {
+		m_qMsg.pop();
+	}
+
 }
 
 
