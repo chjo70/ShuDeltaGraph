@@ -1988,6 +1988,10 @@ void CDlgColList::OnBnClickedButtonOpen()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString strPathName;
+
+	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( FALSE );
+
+
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenXLS ) ) {
@@ -2023,12 +2027,17 @@ void CDlgColList::OnBnClickedButtonOpen()
 		XL.ReleaseExcel();
 	}
 
+	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
+
 }
 
 void CDlgColList::OnBnClickedButtonSave()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString strPathName;
+
+	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( FALSE );
+
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
@@ -2069,6 +2078,8 @@ void CDlgColList::OnBnClickedButtonSave()
 		XL.ReleaseExcel();
 	
 	}
+
+	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( TRUE );
 
 }
 
