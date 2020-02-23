@@ -269,6 +269,9 @@
     <ClInclude Include="Dlg3DBar.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Excel\ExcelLib.h">
+      <Filter>소스 파일\Excel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -369,6 +372,9 @@
     </ClCompile>
     <ClCompile Include="Dlg3DBar.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Excel\ExcelLib.cpp">
+      <Filter>소스 파일\Excel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

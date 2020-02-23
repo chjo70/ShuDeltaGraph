@@ -7,8 +7,6 @@
 #include "afxdialogex.h"
 
 
-
-
 DWORD WINAPI FuncColList( LPVOID lpData );
 
 TCHAR g_stColListMode[6][20] = { _T("IF2(광대역)"), _T("IF1 Course"), _T("IF1 Fine"), _T("광대역IQ"), _T("협대역IQ"), _T("널입니다.") } ;
@@ -306,6 +304,12 @@ BOOL CDlgColList::OnInitDialog()
 	m_CComboMode.SetCurSel( m_stColItem.enMode );
 
 	InitSocketSetting();
+
+	CString strPathname;
+
+	strPathname = GetFilePath();
+	strPathname += _T("//수집 목록.xlsx");
+	OpenXLSViewList( strPathname );
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
@@ -1995,39 +1999,123 @@ void CDlgColList::OnBnClickedButtonOpen()
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenXLS ) ) {
-		long l, lMaxRow;
+		OpenXLSViewList( strPathName );
 
-		CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
-
-		m_ColList.DeleteAllItems();
-
-		// 엑셀 수집 파일 로딩하기...
-		CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
-
-		XL.OpenExcelFile(strPathName);
-		lMaxRow = XL.GetRowNum();
-		for( l=2 ; l <= lMaxRow; ++l ) {
-			int nIndex;
-
-			strNumber = XL.GetCellValue( 1, l );
-			strNumber.Replace( _T("00000"), _T("") );
-			strMode = XL.GetCellValue( 2, l );
-			strCenterFreq = XL.GetCellValue( 3, l );
-			strColTime = XL.GetCellValue( 4, l );
-			strThreshold = XL.GetCellValue( 4, l );
-
-			nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
-
-			m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
-			m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
-			m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
-			m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
-		}
-
-		XL.ReleaseExcel();
+// 		long l, lMaxRow;
+// 
+// 		CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+// 
+// 		m_ColList.DeleteAllItems();
+// 
+// 		// 엑셀 수집 파일 로딩하기...
+// 		CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
+// 
+// 		XL.OpenExcelFile(strPathName);
+// 		lMaxRow = XL.GetRowNum();
+// 		for( l=2 ; l <= lMaxRow; ++l ) {
+// 			int nIndex;
+// 
+// 			strNumber = XL.GetCellValue( 1, l );
+// 			strNumber.Replace( _T("00000"), _T("") );
+// 			strMode = XL.GetCellValue( 2, l );
+// 			strCenterFreq = XL.GetCellValue( 3, l );
+// 			strColTime = XL.GetCellValue( 4, l );
+// 			strThreshold = XL.GetCellValue( 4, l );
+// 
+// 			nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
+// 
+// 			m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
+// 			m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
+// 			m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
+// 			m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
+// 		}
+// 
+// 		XL.ReleaseExcel();
 	}
 
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
+
+}
+
+void CDlgColList::OpenXLSViewList( CString strPathname )
+{
+	long l, lMaxRow;
+
+	m_ColList.DeleteAllItems();
+
+#ifdef EXAUTOMATION
+	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+
+	// 엑셀 수집 파일 로딩하기...
+	CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
+
+	XL.OpenExcelFile( strPathname );
+	lMaxRow = XL.GetRowNum();
+	for( l=2 ; l <= lMaxRow; ++l ) {
+		int nIndex;
+
+		strNumber = XL.GetCellValue( 1, l );
+		strNumber.Replace( _T("00000"), _T("") );
+		strMode = XL.GetCellValue( 2, l );
+		strCenterFreq = XL.GetCellValue( 3, l );
+		strColTime = XL.GetCellValue( 4, l );
+		strThreshold = XL.GetCellValue( 4, l );
+
+		nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
+
+		m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
+		m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
+		m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
+		m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
+	}
+
+	XL.ReleaseExcel();
+#else
+	CExcelLib theExcel;
+
+	WCHAR wsResult[MAX_STRING_BUFFER_SIZE];
+	DWORD dwBX, dwBY, dwLX, dwLY;
+	BOOL bResult;
+
+	// text.xls 파일을 오픈한다.
+	theExcel.OpenExcelFile( (TCHAR*)(LPCTSTR) strPathname );
+
+	// 첫번째 Sheet를 선택한다.
+	theExcel.SetActiveSheet(1);
+
+	// Active Range, 즉 현재 활성화 되어 있는 범위를 얻어온다.
+	theExcel.GetActiveRange(dwBX, dwBY, dwLX, dwLY);
+
+	for( l=2 ; l <= dwLY ; ++l ) {
+		int nIndex;
+		TCHAR szTemp[100];
+
+		theExcel.GetData( 1, l, szTemp, 100 );
+		nIndex = m_ColList.InsertItem( INT_MAX, szTemp, NULL );
+
+		theExcel.GetData( 2, l, szTemp, 100 );
+		m_ColList.SetItem( nIndex, 1, LVIF_TEXT, szTemp, NULL, NULL, NULL, NULL);
+
+		theExcel.GetData( 3, l, szTemp, 100 );
+		m_ColList.SetItem( nIndex, 2, LVIF_TEXT, szTemp, NULL, NULL, NULL, NULL);
+
+		theExcel.GetData( 4, l, szTemp, 100 );
+		m_ColList.SetItem( nIndex, 3, LVIF_TEXT, szTemp, NULL, NULL, NULL, NULL);
+
+		theExcel.GetData( 5, l, szTemp, 100 );
+		m_ColList.SetItem( nIndex, 4, LVIF_TEXT, szTemp, NULL, NULL, NULL, NULL);
+
+
+		//m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
+		//m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
+		//m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
+	}
+
+	// 엑셀 파일을 닫는다.
+	theExcel.CloseExcelFile();
+
+
+#endif
 
 }
 
@@ -2041,6 +2129,7 @@ void CDlgColList::OnBnClickedButtonSave()
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
+#ifdef EXAUTOMATION
 		int i;
 
 		CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
@@ -2076,6 +2165,10 @@ void CDlgColList::OnBnClickedButtonSave()
 		XL.SaveFileAs(strPathName);
 
 		XL.ReleaseExcel();
+#else
+
+
+#endif
 	
 	}
 
@@ -2185,3 +2278,5 @@ void CDlgColList::OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	*pResult = 0;
 }
+
+

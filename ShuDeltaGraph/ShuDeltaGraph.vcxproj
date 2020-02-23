@@ -160,6 +160,7 @@
     <ClInclude Include="DlgFilterSetup.h" />
     <ClInclude Include="DlgMulti.h" />
     <ClInclude Include="EchoSocket\MyEchoSocket.h" />
+    <ClInclude Include="Excel\ExcelLib.h" />
     <ClInclude Include="Excel\XLAutomation.h" />
     <ClInclude Include="Excel\XLEzAutomation.h" />
     <ClInclude Include="FFTW\fftw3.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="DlgFilterSetup.cpp" />
     <ClCompile Include="DlgMulti.cpp" />
     <ClCompile Include="EchoSocket\MyEchoSocket.cpp" />
+    <ClCompile Include="Excel\ExcelLib.cpp" />
     <ClCompile Include="Excel\XLAutomation.cpp" />
     <ClCompile Include="Excel\XLEzAutomation.cpp" />
     <ClCompile Include="FileView.cpp" />

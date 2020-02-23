@@ -1,5 +1,9 @@
 #pragma once
 
+//
+#define EXAUTOMATION
+
+
 #include "./Thread/Thread.h"
 #include "./EchoSocket/MyEchoSocket.h"
 #include "./ListCtrl/ReportCtrl.h"
@@ -10,8 +14,11 @@
 #include "./ButtonST/BtnST.h"
 #include "./ToolTip/XInfoTip.h"
 
+#ifdef EXAUTOMATION
 #include "./Excel/XLEzAutomation.h"
-
+#else
+#include "./Excel/ExcelLib.h"
+#endif
 
 // CDlgColList 대화 상자입니다.
 
@@ -220,6 +227,8 @@ private:
 	//void SetCellValue( CXlSimpleAutomation *pXL, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
 
 	void ActivateGraph( BOOL bEanble );
+
+	void OpenXLSViewList( CString strPathname );
 
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
