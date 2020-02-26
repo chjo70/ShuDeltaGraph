@@ -358,7 +358,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 
 		m_pListCtrl = new CListCtrl;
 
-		m_pListCtrl->Create( WS_VISIBLE | LVS_REPORT | WS_BORDER, CRect( 0, 0, 1200, 700 ), this, 501 );
+		m_pListCtrl->Create( WS_VISIBLE | LVS_REPORT | WS_BORDER, CRect( 0, 0, rect.right, rect.bottom ), this, 501 );
 		m_pListCtrl->SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
 
 		m_pListCtrl->InsertColumn( 0, _T("순서"), LVCFMT_RIGHT, 80, -1 );
@@ -694,7 +694,6 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 	TCHAR szBuffer[100];
 
 	char *pcDV;
-	int i1, i2;
 	float *pfX, *pfY, f1, f2;
 	UINT uiDataItems;
 	STR_PDW_DATA *pPDWData;
@@ -717,6 +716,10 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 
 		PEnset(m_hPE, PEP_nSUBSETS, 2 );
 		PEnset(m_hPE, PEP_nPOINTS, uiDataItems);
+
+		double dnull = -9999.0F;
+		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dnull, 1);
+		PEvset(m_hPE, PEP_fNULLDATAVALUE, &dnull, 1);
 
 		//PEnset(m_hPE, PEP_bINVERTEDXAXIS, TRUE );
 
@@ -756,37 +759,43 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 			PEszset( m_hPE, PEP_szAXISFORMATX, _T("|,.000|") );
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 		}
-		pcDV = pPDWData->pcDV;
-		i1 = i2 = 0;
+		
 		for (i = 0; i < uiDataItems; ++i) {
 			f1 = (float) *pfX;
 			f2 = (float) *pfY;
 
-			if( *pcDV == PDW_DV ) {
-				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i1, & f1);
-				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i1, & f2);
+			PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & f1);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f2);
 
-				++ i1;
+			PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, & f1);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f2);
+
+			++ pfX;
+			++ pfY;
+
+		}
+
+		pcDV = pPDWData->pcDV;
+		for (i = 0; i < uiDataItems; ++i) {
+			float f1 = -9999.0F;
+
+			if (*pcDV == PDW_DV) {
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
+
 			}
 			else {
-				PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i2, & f1);
-				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i2, & f2);
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f1);
 
-				++ i2;
 			}
 
-			//printf("\n [%f, %f]", f1, f2);
-			++ pcDV;
-			++pfX;
-			++pfY;
-
+			++pcDV;
 		}
 
-		if( i2 == 0 ) {
-			PEnset(m_hPE, PEP_nSUBSETS, 1 );
-
-			//PEvsetcell(m_hPE, PEP_szaMULTIBOTTOMTITLES, 0, _T("방탐 유효만 존재합니다." ) );
-		}
+// 		if( i2 == 0 ) {
+// 			PEnset(m_hPE, PEP_nSUBSETS, 1 );
+// 
+// 			//PEvsetcell(m_hPE, PEP_szaMULTIBOTTOMTITLES, 0, _T("방탐 유효만 존재합니다." ) );
+// 		}
 
 		PEnset(m_hPE, PEP_nZERODEGREEOFFSET, 90);
 
@@ -831,16 +840,12 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 		PEvset(m_hPE, PEP_naSUBSETLINETYPES, nTypes, 2);
 
 		// Set point types
-		int nPTypes[] = { PEPT_DOTSOLID, PEPT_PLUS };
+		int nPTypes[] = { PEPT_DOTSOLID, PEPT_DOT };
 		PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, nPTypes, 2);
 
 		// subset colors
 		DWORD dwArray[2] = { RGB(0,198,0), RGB(198, 0, 0) };
 		PEvset(m_hPE, PEP_dwaSUBSETCOLORS, dwArray, 2);
-
-		double dnull = -99999.0F;
-		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dnull, 1);
-		PEvset(m_hPE, PEP_fNULLDATAVALUE, &dnull, 1);
 
 		// Set Various other features //
 		PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
@@ -941,11 +946,10 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEnset(m_hPE, PEP_nPOINTS, uiDataItems);
 
 		// This allows plotting of zero values //
-		double dNill = -99999.0F;
+		double dNill = -9999.0F;
 		PEvset(m_hPE, PEP_fNULLDATAVALUE, &dNill, 1);
 
 		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dNill, 1);
-		PEnset(m_hPE, PEP_bNULLDATAGAPS, FALSE);
 		
 
 		double dMin, dMax;
@@ -972,7 +976,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					dMax = pPDWData->pfTOA[uiDataItems - 1];
 					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
+					PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 					dMin = -360.0;
 					PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
 					dMax = 360.0;
@@ -1021,6 +1025,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+
+					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					dMin = pPDWData->pfTOA[0];
+					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					dMax = pPDWData->pfTOA[uiDataItems - 1];
+					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 				}
 				else {
 					pfY = pIQData->pfPA;
@@ -1109,6 +1119,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+
+					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					dMin = pPDWData->pfTOA[0];
+					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					dMax = pPDWData->pfTOA[uiDataItems - 1];
+					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 				}
 				else {
 					pfY = pIQData->pfFFT;
@@ -1144,6 +1160,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+
+					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					dMin = pPDWData->pfTOA[0];
+					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					dMax = pPDWData->pfTOA[uiDataItems - 1];
+					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 				}
 				else {
 
@@ -1156,15 +1178,6 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		}
 
 		if (enDataType == en_PDW_DATA) {
-			float *pTempfX, *pTempfY;
-			float val1 = 0.0F, val2 = 0.0F;
-
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 1, uiDataItems, &val1);
-			PEvsetcellEx(m_hPE, PEP_faXDATA, 0, uiDataItems, &val2);
-
-			pTempfX = pfX;
-			pTempfX = pfY;
-
 			for (i = 0; i < uiDataItems; ++i) {
 				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, pfX);
 				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, pfY);
@@ -1176,36 +1189,19 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 				++pfY;
 			}
 
-// 			if (enDataType == en_PDW_DATA && enSubGraph == enSubMenu_3 ) {
-// 				PEnset(m_hPE, PEP_nSUBSETS-1, 2 );
-// 			}
-// 			else if (enDataType == en_PDW_DATA || ( enDataType == en_IQ_DATA && enSubGraph == enSubMenu_1 ) ) {
-// 				PEnset(m_hPE, PEP_nSUBSETS, 2 );
-// 			}
-// 			else {
-// 				PEnset(m_hPE, PEP_nSUBSETS, 1 );
-// 			}
  			for (i = 0; i < uiDataItems; ++i) {
- 				float f1 = -99999.0F;
+ 				float f1 = -9999.0F;
 
 				if (*pcDV == PDW_DV) {
-					//PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, pTempfX);
-					//PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, pTempfX);
-					
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
 
 				}
 				else {
-					//PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, pTempfX);
-					//PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, pTempfX);
-
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f1);
 
 				}
 
 				++pcDV;
-				//++pTempfX;
-				//++pfY;
 			}
 
 		}
@@ -1273,8 +1269,10 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	// Enable Bar Glass Effect //
 	PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
 
-	int nPointTypes = PEPT_DOTSOLID;
-	PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, & nPointTypes, 1 );
+	//int nPointTypes = PEPT_DOTSOLID;
+	int nPointTypes[] = { PEPT_DOTSOLID, PEPT_DOT };
+	PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, nPointTypes, 2);
+	//PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, & nPointTypes, 1 );
 
 	PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
 	PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
@@ -1367,6 +1365,10 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	PEszset(m_hPE, PEP_szMAINTITLE, szBuffer);
 	PEszset(m_hPE, PEP_szSUBTITLE, _T("") ); // no subtitle
 
+	double dnull = -9999.0F;
+	PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dnull, 1);
+	PEvset(m_hPE, PEP_fNULLDATAVALUE, &dnull, 1);
+
 	if( uiDataItems > 0 ) {
 		if( enSubGraph == enSubMenu_1 || enSubGraph == enSubMenu_2 ) {
 			PEnset(m_hPE, PEP_nSUBSETS, 4 );
@@ -1437,28 +1439,17 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_FRAMED_RECT );
 
-	// subset labels //
-	i = 0;
-	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );		++ i;
-	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );		++ i;
-	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );		++ i;
-	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );		++ i;
-
 	// subset colors //
 	DWORD dwArray[4] = { RGB(198,0,0), RGB( 0, 198, 198 ), RGB( 198,198,0 ), RGB( 0,198,0 ) };
 	PEvsetEx(m_hPE, PEP_dwaSUBSETCOLORS, 0, 4, dwArray, 0);
 
 	// subset line types //
-	int nLineTypes[] = { PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, 
-		PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, 
-		PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID};
-	PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 8);
+	int nLineTypes[] = { PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID };
+	PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 4);
 
 	// subset point types //
-	int nPointTypes[] = { PEPT_DOTSOLID, PEPT_UPTRIANGLESOLID, 
-		PEPT_SQUARESOLID, PEPT_DOWNTRIANGLESOLID, PEPT_DOT, 
-		PEPT_UPTRIANGLE, PEPT_SQUARE, PEPT_DOWNTRIANGLE };
-	PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, nPointTypes, 8);
+	int nPointTypes[] = { PEPT_DOTSOLID, PEPT_UPTRIANGLESOLID, PEPT_SQUARESOLID, PEPT_DOWNTRIANGLESOLID };
+	PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, nPointTypes, 4);
 
 	// Allow stacked type graphs //
 	PEnset(m_hPE, PEP_bNOSTACKEDDATA, FALSE);
@@ -1509,6 +1500,9 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	if( enSubGraph == enSubMenu_2 ) {
 		// PEnset(m_hPE, PEP_nRYAXISCOMPARISONSUBSETS, 1);
 	}
+
+	PEnset(m_hPE, PEP_nWORKINGAXIS, i);
+	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );
 	PEszset(m_hPE, PEP_szYAXISLABEL, strYLabel[i] );
 	PEnset(m_hPE, PEP_nRYAXISCOMPARISONSUBSETS, 0 );
 	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
@@ -1523,6 +1517,7 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	// Set second axis parameters //
 	++ i;
 	PEnset(m_hPE, PEP_nWORKINGAXIS, i);
+	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );
 	PEszset(m_hPE, PEP_szYAXISLABEL, strYLabel[i]);
 	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,.000|") );
 	dMin = 500;
@@ -1535,6 +1530,7 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	// Set third axis parameters //
 	++ i;
 	PEnset(m_hPE, PEP_nWORKINGAXIS, i);
+	PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );
 	PEszset(m_hPE, PEP_szYAXISLABEL, strYLabel[i]);
 	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
@@ -1550,6 +1546,7 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 		++ i;
 
 		PEnset(m_hPE, PEP_nWORKINGAXIS, i);
+		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );
 		PEszset(m_hPE, PEP_szYAXISLABEL, strYLabel[i]);
 		PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.000|") );
 		PEnset(m_hPE, PEP_nSHOWTICKMARKY, PESTM_TICKS_HIDE); 

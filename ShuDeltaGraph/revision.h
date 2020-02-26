@@ -5,6 +5,6 @@
 #pragma once
 
 
-extern int GetRevision();
+extern const TCHAR *GetRevision();
 
-extern const char *GetBuildDate();
+extern const TCHAR *GetBuildDate();

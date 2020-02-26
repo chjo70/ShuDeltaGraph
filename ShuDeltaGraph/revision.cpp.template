@@ -10,12 +10,14 @@
 // »ý¼º/¼Ò¸ê
 //////////////////////////////////////////////////////////////////////
 
-int GetRevision()
+const TCHAR *GetRevision()
 {
-	return $WCREV$;
+	static TCHAR st_szRev[100] = { _T("$WCREV$") };
+	return st_szRev;
 }
 
-const char *GetBuildDate()
+const TCHAR *GetBuildDate()
 {
-	return "$WCNOW$";
+	static TCHAR st_szDate[100] = { _T("$WCNOW$") };
+	return st_szDate;
 }

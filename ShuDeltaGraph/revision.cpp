@@ -10,12 +10,14 @@
 // »ý¼º/¼Ò¸ê
 //////////////////////////////////////////////////////////////////////
 
-int GetRevision()
+const TCHAR *GetRevision()
 {
-	return 12;
+	static TCHAR st_szRev[100] = { _T("c200a6965b5519c112730df72e032917164845c3") };
+	return st_szRev;
 }
 
-const char *GetBuildDate()
+const TCHAR *GetBuildDate()
 {
-	return "2019/06/25 17:13:57";
+	static TCHAR st_szDate[100] = { _T("2020/02/27 01:09:35") };
+	return st_szDate;
 }

@@ -231,6 +231,7 @@ public:
 	
 	CStatic m_CStaticRev;
 	virtual BOOL OnInitDialog();
+	CStatic m_CStaticRevDate;
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -241,6 +242,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_STATIC_REV, m_CStaticRev);
+	DDX_Control(pDX, IDC_STATIC_REV_DATE, m_CStaticRevDate);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
@@ -262,8 +264,11 @@ BOOL CAboutDlg::OnInitDialog()
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	CString strRev;
 
-	strRev.Format( _T("SVN Rev : %d") , GetRevision() );
+	strRev.Format( _T("SVN Date %s") , GetRevision() );
 	m_CStaticRev.SetWindowText( strRev );
+
+	strRev.Format( _T("SVN Rev %s") , GetBuildDate() );
+	m_CStaticRevDate.SetWindowText( strRev );
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.

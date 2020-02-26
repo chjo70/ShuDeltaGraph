@@ -1,6 +1,6 @@
 rem cd
 rem dir
-SubWCRev.exe E:\SONATA-PIP\개발소스\ShuDeltaGraph\ShuDeltaGraph revision.cpp.template revision.cpp
+GitWCRev.exe . revision.cpp.template revision.cpp
 
 
 
