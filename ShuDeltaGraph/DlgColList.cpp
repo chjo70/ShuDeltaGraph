@@ -2061,6 +2061,7 @@ void CDlgColList::OpenXLSViewList( CString strPathname )
 		strColTime = XL.GetCellValue( 4, l );
 		strThreshold = XL.GetCellValue( 4, l );
 
+		strNumber.Replace( _T(".0"), _T("") );
 		nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
 
 		m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);

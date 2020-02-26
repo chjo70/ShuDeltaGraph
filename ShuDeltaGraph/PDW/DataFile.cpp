@@ -128,12 +128,7 @@ void CPDW::ConvertArray()
 		*pfPW = FPWCNV(uiTemp);
 
 		uiTemp = BIT_MERGE(pPDW->item.direction_h, pPDW->item.direction_l);
-		if( uiTemp == 0 ) {
-			*pfAOA = (float) 0.00000001;
-		}
-		else {
-			*pfAOA = FAOACNV(uiTemp);
-		}
+		*pfAOA = FAOACNV(uiTemp);
 
 		uiTemp = pPDW->item.amplitude;
 		*pfPA = FPACNV(uiTemp);

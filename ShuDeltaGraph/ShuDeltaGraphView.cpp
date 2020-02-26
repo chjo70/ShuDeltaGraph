@@ -929,13 +929,24 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	PEszset(m_hPE, PEP_szSUBTITLE, _T("") ); // no subtitle
 
 	if( uiDataItems > 0 ) {
-		if (enDataType == en_PDW_DATA || ( enDataType == en_IQ_DATA && enSubGraph == enSubMenu_1 ) ) {
+		if (enDataType == en_PDW_DATA && enSubGraph == enSubMenu_3 ) {
+			PEnset(m_hPE, PEP_nSUBSETS, 2 );
+		}
+		else if (enDataType == en_PDW_DATA || ( enDataType == en_IQ_DATA && enSubGraph == enSubMenu_1 ) ) {
 			PEnset(m_hPE, PEP_nSUBSETS, 2 );
 		}
 		else {
 			PEnset(m_hPE, PEP_nSUBSETS, 1 );
 		}
 		PEnset(m_hPE, PEP_nPOINTS, uiDataItems);
+
+		// This allows plotting of zero values //
+		double dNill = -99999.0F;
+		PEvset(m_hPE, PEP_fNULLDATAVALUE, &dNill, 1);
+
+		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dNill, 1);
+		PEnset(m_hPE, PEP_bNULLDATAGAPS, FALSE);
+		
 
 		double dMin, dMax;
 
@@ -962,11 +973,11 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
 					PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
-					dMin = -0.0;
+					dMin = -360.0;
 					PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
 					dMax = 360.0;
 					PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
-					PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
+					//PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 				}
 				else {
 					pfY = pIQData->pfI;
@@ -1051,6 +1062,12 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+
+					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					dMin = pPDWData->pfTOA[0];
+					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					dMax = pPDWData->pfTOA[uiDataItems - 1];
+					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 				}
 				else {
 					pfY = pIQData->pfIP;
@@ -1139,24 +1156,56 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		}
 
 		if (enDataType == en_PDW_DATA) {
+			float *pTempfX, *pTempfY;
+			float val1 = 0.0F, val2 = 0.0F;
+
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 1, uiDataItems, &val1);
+			PEvsetcellEx(m_hPE, PEP_faXDATA, 0, uiDataItems, &val2);
+
+			pTempfX = pfX;
+			pTempfX = pfY;
 
 			for (i = 0; i < uiDataItems; ++i) {
-				if (*pcDV == PDW_DV) {
-					PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i1, pfX);
-					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i1, pfY);
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, pfX);
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, pfY);
 
-					++i1;
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, pfX);
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, pfY);
+
+				++pfX;
+				++pfY;
+			}
+
+// 			if (enDataType == en_PDW_DATA && enSubGraph == enSubMenu_3 ) {
+// 				PEnset(m_hPE, PEP_nSUBSETS-1, 2 );
+// 			}
+// 			else if (enDataType == en_PDW_DATA || ( enDataType == en_IQ_DATA && enSubGraph == enSubMenu_1 ) ) {
+// 				PEnset(m_hPE, PEP_nSUBSETS, 2 );
+// 			}
+// 			else {
+// 				PEnset(m_hPE, PEP_nSUBSETS, 1 );
+// 			}
+ 			for (i = 0; i < uiDataItems; ++i) {
+ 				float f1 = -99999.0F;
+
+				if (*pcDV == PDW_DV) {
+					//PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, pTempfX);
+					//PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, pTempfX);
+					
+					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
+
 				}
 				else {
-					PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i2, pfX);
-					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i2, pfY);
+					//PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, pTempfX);
+					//PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, pTempfX);
 
-					++i2;
+					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f1);
+
 				}
 
 				++pcDV;
-				++pfX;
-				++pfY;
+				//++pTempfX;
+				//++pfY;
 			}
 
 		}
@@ -1219,6 +1268,10 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, _T("Q 데이터") );
 	}
 
+	PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  // v9
+
+	// Enable Bar Glass Effect //
+	PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
 
 	int nPointTypes = PEPT_DOTSOLID;
 	PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, & nPointTypes, 1 );
@@ -1250,6 +1303,31 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	PEnset(m_hPE, PEP_bLINESHADOWS, TRUE);
 	PEnset(m_hPE, PEP_nFONTSIZE, PEFS_LARGE);
 	PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
+
+	//
+	PEnset(m_hPE, PEP_bSIMPLEPOINTLEGEND, TRUE);
+	PEnset(m_hPE, PEP_bSIMPLELINELEGEND, TRUE);
+	PEnset(m_hPE, PEP_nLEGENDSTYLE, PELS_1_LINE);
+
+	// Allow stacked type graphs //
+	PEnset(m_hPE, PEP_bNOSTACKEDDATA, FALSE);
+
+	// Various other features //
+	PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
+	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
+
+	PEnset(m_hPE, PEP_nGRADIENTBARS, 8);
+	PEnset(m_hPE, PEP_bLINESHADOWS, TRUE);
+	PEnset(m_hPE, PEP_bMAINTITLEBOLD, TRUE);
+	PEnset(m_hPE, PEP_bSUBTITLEBOLD, TRUE);
+	PEnset(m_hPE, PEP_bLABELBOLD, TRUE);
+	PEnset(m_hPE, PEP_nTEXTSHADOWS, PETS_BOLD_TEXT);
+	PEnset(m_hPE, PEP_nFONTSIZE, PEFS_LARGE);
+
+	PEnset(m_hPE, PEP_nDATAPRECISION, 1);
+	PEnset(m_hPE, PEP_nGRAPHPLUSTABLE, PEGPT_BOTH);
+	PEnset(m_hPE, PEP_bMARKDATAPOINTS, FALSE);
 
 	// 그래프 공통 기능
 	SetupCommonGraph( enDataType );
@@ -1346,6 +1424,17 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	PEnset(m_hPE, PEP_bALLOWRIBBON, TRUE);
 	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORIZONTAL);
+
+	//
+	PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZPLUSVERT_ZOOM);
+	PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);  // note that pan gestures require MouseDragging to be enabled 
+	PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);  
+
+	// Enable MouseWheel Zoom Smoothness
+	PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
+	PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
+
+
 	PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_FRAMED_RECT );
 
 	// subset labels //
@@ -1459,11 +1548,13 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	// Set fourth axis parameters //
 	if( enSubGraph != enSubMenu_3 ) {
 		++ i;
+
 		PEnset(m_hPE, PEP_nWORKINGAXIS, i);
 		PEszset(m_hPE, PEP_szYAXISLABEL, strYLabel[i]);
 		PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.000|") );
 		PEnset(m_hPE, PEP_nSHOWTICKMARKY, PESTM_TICKS_HIDE); 
 		PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
+		PEnset(m_hPE, PEP_bAUTOSCALEDATA, TRUE );
 	}
 
 	// Reset WorkingAxis when done //
