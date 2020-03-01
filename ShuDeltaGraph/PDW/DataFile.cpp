@@ -156,7 +156,7 @@ void CPDW::ConvertArray()
 //////////////////////////////////////////////////////////////////////////
 CEPDW::CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
 {
- 	STR_PDWDATA *pPDWData;
+	STR_PDWDATA *pPDWData;
  
  	if( pRawData->uiByte == (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW) ) + sizeof(_PDW)*pRawData->uiDataItems ) {
  		m_bPhaseData = true;
@@ -360,6 +360,15 @@ CSPDW::CSPDW(STR_RAWDATA *pRawData) : CData(pRawData )
 
 }
 
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:39
+ * @warning   
+ */
 CSPDW::~CSPDW(void)
 {
 
@@ -378,6 +387,14 @@ void CSPDW::Alloc()
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:58
+ * @warning   
+ */
 void CSPDW::Free()
 {
 	free(m_PDWData.pfFreq);
@@ -392,6 +409,14 @@ void CSPDW::Free()
 
 }
 
+/**
+ * @brief     
+ * @return    void *
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:55
+ * @warning   
+ */
 void *CSPDW::GetData()
 {
 	return & m_PDWData;
@@ -474,6 +499,162 @@ void CSPDW::ConvertArray()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+C7PDW::C7PDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
+{
+	m_bPhaseData = false;
+}
+
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:39
+ * @warning   
+ */
+C7PDW::~C7PDW(void)
+{
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:02
+ * @warning   
+ */
+void C7PDW::Alloc()
+{
+	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPW = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfAOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
+
+	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
+	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:58
+ * @warning   
+ */
+void C7PDW::Free()
+{
+	free(m_PDWData.pfFreq);
+	free(m_PDWData.pfPW);
+	free(m_PDWData.pfAOA);
+	free(m_PDWData.pfTOA);
+	free(m_PDWData.pfDTOA);
+	free(m_PDWData.pfPA);
+	free(m_PDWData.pfllTOA);
+
+	free(m_PDWData.pcType);
+	free(m_PDWData.pcDV);
+
+}
+
+/**
+ * @brief     
+ * @return    void *
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:55
+ * @warning   
+ */
+void *C7PDW::GetData()
+{
+	return & m_PDWData;
+}
+
+/**
+  * @brief		
+  * @return 	void
+  * @date       2019/06/07 10:10
+*/
+void C7PDW::ConvertArray()
+{
+	UINT i;
+
+	float *pfFreq = m_PDWData.pfFreq;
+	float *pfPW = m_PDWData.pfPW;
+	float *pfAOA = m_PDWData.pfAOA;
+	float *pfTOA = m_PDWData.pfTOA;
+	float *pfDTOA = m_PDWData.pfDTOA;
+	float *pfPA = m_PDWData.pfPA;
+
+	char *pcType = m_PDWData.pcType;
+	char *pcDV = m_PDWData.pcDV;
+
+	float fToa, /* firstToa, */ preToa;
+
+	SRXPDWDataRGroup *pPDW = (SRXPDWDataRGroup *) & gstpRawDataBuffer[sizeof(SRxPDWHeader)];
+
+	_spOneSec = 20000000.;
+	_spOneMilli = FDIV( _spOneSec, 1000. );
+	_spOneMicrosec = FDIV( _spOneMilli, 1000. );
+	_spOneNanosec = FDIV( _spOneMicrosec, 1000. );
+
+	_spAOAres = (float) ( 0.351562 );
+	_spAMPres = (float) (0.351562);
+	_spPWres = _spOneMicrosec;
+
+	for (i = 0; i < m_pRawData->uiDataItems; ++i) {
+		swapByteOrder( pPDW->llTOA );
+		AllSwapData32( & pPDW->iSignalType, sizeof(SRXPDWDataRGroup)- sizeof(long long int) );
+
+ 		if (i == 0) {
+// 			//firstToa = pPDW->TOA;
+ 			*pfTOA = FDIV( pPDW->llTOA, 1000.0 );
+ 			*pfDTOA = 0;
+ 			preToa = *pfTOA;
+ 		}
+ 		else {
+// 			fToa = (float) pPDW->TOA; // - firstToa;
+			*pfTOA = FDIV( pPDW->llTOA, 1000.0 );
+
+ 			*pfDTOA = ( *pfTOA - preToa );
+ 
+ 			preToa = *pfTOA;
+ 		}
+
+		*pfFreq = FMUL( pPDW->iFreq, 0.010 );		// MHz
+ 
+ 		*pfPW = FMUL( pPDW->iPW, 6.48824 );
+
+ 		*pfAOA = FMUL( pPDW->iDirection, 0.1 );
+
+ 		*pfPA = FMUL( pPDW->iPA, 0.25 ) - 110.;
+ 
+ 		*pcType = pPDW->iSignalType;
+
+ 		*pcDV = pPDW->iDirectionVaild ^ 1;
+
+		// printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
+
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
+
+		++pPDW;
+	}
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -483,12 +664,29 @@ CIQ::CIQ(STR_RAWDATA *pRawData) : CData(pRawData )
 
 }
 
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:06
+ * @warning   
+ */
 CIQ::~CIQ(void)
 {
 
 }
 
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:08
+ * @warning   
+ */
 void CIQ::Alloc()
 {
 	m_IQData.pfI = (float *)malloc( sizeof(float) * m_pRawData->uiDataItems);
@@ -499,6 +697,14 @@ void CIQ::Alloc()
 	
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:09
+ * @warning   
+ */
 void CIQ::Free()
 {
 	free(m_IQData.pfI);
@@ -508,6 +714,14 @@ void CIQ::Free()
 	free(m_IQData.pfFFT);
 }
 
+/**
+ * @brief     
+ * @return    void *
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:12
+ * @warning   
+ */
 void *CIQ::GetData()
 {
 	return & m_IQData;
@@ -621,6 +835,15 @@ void CIQ::ConvertArray()
 }
 
 //////////////////////////////////////////////////////////////////////////
+/**
+ * @brief     
+ * @param     STR_RAWDATA * pRawData
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:19
+ * @warning   
+ */
 CData::CData( STR_RAWDATA *pRawData )
 {
 	m_pRawData = pRawData;
@@ -639,14 +862,67 @@ CData::CData( STR_RAWDATA *pRawData )
 	m_stFilterSetup.dPaMax = 10.;
 }
 
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:22
+ * @warning   
+ */
 CData::~CData(void)
 {
 	//Free();
 }
 
 
+
+void CData::AllSwapData32( void *pData, int iLength )
+{
+	int i;
+	UINT *pWord;
+
+	pWord = (UINT *) pData;
+	for( i=0 ; i < iLength ; i+=sizeof(int) ) {
+		swapByteOrder( *pWord );
+		++ pWord;
+	}
+
+}
+
+void CData::swapByteOrder(unsigned long long& ull)
+{
+	ull = (ull >> 56) |
+		((ull<<40) & 0x00FF000000000000) |
+		((ull<<24) & 0x0000FF0000000000) |
+		((ull<<8) & 0x000000FF00000000) |
+		((ull>>8) & 0x00000000FF000000) |
+		((ull>>24) & 0x0000000000FF0000) |
+		((ull>>40) & 0x000000000000FF00) |
+		(ull << 56);
+}
+
+void CData::swapByteOrder(unsigned int& ui) 
+{
+	ui = (ui >> 24) |
+		((ui<<8) & 0x00FF0000) |
+		((ui>>8) & 0x0000FF00) |
+		(ui << 24);
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:24
+ * @warning   
+ */
 CDataFile::CDataFile(void)
 {
 	Alloc();
@@ -741,7 +1017,7 @@ void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, 
 */
 void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup )
 {
-	bool bPDW=false, bSPDW=false, bIQ=false, bEPDW=false;
+	bool bPDW=false, bSPDW=false, b7PDW=false, bIQ=false, bEPDW=false;
 
 	m_pData = NULL;
 
@@ -751,6 +1027,9 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 	}
 	if( NULL != wcsstr( strPathname.GetBuffer(), L".spdw" ) ) {
 		bSPDW = true;
+	}
+	if( NULL != wcsstr( strPathname.GetBuffer(), L".dat" ) ) {
+		b7PDW = true;
 	}
 	if( NULL != wcsstr( strPathname.GetBuffer(), L".iq" ) || NULL != wcsstr( strPathname.GetBuffer(), L".siq" ) ) {
 		bIQ = true;
@@ -833,6 +1112,40 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 		}
 
 	}
+
+	else if( b7PDW == true ) {
+		m_RawData.enDataType = en_PDW_DATA;
+		m_RawData.enUnitType = en_701;
+
+		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE) {
+			SRxPDWHeader *pPDWHeader;
+
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
+			
+			pPDWHeader = ( SRxPDWHeader * ) gstpRawDataBuffer;
+			
+			m_pData = new C7PDW( & m_RawData, pstFilterSetup );
+
+			m_pData->AllSwapData32( & pPDWHeader->uiAcqTime, sizeof(int)*4 );
+			m_pData->AllSwapData32( & pPDWHeader->iSearchBandID, sizeof(int)*4 );
+
+			m_RawData.uiDataItems = pPDWHeader->iNumOfPDW;
+
+			m_pData->Alloc();
+
+			m_pData->ConvertArray();
+
+			m_RawDataFile.Close();
+
+		}
+		else {
+			m_RawData.uiByte = -1;
+			m_RawData.uiDataItems = 0;
+		}
+
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	else if( bIQ == true ) {
 		m_RawData.enDataType = en_IQ_DATA;
 		m_RawData.enUnitType = en_SONATA;
@@ -863,6 +1176,14 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 
 }
 
+/**
+ * @brief     
+ * @return    void *
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:49:58
+ * @warning   
+ */
 void *CDataFile::GetData() 
 { 
 	if( m_pData != NULL ) 

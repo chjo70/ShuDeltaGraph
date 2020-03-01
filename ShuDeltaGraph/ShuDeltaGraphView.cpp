@@ -836,7 +836,7 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 		PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
 
 		// Set line types
-		int nTypes[] = { PELT_MEDIUMSOLID, PELT_MEDIUMSOLID };
+		int nTypes[] = { PELT_THINSOLID, PELT_THINSOLID };
 		PEvset(m_hPE, PEP_naSUBSETLINETYPES, nTypes, 2);
 
 		// Set point types
@@ -1178,6 +1178,8 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		}
 
 		if (enDataType == en_PDW_DATA) {
+			float f1 = -9999.0F;
+
 			for (i = 0; i < uiDataItems; ++i) {
 				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, pfX);
 				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, pfY);
@@ -1189,9 +1191,13 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 				++pfY;
 			}
 
- 			for (i = 0; i < uiDataItems; ++i) {
- 				float f1 = -9999.0F;
+			// 첫번재 시간 마크 없애기
+			if( enSubGraph == enSubMenu_3 ) {
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
+			}
 
+ 			for (i = 0; i < uiDataItems; ++i) {
 				if (*pcDV == PDW_DV) {
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
 
@@ -1544,7 +1550,6 @@ void CShuDeltaGraphView::ShowMultiGraph( ENUM_SUB_GRAPH enSubGraph )
 	// Set fourth axis parameters //
 	if( enSubGraph != enSubMenu_3 ) {
 		++ i;
-
 		PEnset(m_hPE, PEP_nWORKINGAXIS, i);
 		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, i, strYLabel[i] );
 		PEszset(m_hPE, PEP_szYAXISLABEL, strYLabel[i]);

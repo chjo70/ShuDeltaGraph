@@ -8,7 +8,7 @@
 
 #include "../FFTW/fftw3.h"
 
-#define			MAX_RAWDATA_SIZE				(1000000)
+#define			MAX_RAWDATA_SIZE				(4000000)	// 2,432,052
 
 typedef enum {
 	en_UnknownData = 0,
@@ -22,7 +22,8 @@ typedef enum {
 	en_UnknownUnit = 0,
 
 	en_SONATA,
-	en_ELINT
+	en_ELINT,
+	en_701
 
 } ENUM_UnitType;
 
@@ -135,15 +136,16 @@ class CData
 public:
 	STR_RAWDATA *m_pRawData;
 
-	//ENUM_DataType m_enDataType;
-	//ENUM_UnitType m_enUnitType;
-	//UINT m_uiDataItems;
-
 	UINT m_uiWindowNumber;
 
 	bool m_bPhaseData;
 
 	STR_FILTER_SETUP m_stFilterSetup;
+
+public:
+	void swapByteOrder(unsigned int& ui);
+	void swapByteOrder(unsigned long long& ull);
+	void AllSwapData32( void *pData, int iLength );
 
 public:
 	CData(STR_RAWDATA *pRawData);
@@ -188,6 +190,7 @@ public:
 
 };
 
+// 인천공항 PDW
 class CEPDW : public CData
 {
 private:
@@ -196,6 +199,23 @@ private:
 public:
 	CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~CEPDW();
+
+	void Alloc();
+	void Free();
+	void ConvertArray();
+	void *GetData();
+
+};
+
+// 701 PDW
+class C7PDW : public CData
+{
+private:
+	STR_PDW_DATA m_PDWData;
+
+public:
+	C7PDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
+	virtual ~C7PDW();
 
 	void Alloc();
 	void Free();
@@ -245,12 +265,11 @@ public:
 	inline ENUM_DataType GetDataType() { return m_pData->m_pRawData->enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
-
+	
 	inline bool IsPhaseData() { return m_pData->m_bPhaseData; }
 	
-	
 private:
-	//CFile m_PDWFile;
-	//void ReadDataFile( CString & strPathname);
+	
+	
 };
 

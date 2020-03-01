@@ -166,6 +166,8 @@ typedef struct {
 	float fPh4;
 
 } _PDW;
+
+
 #endif
 
 #ifndef ENUM_BANDWIDTH_ENUM
@@ -180,7 +182,7 @@ typedef enum {
 #ifndef _STR_PDWDATA
 #define _STR_PDWDATA
 typedef struct {
-	unsigned char	aucTaskID[LENGTH_OF_TASK_ID];
+	unsigned char aucTaskID[LENGTH_OF_TASK_ID];
 	unsigned int iIsStorePDW;
 	int iCollectorID;
 	ENUM_BANDWIDTH enBandWidth;
@@ -190,6 +192,53 @@ typedef struct {
 
 } STR_PDWDATA ;
 #endif
+
+//////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////
+//
+
+#define _701_LENGTH_OF_TASK_ID			(20)		//과제ID 문자열 길이 (TBD)
+
+#pragma pack(push, 1)
+
+typedef struct {
+	unsigned int uiAcqTime;
+	unsigned int uiAcqTimeMilSec;
+	int iPDWSetID;
+	int iSDFID;
+	unsigned char aucTaskID[_701_LENGTH_OF_TASK_ID];
+	int iSearchBandID;
+	int	iAETID;	
+	int	iLOBID;
+	int	iNumOfPDW;
+
+} SRxPDWHeader;
+
+typedef struct {
+	unsigned long long int	llTOA;
+	int	iSignalType;
+	int	iPolFlag;
+	int	iFMOPFlag;
+	int	iPMOPFlag;
+	int	iBlankingTag;
+	int	iIsChannelChangePOP;
+	int	iBLK;
+
+	int	iDirectionVaild;
+	int	iAcqDirectionLimit;
+	int	iChannelNumber;
+	int	iPA;
+	int	iFreq;
+	int	iDirection;
+	int	iPolization;
+	int	iPFTag;
+	int	iPW;
+	UINT uiPDWID;
+
+} SRXPDWDataRGroup;
+
+#pragma pack(pop)
 
 #else
 
