@@ -23,7 +23,8 @@ typedef enum {
 
 	en_SONATA,
 	en_ELINT,
-	en_701
+	en_701,
+	en_KFX
 
 } ENUM_UnitType;
 
@@ -216,6 +217,23 @@ private:
 public:
 	C7PDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~C7PDW();
+
+	void Alloc();
+	void Free();
+	void ConvertArray();
+	void *GetData();
+
+};
+
+// KFX PDW
+class CKFXPDW : public CData
+{
+private:
+	STR_PDW_DATA m_PDWData;
+
+public:
+	CKFXPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
+	virtual ~CKFXPDW();
 
 	void Alloc();
 	void Free();

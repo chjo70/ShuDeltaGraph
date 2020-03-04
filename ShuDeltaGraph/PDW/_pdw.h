@@ -240,6 +240,14 @@ typedef struct {
 
 #pragma pack(pop)
 
+
+typedef struct {
+	unsigned int uiSearchBandNo;
+	unsigned int uiSignalDeletingStatus;
+	unsigned int uiSignalCount;
+
+} STR_PDWFILE;
+
 #else
 
 #endif

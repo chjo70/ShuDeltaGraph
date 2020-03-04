@@ -4,9 +4,13 @@
 #include <string.h>
 
 #define _MAIN_
+
+#include <math.h>
 #include "DataFile.h"
 
 #include "../Log/LogDebug.h"
+
+#include "../CRWRCommonVariables.h"
 
 static int stDataFile;
 
@@ -500,6 +504,159 @@ void CSPDW::ConvertArray()
 }
 
 //////////////////////////////////////////////////////////////////////////
+CKFXPDW::CKFXPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
+{
+	m_bPhaseData = false;
+}
+
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:39
+ * @warning   
+ */
+CKFXPDW::~CKFXPDW(void)
+{
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:02
+ * @warning   
+ */
+void CKFXPDW::Alloc()
+{
+	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPW = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfAOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
+	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
+
+	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
+	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:58
+ * @warning   
+ */
+void CKFXPDW::Free()
+{
+	free(m_PDWData.pfFreq);
+	free(m_PDWData.pfPW);
+	free(m_PDWData.pfAOA);
+	free(m_PDWData.pfTOA);
+	free(m_PDWData.pfDTOA);
+	free(m_PDWData.pfPA);
+	free(m_PDWData.pfllTOA);
+
+	free(m_PDWData.pcType);
+	free(m_PDWData.pcDV);
+
+}
+
+/**
+ * @brief     
+ * @return    void *
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:41:55
+ * @warning   
+ */
+void *CKFXPDW::GetData()
+{
+	return & m_PDWData;
+}
+
+/**
+  * @brief		
+  * @return 	void
+  * @date       2019/06/07 10:10
+*/
+void CKFXPDW::ConvertArray()
+{
+	UINT i;
+
+	float *pfFreq = m_PDWData.pfFreq;
+	float *pfPW = m_PDWData.pfPW;
+	float *pfAOA = m_PDWData.pfAOA;
+	float *pfTOA = m_PDWData.pfTOA;
+	float *pfDTOA = m_PDWData.pfDTOA;
+	float *pfPA = m_PDWData.pfPA;
+
+	char *pcType = m_PDWData.pcType;
+	char *pcDV = m_PDWData.pcDV;
+
+	float fToa, /* firstToa, */ preToa;
+
+	UDRCPDW *pPDW = (UDRCPDW *) & gstpRawDataBuffer[sizeof(STR_PDWFILE)];
+
+	_spOneSec = 20000000.;
+	_spOneMilli = FDIV( _spOneSec, 1000. );
+	_spOneMicrosec = FDIV( _spOneMilli, 1000. );
+	_spOneNanosec = FDIV( _spOneMicrosec, 1000. );
+
+	_spAOAres = (float) ( 0.351562 );
+	_spAMPres = (float) (0.351562);
+	_spPWres = _spOneMicrosec;
+
+	for (i = 0; i < m_pRawData->uiDataItems; ++i) {
+ 		if (i == 0) {
+// 			//firstToa = pPDW->TOA;
+ 			*pfTOA = FDIV( pPDW->llTOA, 1000.0 );
+ 			*pfDTOA = 0;
+ 			preToa = *pfTOA;
+ 		}
+ 		else {
+// 			fToa = (float) pPDW->TOA; // - firstToa;
+			*pfTOA = FDIV( pPDW->llTOA, 1000.0 );
+
+ 			*pfDTOA = ( *pfTOA - preToa );
+ 
+ 			preToa = *pfTOA;
+ 		}
+
+		*pfFreq = FMUL( pPDW->sPDWFormat.m_freq, 0.010 );		// MHz
+ 
+ 		*pfPW = FMUL( pPDW->sPDWFormat.m_PW, 6.48824 );
+
+ 		*pfAOA = FMUL( pPDW->sPDWFormat.m_DOA, 0.1 );
+
+ 		*pfPA = FMUL( pPDW->sPDWFormat.m_PA, 0.25 ) - 110.;
+ 
+ 		*pcType = pPDW->sPDWFormat.m_sigType;
+
+ 		*pcDV = pPDW->sPDWFormat.m_DI ^ 1;
+
+		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
+
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
+
+		++pPDW;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
 C7PDW::C7PDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
 {
 	m_bPhaseData = false;
@@ -975,11 +1132,25 @@ void CDataFile::Free()
 }
 
 
-void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc, int iSizeOfEtc )
+/**
+ * @brief     
+ * @param     CString & strPathname
+ * @param     void * pData
+ * @param     int iNumData
+ * @param     ENUM_UnitType enUnitType
+ * @param     ENUM_DataType enDataType
+ * @param     void * pDataEtc
+ * @param     int iSizeOfEtc
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/04 14:09:35
+ * @warning   
+ */void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc, int iSizeOfEtc )
 {
 	CFileException ex;
 
-	if( enUnitType == en_SONATA ) {
+	if( enUnitType == en_SONATA || enUnitType == en_KFX ) {
 		if( enDataType == en_PDW_DATA) {
 			
 			if( ! m_RawDataFile.Open( strPathname, CFile::modeWrite | CFile::shareExclusive | CFile::modeCreate, &ex ) ) {
@@ -1017,11 +1188,29 @@ void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, 
 */
 void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup )
 {
-	bool bPDW=false, bSPDW=false, b7PDW=false, bIQ=false, bEPDW=false;
+	bool bPDW=false, bSPDW=false, b7PDW=false, bIQ=false, bEPDW=false, bKFXPDW=false;
 
 	m_pData = NULL;
 
 	strPathname.MakeLower();
+
+#ifdef _MBCS
+	if( NULL != strcmp( strPathname.GetBuffer(), _T(".pdw") ) || NULL != strcmp( strPathname.GetBuffer(), _T(".npw") ) ) {
+		bPDW = true;
+	}
+	if( NULL != strcmp( strPathname.GetBuffer(), _T(".spdw") ) ) {
+		bSPDW = true;
+	}
+	if( NULL != strcmp( strPathname.GetBuffer(), _T(".dat") ) ) {
+		b7PDW = true;
+	}
+	if( NULL != strcmp( strPathname.GetBuffer(), _T(".iq") ) || NULL != strcmp( strPathname.GetBuffer(), _T(".siq") ) ) {
+		bIQ = true;
+	}
+	if( NULL != strcmp( strPathname.GetBuffer(), _T(".epdw") ) || NULL != strcmp( strPathname.GetBuffer(), _T(".enpw") ) ) {
+		bEPDW = true;
+	}
+#else
 	if( NULL != wcsstr( strPathname.GetBuffer(), L".pdw" ) || NULL != wcsstr( strPathname.GetBuffer(), L".npw" ) ) {
 		bPDW = true;
 	}
@@ -1031,12 +1220,17 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 	if( NULL != wcsstr( strPathname.GetBuffer(), L".dat" ) ) {
 		b7PDW = true;
 	}
+	if( NULL != wcsstr( strPathname.GetBuffer(), L".kpdw" ) ) {
+		bKFXPDW = true;
+	}
 	if( NULL != wcsstr( strPathname.GetBuffer(), L".iq" ) || NULL != wcsstr( strPathname.GetBuffer(), L".siq" ) ) {
 		bIQ = true;
 	}
 	if( NULL != wcsstr( strPathname.GetBuffer(), L".epdw" ) || NULL != wcsstr( strPathname.GetBuffer(), L".enpw" ) ) {
 		bEPDW = true;
 	}
+
+#endif
 
 	if( bPDW == true ) {
 		m_RawData.enDataType = en_PDW_DATA;
@@ -1130,6 +1324,35 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 			m_pData->AllSwapData32( & pPDWHeader->iSearchBandID, sizeof(int)*4 );
 
 			m_RawData.uiDataItems = pPDWHeader->iNumOfPDW;
+
+			m_pData->Alloc();
+
+			m_pData->ConvertArray();
+
+			m_RawDataFile.Close();
+
+		}
+		else {
+			m_RawData.uiByte = -1;
+			m_RawData.uiDataItems = 0;
+		}
+
+	}
+
+	else if( bKFXPDW == true ) {
+		m_RawData.enDataType = en_PDW_DATA;
+		m_RawData.enUnitType = en_KFX;
+
+		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE) {
+			STR_PDWFILE *pPDWFile;
+
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
+
+			pPDWFile = ( STR_PDWFILE * ) gstpRawDataBuffer;
+
+			m_pData = new CKFXPDW( & m_RawData, pstFilterSetup );
+
+			m_RawData.uiDataItems = pPDWFile->uiSignalCount;
 
 			m_pData->Alloc();
 
