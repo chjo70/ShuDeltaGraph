@@ -605,7 +605,7 @@ void CKFXPDW::ConvertArray()
 	float fToa, /* firstToa, */ preToa;
 
 	_TOA llToa, ll1stToa;
-	UDRCPDW *pPDW = (UDRCPDW *) & gstpRawDataBuffer[sizeof(STR_PDWFILE)];
+	UDRCPDW *pPDW = (UDRCPDW *) & gstpRawDataBuffer[sizeof(STR_PDWFILE_HEADER)];
 
 	_spOneSec = 20000000.;
 	_spOneMilli = FDIV( _spOneSec, 1000. );
@@ -796,7 +796,7 @@ void C7PDW::ConvertArray()
 
  		*pfAOA = FMUL( pPDW->iDirection, 0.1 );
 
- 		*pfPA = FMUL( pPDW->iPA, 0.25 ) - 110.;
+ 		*pfPA = FMUL( pPDW->iPA, 0.25 ) - (float) 110.;
  
  		*pcType = pPDW->iSignalType;
 
@@ -1349,11 +1349,11 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 		m_RawData.enUnitType = en_KFX;
 
 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE) {
-			STR_PDWFILE *pPDWFile;
+			STR_PDWFILE_HEADER *pPDWFile;
 
 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
 
-			pPDWFile = ( STR_PDWFILE * ) gstpRawDataBuffer;
+			pPDWFile = ( STR_PDWFILE_HEADER * ) gstpRawDataBuffer;
 
 			m_pData = new CKFXPDW( & m_RawData, pstFilterSetup );
 

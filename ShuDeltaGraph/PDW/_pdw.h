@@ -21,16 +21,13 @@
 
 
 
-#ifdef _SONATA_
-
 //#define _spTimeres              (20000000)					// 1 sec / 50 ns */
 //#define _spOneSec               (_spTimeres)				// 1 sec  / 50 ns */
 //#define _spOneMilli             (_spOneSec/1000)		// 1 msec / 50 ns */
 //#define _spOneMicrosec          (_spOneMilli/1000)
 
 // PDW의 Phase 개수
-#define PDW_WORD_LEN        4
-#define PDW_WORD_CNT        4
+
 #define SizeOfPDW           16
 #define ByteOfPhase         4
 #define SizeOfPSEUDO_PDW    ByteOfPhase
@@ -44,6 +41,18 @@
 #define PDW_BIT             15
 
 #define PDW_DV							(1)
+
+
+//////////////////////////////////////////////////////////////////////////
+
+// KFX 정의
+#define KPDW_CW             1
+#define KPDW_PULSE          0
+
+//////////////////////////////////////////////////////////////////////////
+
+#define PDW_WORD_LEN        4
+#define PDW_WORD_CNT        4
 
 // PDW 파일, Platform이 어떤 것이냐에 따라 UNIX 로 정의하여 컴파일 또는 없이 컴파일함.
 #ifndef _WIN32
@@ -87,6 +96,7 @@ typedef union
 } TNEW_PDW;
 
 #else /* dos */
+
 typedef union
 {
 	UCHAR bpdw[ PDW_WORD_CNT ][ PDW_WORD_LEN ];
@@ -246,11 +256,8 @@ typedef struct {
 	unsigned int uiSignalDeletingStatus;
 	unsigned int uiSignalCount;
 
-} STR_PDWFILE;
+} STR_PDWFILE_HEADER;
 
-#else
-
-#endif
 
 
 

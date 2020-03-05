@@ -78,7 +78,11 @@ double CNumSpinCtrl::GetPos()
 	{
 		CString str;
 		pEdit->GetWindowText (str);
+#ifdef UNICODE
 		double val = _wtof (str);
+#else
+		double val = atof (str);
+#endif
 		return val;
 	}
 	else

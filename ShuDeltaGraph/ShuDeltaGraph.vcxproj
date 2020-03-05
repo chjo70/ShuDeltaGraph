@@ -171,7 +171,6 @@
     <ClInclude Include="ListCtrl\ReportCtrl.h" />
     <ClInclude Include="Log\LogDebug.h" />
     <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="NumSpinCtrl.h" />
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="PDW\DataFile.h" />
     <ClInclude Include="PDW\_iq.h" />
@@ -212,7 +211,6 @@
     <ClCompile Include="ListCtrl\ReportCtrl.cpp" />
     <ClCompile Include="Log\LogDebug.cpp" />
     <ClCompile Include="MainFrm.cpp" />
-    <ClCompile Include="NumSpinCtrl.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="PDW\DataFile.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />

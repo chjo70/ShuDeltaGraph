@@ -212,9 +212,6 @@
     <ClInclude Include="DlgFilterSetup.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="NumSpinCtrl.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="DlgColList.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -317,9 +314,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="DlgFilterSetup.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="NumSpinCtrl.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="DlgColList.cpp">

@@ -1,6 +1,5 @@
 #pragma once
 
-#define _SONATA_
 
 #include "_iq.h"
 #include "_pdw.h"
@@ -28,7 +27,6 @@ typedef enum {
 
 } ENUM_UnitType;
 
-#ifdef _SONATA_
 #define MAX_SONATA_DATA		(10000)
 typedef union {
 	TNEW_PDW stPDWData[MAX_SONATA_DATA];
@@ -43,8 +41,7 @@ typedef struct {
 	UNI_SONATA_DATA unRawData;
 
 } STR_SONATA_DATA;
-#else
-#endif
+
 
 typedef struct {
 	UINT uiByte;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NumSpinCtrl.h"
+#include "./SpinCtrl/NumSpinCtrl.h"
 #include "afxcmn.h"
 
 // CDlgFilterSetup 대화 상자입니다.

@@ -7,9 +7,6 @@
 #ifndef  _MACRO_H
 #define  _MACRO_H
 
-#ifdef _SONATA_
-
-
 #define DFD_FREQ_OFFSET		(1900)
 
 #define _spSONATAPAoffset			(-70)					// amplitude initial value
@@ -87,9 +84,7 @@ extern float _spFreqMax;
 
 #endif
 
-#else
 
-#endif
 
 #define BIT_MERGE(high,low)     ( ( ((UINT)high) << 8 ) | low )
 
