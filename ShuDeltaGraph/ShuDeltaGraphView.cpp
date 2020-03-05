@@ -403,7 +403,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					strVal.Format( _T("%d") , *pcType );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
-					strVal.Format( _T("%12.3f/%12ld") , *pfTOA*1., *pfllTOA );
+					strVal.Format( _T("%12.3f/%12llu") , *pfTOA*1., *pfllTOA );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
@@ -2374,7 +2374,7 @@ void CShuDeltaGraphView::OnDestroy()
 
 void CShuDeltaGraphView::SetFreqRange()
 {
-	if( m_pDoc->GetUnitType() == en_SONATA ) {
+	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_KFX ) {
 		_spFreqMin = 500;
 		_spFreqMax = 18000;
 	}

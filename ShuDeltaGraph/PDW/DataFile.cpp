@@ -600,8 +600,11 @@ void CKFXPDW::ConvertArray()
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
+	_TOA *pfllTOA = m_PDWData.pfllTOA;
+
 	float fToa, /* firstToa, */ preToa;
 
+	_TOA llToa, ll1stToa;
 	UDRCPDW *pPDW = (UDRCPDW *) & gstpRawDataBuffer[sizeof(STR_PDWFILE)];
 
 	_spOneSec = 20000000.;
@@ -614,32 +617,33 @@ void CKFXPDW::ConvertArray()
 	_spPWres = _spOneMicrosec;
 
 	for (i = 0; i < m_pRawData->uiDataItems; ++i) {
+		llToa = (_TOA) ( pPDW->sPDWFormat.m_LSBTOA ) | ( (_TOA) pPDW->sPDWFormat.m_MSBTOA << 32 );
+		*pfllTOA = llToa;
  		if (i == 0) {
-// 			//firstToa = pPDW->TOA;
- 			*pfTOA = FDIV( pPDW->llTOA, 1000.0 );
+			ll1stToa = llToa;
+ 			*pfTOA = DecodeTOA( llToa-ll1stToa );
  			*pfDTOA = 0;
  			preToa = *pfTOA;
  		}
  		else {
-// 			fToa = (float) pPDW->TOA; // - firstToa;
-			*pfTOA = FDIV( pPDW->llTOA, 1000.0 );
+			*pfTOA = DecodeTOA( llToa-ll1stToa );
 
  			*pfDTOA = ( *pfTOA - preToa );
  
  			preToa = *pfTOA;
  		}
 
-		*pfFreq = FMUL( pPDW->sPDWFormat.m_freq, 0.010 );		// MHz
+		*pfFreq = DecodeFREQ( pPDW->sPDWFormat.m_freq );		// MHz
  
- 		*pfPW = FMUL( pPDW->sPDWFormat.m_PW, 6.48824 );
+ 		*pfPW = DecodePW( pPDW->sPDWFormat.m_PW );
 
- 		*pfAOA = FMUL( pPDW->sPDWFormat.m_DOA, 0.1 );
+ 		*pfAOA = DecodeDOA( pPDW->sPDWFormat.m_DOA );
 
- 		*pfPA = FMUL( pPDW->sPDWFormat.m_PA, 0.25 ) - 110.;
+ 		*pfPA = DecodePA( pPDW->sPDWFormat.m_PA );
  
- 		*pcType = pPDW->sPDWFormat.m_sigType;
+ 		*pcType = 0; // pPDW->sPDWFormat.m_sigType;
 
- 		*pcDV = pPDW->sPDWFormat.m_DI ^ 1;
+ 		*pcDV = pPDW->sPDWFormat.m_DI;
 
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
@@ -651,6 +655,7 @@ void CKFXPDW::ConvertArray()
 		++pfDTOA;
 		++pcType;
 		++pcDV;
+		++pfllTOA;
 
 		++pPDW;
 	}

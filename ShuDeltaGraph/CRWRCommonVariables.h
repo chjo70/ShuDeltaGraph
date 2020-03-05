@@ -6,6 +6,8 @@
 #ifndef RWRCOMMONVARIABLES_H_
 #define RWRCOMMONVARIABLES_H_
 
+#pragma pack( push, 1 )
+
 //#include <Data/CPDWContainer.h>
 //#include <SignalProcessing/CSignalProcessingVariables.h>
 //#include <Util/Time/CStopWatch.h>
@@ -390,6 +392,8 @@ struct SScanCollectInfo
 // 	double m_totalTime;
 // };
 
+#define LITTLE_ENDIAN_MODE
+
 /**
 * union UDRCPDW
 * - union Ό³Έν
@@ -466,60 +470,60 @@ union UDRCPDW
 	struct
 	{
 		//1
-		unsigned int m_LSBTOA :			32;
-		
+		unsigned int m_LSBTOA :32;
+
 		//2
-		unsigned int m_DOA :			9;
-		unsigned int m_Rsvd :			3;
-		unsigned int m_PA :				9;
-		unsigned int m_Ovp :			1;
-		unsigned int m_MSBTOA :			10;
-		
+		unsigned int m_DOA :9;
+		unsigned int x1 :3;
+		unsigned int m_PA :9;
+		unsigned int m_Ovp :1;
+		unsigned int m_MSBTOA :10;
+
 		//3
-		unsigned int m_freq :			21;
-		unsigned int m_DI :				1;
-		unsigned int m_ChChg :			2;
-		unsigned int m_PMOP :			1;
-		unsigned int m_FMOP :			1;
-		unsigned int m_BLK :			1;
-		unsigned int m_sigType :		1;
-		unsigned int m_ChNo :			4;
-		
+		unsigned int m_freq :21;
+		unsigned int m_DI :1;
+		unsigned int m_ChChg :2;
+		unsigned int m_PMOP :1;
+		unsigned int m_FMOP :1;
+		unsigned int m_BLK :1;
+		unsigned int m_sigType :1;
+		unsigned int m_ChNo :4;
+
 		//4
-		unsigned int m_PW :				22;
-		unsigned char TOAI:				1;
-		unsigned char PWI : 			1;
-		unsigned int m_ft8 : 			1;
-		unsigned int m_ft7 : 			1;
-		unsigned int m_ft6 : 			1;
-		unsigned int m_ft5 : 			1;
-		unsigned int m_ft4 : 			1;
-		unsigned int m_ft3 : 			1;
-		unsigned int m_ft2 : 			1;
-		unsigned int m_ft1 : 			1;
+		unsigned int m_PW :22;
+		unsigned int m_TOAinvalid :1;
+		unsigned int m_PWinvalid :1;
+		unsigned int m_ft8 :1;
+		unsigned int m_ft7 :1;
+		unsigned int m_ft6 :1;
+		unsigned int m_ft5 :1;
+		unsigned int m_ft4 :1;
+		unsigned int m_ft3 :1;
+		unsigned int m_ft2 :1;
+		unsigned int m_ft1 :1;
 
 		//5
-		unsigned int m_PDWNum :			32;
-		
+		unsigned int m_PDWNum :32;
+
 		//6
-		unsigned int m_FMOPMaxFreq :	13;
-		unsigned int m_Rsvd3 :			3;
-		unsigned int m_FMOPMinFreq :	13;
-		unsigned int m_Rsvd2 :			3;
-		
+		unsigned int m_FMOPMaxFreq :13;
+		unsigned int m_Rsvd3 :3;
+		unsigned int m_FMOPMinFreq :13;
+		unsigned int m_Rsvd2 :3;
+
 		//7
-		unsigned int m_PMOPMode :		2;
-		unsigned int m_Rsvd4 :			2;
-		unsigned int m_PMOPCount :		8;
-		unsigned int m_PMOPRsvdTime :	20;
-		
+		unsigned int m_PMOPMode :2;
+		unsigned int m_Rsvd4 :2;
+		unsigned int m_PMOPCount :8;
+		unsigned int m_PMOPRsvdTime :20;
+
 		//8
-		unsigned char m_firstAnt : 		2;
-		unsigned char m_Rsvd7 : 		2;
-		unsigned char m_secondAnt :		2;
-		unsigned char m_Rsvd6 : 		2;
-		unsigned int m_AntPAGap : 		8;
-		unsigned int m_Rsvd5 :			16;
+		unsigned int m_Ant_1st :2;
+		unsigned int m_Rsvd5 :2;
+		unsigned int m_Ant_2nd :2;
+		unsigned int m_Rsvd6 :2;
+		unsigned int m_PA_Diff :8;
+		unsigned int m_Rsvd7 :16;
 
 	}sPDWFormat;
 #endif
@@ -748,5 +752,7 @@ void SigProcLogOn();
 // 		double GetTotalSigProcElapsedTime(int completeSigProcIndex);		
 // 		
 // };
+
+#pragma pack( pop )
 
 #endif

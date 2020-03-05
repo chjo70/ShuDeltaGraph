@@ -59,36 +59,6 @@ typedef struct {
 
 typedef long long int _TOA;
 
-// typedef struct {
-// 	long long int llTOA;
-// 	int iFreq;
-// 	int iPulseType;
-// 	int iPA;
-// 	int iPW;
-// 	int iPFTag;
-// 	int iAOA;
-// 
-// } _PDW;
-
-// typedef enum {
-// 	en50MHZ_BW=0,
-// 	en5MHZ_BW 
-// 
-// } ENUM_BANDWIDTH ;
-
-// #define LENGTH_OF_TASK_ID			(19+1)		//과제ID 문자열 길이 (TBD)
-// #define _MAX_PDW							(4096)
-// typedef struct {
-// 	unsigned char aucTaskID[LENGTH_OF_TASK_ID];
-// 	unsigned int iIsStorePDW;
-// 	int iCollectorID;
-// 	ENUM_BANDWIDTH enBandWidth;
-// 
-// 	UINT count;
-// 	_PDW stPDW[_MAX_PDW];
-// 
-// } STR_PDWDATA ;
-
 typedef struct {
 	float *pfFreq;			// [KHz]
 	float *pfPW;			// [ns]
@@ -239,6 +209,47 @@ public:
 	void Free();
 	void ConvertArray();
 	void *GetData();
+
+public:
+	float DecodeDOA(int iDOA  ) 
+	{
+		float fDOA;
+
+		fDOA = (float) ( (float) iDOA * (float) 360. ) / (float) 512;
+		return fDOA;	/* [degree] */
+	} ;
+
+	float DecodePA(int iPA ) 
+	{
+		float fPA;
+
+		fPA = (float) ( (float) iPA * (float) 0.25 ) - (float) 110.0;
+		return fPA;		/* [dBm] */
+	} ;
+
+	float DecodeFREQ( int iFreq ) 
+	{
+		float fFREQ;
+
+		fFREQ = (float) ( (float) iFreq * (float) 13.1072 ) / (float) 1000.0;
+		return fFREQ;	/* [MHz] */
+	} ;
+
+	float DecodePW( int iPW ) 
+	{
+		float fPW;
+
+		fPW = (float) ( (float) iPW * (float) 6.48824007 / (float) 1.0 );
+		return fPW;		/* [ns] */
+	} ;
+
+	float DecodeTOA( _TOA iTOA  ) 
+	{
+		float fTOA;
+
+		fTOA = (float) ( (float) iTOA * (float) 6.48824007 / (float) 1000.0 );
+		return fTOA;	/* [ns] */
+	} ;
 
 };
 
