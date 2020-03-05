@@ -264,10 +264,10 @@ BOOL CAboutDlg::OnInitDialog()
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	CString strRev;
 
-	strRev.Format( _T("SVN Date %s") , GetRevision() );
+	strRev.Format( _T("SVN Date %s") , GetBuildDate() );
 	m_CStaticRev.SetWindowText( strRev );
 
-	strRev.Format( _T("SVN Rev %s") , GetBuildDate() );
+	strRev.Format( _T("SVN Rev %s") , GetRevision() );
 	m_CStaticRevDate.SetWindowText( strRev );
 
 	return TRUE;  // return TRUE unless you set the focus to a control
