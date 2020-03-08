@@ -125,7 +125,7 @@ BOOL CDeltaGraphApp::InitInstance()
 	pDocTemplate = new CMultiDocTemplate(IDR_DeltaGraphTYPE,
 		RUNTIME_CLASS(CDeltaGraphDoc),
 		RUNTIME_CLASS(CChildFrame), // 사용자 지정 MDI 자식 프레임입니다.
-		RUNTIME_CLASS(CDeltaGraphView2));
+		RUNTIME_CLASS(CDeltaGraphView));
 	if (!pDocTemplate)
 		return FALSE;
 	AddDocTemplate(pDocTemplate);
@@ -323,9 +323,8 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 
 	if( true == IsExistFile( *pStrPathname ) ) {
 		if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
+			pos = GetFirstDocTemplatePosition();
 			for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
- 				pos = GetFirstDocTemplatePosition();
- 
  				pDocTemplate = GetNextDocTemplate( pos );
  
  				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
