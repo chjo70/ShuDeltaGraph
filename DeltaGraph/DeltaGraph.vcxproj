@@ -137,6 +137,7 @@
     <ClInclude Include="DeltaGraph.h" />
     <ClInclude Include="DeltaGraphDoc.h" />
     <ClInclude Include="DeltaGraphView.h" />
+    <ClInclude Include="DeltaGraphView2.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="OutputWnd.h" />
@@ -155,6 +156,7 @@
     <ClCompile Include="DeltaGraph.cpp" />
     <ClCompile Include="DeltaGraphDoc.cpp" />
     <ClCompile Include="DeltaGraphView.cpp" />
+    <ClCompile Include="DeltaGraphView2.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OutputWnd.cpp" />

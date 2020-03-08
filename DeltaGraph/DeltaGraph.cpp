@@ -11,6 +11,7 @@
 #include "ChildFrm.h"
 #include "DeltaGraphDoc.h"
 #include "DeltaGraphView.h"
+#include "DeltaGraphView2.h"
 #include "revision.h"
 #include "afxwin.h"
 
@@ -115,7 +116,16 @@ BOOL CDeltaGraphApp::InitInstance()
 	pDocTemplate = new CMultiDocTemplate(IDR_DeltaGraphTYPE,
 		RUNTIME_CLASS(CDeltaGraphDoc),
 		RUNTIME_CLASS(CChildFrame), // 사용자 지정 MDI 자식 프레임입니다.
-		RUNTIME_CLASS(CDeltaGraphView));
+		RUNTIME_CLASS(CDeltaGraphView2));
+	if (!pDocTemplate)
+		return FALSE;
+	AddDocTemplate(pDocTemplate);
+
+
+	pDocTemplate = new CMultiDocTemplate(IDR_DeltaGraphTYPE,
+		RUNTIME_CLASS(CDeltaGraphDoc),
+		RUNTIME_CLASS(CChildFrame), // 사용자 지정 MDI 자식 프레임입니다.
+		RUNTIME_CLASS(CDeltaGraphView2));
 	if (!pDocTemplate)
 		return FALSE;
 	AddDocTemplate(pDocTemplate);
@@ -261,7 +271,7 @@ void CDeltaGraphApp::SaveCustomState()
 
 // CDeltaGraphApp 메시지 처리기
 
-#define PDW_MULTI_WINDOWS			(1)//(1)
+#define PDW_MULTI_WINDOWS			(2)//(1)
 #define IQ_MULTI_WINDOWS			(1)//(5)
 void CDeltaGraphApp::OnFileOpen()
 {
@@ -321,9 +331,10 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
  				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
  
  				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
- 				pView = (CDeltaGraphView *) pChild->GetActiveView();
+
+ 				//pView = (CDeltaGraphView *) pChild->GetActiveView();
  
- 				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+ 				//if( true == pDoc->OpenFile( *pStrPathname ) ) {
 // 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
 // 						pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
 // 					}
@@ -332,7 +343,7 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 // 						AfxMessageBox( warningMessage );
 // 						break;
 // 					}
- 				}
+ 				//}
 			}
 		}
 		else {
