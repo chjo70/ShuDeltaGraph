@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\FFTW">
+      <UniqueIdentifier>{672a8cd3-6d4f-41ed-8384-639e285494a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\LOG">
+      <UniqueIdentifier>{c03df85c-ea8c-439e-ac39-884ba72a8a21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\PDW">
+      <UniqueIdentifier>{2b36d8df-adb0-4715-8001-ca67cb483543}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -135,6 +144,27 @@
     <ClInclude Include="PropertiesWnd.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\FFTW\fftw3.h">
+      <Filter>소스 파일\FFTW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Log\LogDebug.h">
+      <Filter>소스 파일\LOG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\PDW\_iq.h">
+      <Filter>소스 파일\PDW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\PDW\_macro.h">
+      <Filter>소스 파일\PDW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\PDW\_pdw.h">
+      <Filter>소스 파일\PDW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\PDW\DataFile.h">
+      <Filter>소스 파일\PDW</Filter>
+    </ClInclude>
+    <ClInclude Include="revision.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DeltaGraph.cpp">
@@ -168,6 +198,15 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="PropertiesWnd.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\Log\LogDebug.cpp">
+      <Filter>소스 파일\LOG</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\PDW\DataFile.cpp">
+      <Filter>소스 파일\PDW</Filter>
+    </ClCompile>
+    <ClCompile Include="revision.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
