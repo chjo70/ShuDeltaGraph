@@ -9,6 +9,14 @@
 
 class CDeltaGraphView : public CFormView
 {
+private:
+	CString m_strPathName;
+
+public:
+
+public:
+	inline void SetWindowTitle( CString strWindowTitle ) { m_strPathName=strWindowTitle; }
+
 protected: // serialization에서만 만들어집니다.
 	CDeltaGraphView();
 	DECLARE_DYNCREATE(CDeltaGraphView)

@@ -9,13 +9,19 @@
 #include "DeltaGraph.h"
 #endif
 
+#include "MainFrm.h"
+#include "ChildFrm.h"
+
 #include "DeltaGraphDoc.h"
+#include "DeltaGraphView.h"
 
 #include <propkey.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+map<CString, CData *> CDeltaGraphDoc::m_gMapData;
 
 // CDeltaGraphDoc
 
@@ -30,6 +36,7 @@ END_MESSAGE_MAP()
 CDeltaGraphDoc::CDeltaGraphDoc()
 {
 	// TODO: 여기에 일회성 생성 코드를 추가합니다.
+	m_pFrame = ( CMainFrame * ) AfxGetMainWnd();
 
 }
 
@@ -135,3 +142,68 @@ void CDeltaGraphDoc::Dump(CDumpContext& dc) const
 
 
 // CDeltaGraphDoc 명령
+
+
+/**
+ * @brief     
+ * @param     CString & strPathname
+ * @param     STR_FILTER_SETUP * pstFilterSetup
+ * @return    bool
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 22:17:09
+ * @warning   
+ */
+bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup )
+{
+	CString strMainTitle;
+	map<CString, CData *>::iterator it;
+	CChildFrame *pChild;
+	CDeltaGraphView *pView;
+
+	pChild = ( CChildFrame * ) m_pFrame->GetActiveFrame();
+
+	m_strPathname = strPathname;
+
+	// 데이터 읽기
+	it = m_gMapData.find( m_strPathname );
+	if( it == m_gMapData.end() ) {
+		ReadDataFile( pstFilterSetup );
+
+	}
+	else {
+		m_theDataFile.SetData( it->second );
+
+	}
+
+	// 타이틀 바 변경
+	strMainTitle.Format( _T("%s:%d") , m_strPathname, m_theDataFile.GetWindowNumber() );
+	pChild->SetWindowText( strMainTitle );
+
+	pView = (CDeltaGraphView *) pChild->GetActiveView();
+	pView->SetWindowTitle( m_strPathname );
+
+	return true;
+}
+
+/**
+ * @brief     
+ * @param     STR_FILTER_SETUP * pstFilterSetup
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 22:36:03
+ * @warning   
+ */
+void CDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
+{
+	CData *pData;
+
+	m_theDataFile.ReadDataFile( m_strPathname, pstFilterSetup );
+
+	pData = m_theDataFile.GetRawData();
+	if( pData != NULL ) {
+		m_gMapData.insert( make_pair( m_strPathname, pData ) );
+	}
+
+}

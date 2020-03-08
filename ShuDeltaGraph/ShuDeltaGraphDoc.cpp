@@ -256,6 +256,14 @@ void CShuDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 
 }
 
+/**
+ * @brief     
+ * @return    bool
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 22:35:24
+ * @warning   
+ */
 bool CShuDeltaGraphDoc::IsAlreadyOpen()
 {
 	bool bRet = true;

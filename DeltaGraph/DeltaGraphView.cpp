@@ -9,8 +9,12 @@
 #include "DeltaGraph.h"
 #endif
 
+#include "MainFrm.h"
+
 #include "DeltaGraphDoc.h"
 #include "DeltaGraphView.h"
+
+//#include "../ShuDeltaGraph/Log/LogDebug.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

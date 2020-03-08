@@ -5,9 +5,29 @@
 
 #pragma once
 
+#include <map>
+
+#include "../ShuDeltaGraph/PDW/DataFile.h"
+
+using namespace std;
 
 class CDeltaGraphDoc : public CDocument
 {
+private:
+	CMainFrame *m_pFrame;
+	CString m_strPathname;
+
+	CDataFile m_theDataFile;
+
+	static map<CString, CData *> m_gMapData;
+
+private:
+	void ReadDataFile( STR_FILTER_SETUP *pstFilterSetup );
+
+public:
+	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
+
+
 protected: // serialization에서만 만들어집니다.
 	CDeltaGraphDoc();
 	DECLARE_DYNCREATE(CDeltaGraphDoc)

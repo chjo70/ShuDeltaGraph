@@ -11,6 +11,8 @@
 #include "ChildFrm.h"
 #include "DeltaGraphDoc.h"
 #include "DeltaGraphView.h"
+#include "revision.h"
+#include "afxwin.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,7 +25,7 @@ BEGIN_MESSAGE_MAP(CDeltaGraphApp, CWinAppEx)
 	ON_COMMAND(ID_APP_ABOUT, &CDeltaGraphApp::OnAppAbout)
 	// 표준 파일을 기초로 하는 문서 명령입니다.
 	ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
+	ON_COMMAND(ID_FILE_OPEN, &CDeltaGraphApp::OnFileOpen)
 END_MESSAGE_MAP()
 
 
@@ -133,6 +135,16 @@ BOOL CDeltaGraphApp::InitInstance()
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
 
+	if( true == cmdInfo.m_strFileName.IsEmpty() ) {
+		cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
+	}
+	else {
+		m_strArgument = cmdInfo.m_strFileName;
+
+		OnFileOpen();
+		//cmdInfo.m_nShellCommand = CCommandLineInfo::FileOpen;
+	}
+
 
 
 	// 명령줄에 지정된 명령을 디스패치합니다.
@@ -173,6 +185,10 @@ protected:
 // 구현입니다.
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL OnInitDialog();
+	CStatic m_CStaticRevDate;
+	CStatic m_CStaticRev;
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -182,6 +198,8 @@ CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_STATIC_REV, m_CStaticRevDate);
+	DDX_Control(pDX, IDC_STATIC_REV_DATE, m_CStaticRev);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
@@ -192,6 +210,31 @@ void CDeltaGraphApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
+}
+
+
+/**
+ * @brief     
+ * @return    BOOL
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 21:48:30
+ * @warning   
+ */
+BOOL CAboutDlg::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	// TODO:  여기에 추가 초기화 작업을 추가합니다.
+	CString strRev;
+
+	strRev.Format( _T("SVN Date %s") , GetBuildDate() );
+	m_CStaticRev.SetWindowText( strRev );
+
+	strRev.Format( _T("SVN Rev %s") , GetRevision() );
+	m_CStaticRevDate.SetWindowText( strRev );
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }
 
 // CDeltaGraphApp 사용자 지정 로드/저장 메서드
@@ -217,6 +260,238 @@ void CDeltaGraphApp::SaveCustomState()
 }
 
 // CDeltaGraphApp 메시지 처리기
+
+#define PDW_MULTI_WINDOWS			(1)//(1)
+#define IQ_MULTI_WINDOWS			(1)//(5)
+void CDeltaGraphApp::OnFileOpen()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	CString strPathName;
+
+	if( m_strArgument.IsEmpty() == true ) {
+		if( true == OpenFile( strPathName, _T("PDW 및 IQ 파일 읽어오기...") ) ) {
+			RawDataOpen( & strPathName );
+		}
+	}
+	else {
+		strPathName = m_strArgument;
+		m_strArgument.Empty();
+	}
+
+}
+
+/**
+ * @brief     
+ * @param     CString * pStrPathname
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 21:43:12
+ * @warning   
+ */
+void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
+{
+	int i;
+
+	CDocTemplate *pDocTemplate=nullptr;	
+	TCHAR warningMessage[100];
+
+	POSITION pos;
+	CMainFrame *pMainFrame=( CMainFrame * ) AfxGetMainWnd();
+	CDeltaGraphDoc *pDoc;
+	CDeltaGraphView *pView;
+	CChildFrame *pChild;
+
+// 	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
+// 	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;
+// 
+// 	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
+// 	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
+// 
+// 	OnMenuCloseAll();
+// 
+
+	if( true == IsExistFile( *pStrPathname ) ) {
+		if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
+			for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
+ 				pos = GetFirstDocTemplatePosition();
+ 
+ 				pDocTemplate = GetNextDocTemplate( pos );
+ 
+ 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+ 
+ 				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+ 				pView = (CDeltaGraphView *) pChild->GetActiveView();
+ 
+ 				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+// 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
+// 						pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
+// 					}
+// 					else {
+// 						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+// 						AfxMessageBox( warningMessage );
+// 						break;
+// 					}
+ 				}
+			}
+		}
+		else {
+			for( i=0 ; i < IQ_MULTI_WINDOWS ; ++i ) {
+				pos = GetFirstDocTemplatePosition();
+				 
+// 				pDocTemplate = GetNextDocTemplate( pos );
+// 
+// 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+// 
+// 				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+// 				pView = (CDeltaGraphView *) pChild->GetActiveView();
+// 
+// 				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+// 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
+// 						pView->ShowGraph( viewIQGraph[i], viewIQSubGraph[i] );
+// 					}
+// 					else {
+// 						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+// 						AfxMessageBox( warningMessage );
+// 						break;
+// 					}
+//				}
+			}
+		}
+
+	}
+	else {
+		wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+		AfxMessageBox( warningMessage );
+	}
+
+
+	::PostMessage( m_pMainWnd->m_hWnd, WM_COMMAND, ID_WINDOW_TILE_HORZ, NULL );
+
+}
+
+
+
+/**
+ * @brief     
+ * @param     CString & strPathname
+ * @return    bool
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 16:31:42
+ * @warning   
+ */
+bool CDeltaGraphApp::IsExistFile( CString &strPathname )
+{
+	bool bRet;
+	CFileStatus fs;
+
+	if( CFile::GetStatus( strPathname, fs ) == TRUE ) {
+		bRet = true;
+	}
+	else {
+		bRet = false;
+	}
+	return bRet;
+}
+
+/**
+ * @brief     
+ * @param     CString & strPathName
+ * @return    ENUM_DataType
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 22:03:45
+ * @warning   
+ */
+ENUM_DataType CDeltaGraphApp::GetDataType(CString &strPathName)
+{
+	ENUM_DataType enDataType=en_UnknownData;
+
+	strPathName.MakeLower();
+	if( NULL != wcsstr( strPathName.GetBuffer(), L"pdw" ) || NULL != wcsstr( strPathName.GetBuffer(), L"npw" ) || NULL != wcsstr( strPathName.GetBuffer(), L"dat" ) ) {
+		enDataType = en_PDW_DATA;
+	}
+
+	if( NULL != wcsstr( strPathName.GetBuffer(), L"iq" ) ) {
+		enDataType = en_IQ_DATA;
+	}
+
+	return enDataType;
+
+}
+
+/**
+ * @brief     
+ * @param     CString & strPathname
+ * @param     TCHAR * pTitle
+ * @param     ENUM_OPENTYPE enOpenType
+ * @return    bool
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 21:43:08
+ * @warning   
+ */
+bool CDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYPE enOpenType )
+{
+	bool bRet = true;
+	CFileDialog *pWndFile;
+	TCHAR szinitDir[MAX_PATH];
+
+	CString strFilepath;
+
+	strFilepath = GetFilePath();
+
+	// 로그 파일을 오픈할 FILE Dialog창을 생성한다.
+	switch( enOpenType ) {
+	case enOpenPDW :
+		pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.siq;*.dat)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.siq;*.dat|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+		szinitDir[0] = NULL;
+		break;
+
+	case enOpenXLS :
+		pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("수집 목록 파일들 (*.xls)|*.xls*|All Files (*.*)|*.*||") );
+
+		_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
+		strFilepath.ReleaseBuffer();
+		break;
+
+	case enSavePDW :
+		pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+		szinitDir[0] = NULL;
+		break;
+
+	case enSaveXLS :
+		pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("수집 목록 파일들 (*.xls)|*.xls*|All Files (*.*)|*.*||") );
+
+		_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
+		strFilepath.ReleaseBuffer();
+		break;
+
+	default :
+		break;
+	}
+
+
+	// Initializes m_ofn structure
+	pWndFile->m_ofn.lpstrTitle = pTitle;			// 타이틀명
+	pWndFile->m_ofn.lpstrInitialDir = szinitDir;			// 타이틀명
+
+	// Call DoModal
+	if (pWndFile->DoModal() == IDOK) {
+		//m_strWindowtitle = pWndFile->GetFileTitle() + '.' + pWndFile->GetFileExt();
+		strPathname = pWndFile->GetPathName();
+
+	}
+	else {
+		bRet = false;
+	}
+
+	delete pWndFile;
+
+	return bRet;
+
+}
 
 
 

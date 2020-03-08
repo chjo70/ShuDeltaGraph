@@ -181,7 +181,7 @@ extern float _spFreqMax;
 #define FFRQCNV( A, B )         (float) ( ( (float) B * gFreqRes[A].res) + gFreqRes[A].min )
 
 #if defined(_WIN32)
-#define printf                  Printf
+//#define printf                  Printf
 
 #ifdef __cplusplus
 extern "C"

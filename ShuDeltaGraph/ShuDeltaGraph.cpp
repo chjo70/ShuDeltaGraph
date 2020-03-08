@@ -253,7 +253,6 @@ END_MESSAGE_MAP()
 void CShuDeltaGraphApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
-
 	aboutDlg.DoModal();
 }
 
@@ -335,6 +334,15 @@ void CShuDeltaGraphApp::OnFileOpen()
 
 }
 
+/**
+ * @brief     
+ * @param     CString * pStrPathname
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/08 21:42:48
+ * @warning   
+ */
 void CShuDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 {
 	int i;

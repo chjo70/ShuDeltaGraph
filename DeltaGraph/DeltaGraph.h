@@ -9,6 +9,22 @@
 
 #include "resource.h"       // 주 기호입니다.
 
+#include "../ShuDeltaGraph/PDW/DataFile.h"
+
+//
+//////////////////////////////////////////////////////////////////////////
+
+typedef enum {
+	enOpenPDW = 0,
+	enOpenXLS,
+	enSavePDW,
+	enSaveXLS
+
+} ENUM_OPENTYPE;
+
+//
+//////////////////////////////////////////////////////////////////////////
+
 
 // CDeltaGraphApp:
 // 이 클래스의 구현에 대해서는 DeltaGraph.cpp을 참조하십시오.
@@ -16,8 +32,19 @@
 
 class CDeltaGraphApp : public CWinAppEx
 {
+private:
+	CString m_strArgument;
+
+private:
+	bool OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYPE enOpenType=enOpenPDW );
+	void RawDataOpen( CString *pStrPathname );
+	ENUM_DataType GetDataType(CString &strPathName);
+	bool IsExistFile( CString &strPathname );
+
 public:
 	CDeltaGraphApp();
+
+	
 
 
 // 재정의입니다.
@@ -35,6 +62,8 @@ public:
 
 	afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()
+
+	afx_msg void OnFileOpen();
 };
 
 extern CDeltaGraphApp theApp;
