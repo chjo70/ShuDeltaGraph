@@ -7,7 +7,7 @@
 
 #include "../FFTW/fftw3.h"
 
-#define			MAX_RAWDATA_SIZE				(4000000)	// 2,432,052
+#define			MAX_RAWDATA_SIZE				(8000000)	// 2,432,052
 
 typedef enum {
 	en_UnknownData = 0,
@@ -64,7 +64,7 @@ typedef struct {
 	float *pfPA;
 	float *pfDTOA;
 
-	_TOA *pfllTOA;
+	_TOA *pllTOA;
 
 	char *pcType;			// [신호형태]
 	char *pcDV;				// [DV]

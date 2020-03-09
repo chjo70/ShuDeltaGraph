@@ -23,9 +23,19 @@ private:
 
 private:
 	void ReadDataFile( STR_FILTER_SETUP *pstFilterSetup );
+	
 
 public:
+	void CloseMapData( CString *pStrWindowTitle=NULL );
+
 	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
+
+	inline UINT GetDataItems() { return m_theDataFile.GetDataItems();}
+	inline ENUM_DataType GetDataType() { return m_theDataFile.GetDataType(); }
+	inline ENUM_UnitType GetUnitType() { return m_theDataFile.GetUnitType(); }
+
+	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
+	inline void *GetData() { return m_theDataFile.GetData();}
 
 
 protected: // serialization에서만 만들어집니다.

@@ -335,7 +335,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 	float *pfAOA, *pfFreq, *pfPA, *pfPW;
 	float *pfPh1, *pfPh2, *pfPh3, *pfPh4;
 	float *pfI, *pfQ, *pfIP, *pfFFT;
-	_TOA *pfllTOA;
+	_TOA *pllTOA;
 	CString strVal;
 
 	bool bPhaseData;
@@ -388,7 +388,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 				pfPA = pPDWData->pfPA;
 				pfPW = pPDWData->pfPW;
 				pcDV = pPDWData->pcDV;
-				pfllTOA = pPDWData->pfllTOA;
+				pllTOA = pPDWData->pllTOA;
 				pcType = pPDWData->pcType;
 				pfPh1 = pPDWData->pfPh1;
 				pfPh2 = pPDWData->pfPh2;
@@ -403,7 +403,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					strVal.Format( _T("%d") , *pcType );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
-					strVal.Format( _T("%12.3f/%12llu") , *pfTOA*1., *pfllTOA );
+					strVal.Format( _T("%12.3f/%12llu") , *pfTOA*1., *pllTOA );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
@@ -441,7 +441,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					++ pfPA;
 					++ pfPW;
 
-					++ pfllTOA;
+					++ pllTOA;
 
 					++ pcDV;
 					++ pcType;
@@ -900,6 +900,8 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	DWORD dwColor[2];
 
+	double dMin, dMax;
+
 	TCHAR strMainTitleLabel[2][5][30] = { { _T("방위"), _T("주파수"), _T("DTOA"), _T("신호세기"), _T("펄스폭") },
 																				{ _T("I/Q 데이터"), _T("순시진폭"), _T("위상차"), _T("FFT") } };
 
@@ -952,7 +954,6 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dNill, 1);
 		
 
-		double dMin, dMax;
 
 		// 그래프 데이터 계산하기
 		switch( enSubGraph ) {

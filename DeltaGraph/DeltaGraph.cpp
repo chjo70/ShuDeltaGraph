@@ -110,6 +110,11 @@ BOOL CDeltaGraphApp::InitInstance()
 	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
 		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
+
+	//////////////////////////////////////////////////////////////////////////
+	//
+	Log( enNormal, _T("DeltaGraph+++++++++++++++++++++++++++++++++++++++++++") );
+
 	// 응용 프로그램의 문서 템플릿을 등록합니다. 문서 템플릿은
 	//  문서, 프레임 창 및 뷰 사이의 연결 역할을 합니다.
 	CMultiDocTemplate* pDocTemplate;
@@ -138,6 +143,7 @@ BOOL CDeltaGraphApp::InitInstance()
 		return FALSE;
 	}
 	m_pMainWnd = pMainFrame;
+
 	// 접미사가 있을 경우에만 DragAcceptFiles를 호출합니다.
 	//  MDI 응용 프로그램에서는 m_pMainWnd를 설정한 후 바로 이러한 호출이 발생해야 합니다.
 
@@ -155,14 +161,16 @@ BOOL CDeltaGraphApp::InitInstance()
 		//cmdInfo.m_nShellCommand = CCommandLineInfo::FileOpen;
 	}
 
-
+	
 
 	// 명령줄에 지정된 명령을 디스패치합니다.
 	// 응용 프로그램이 /RegServer, /Register, /Unregserver 또는 /Unregister로 시작된 경우 FALSE를 반환합니다.
-	if (!ProcessShellCommand(cmdInfo))
-		return FALSE;
+// 	if (!ProcessShellCommand(cmdInfo))
+// 		return FALSE;
+
+
 	// 주 창이 초기화되었으므로 이를 표시하고 업데이트합니다.
-	pMainFrame->ShowWindow(m_nCmdShow);
+	pMainFrame->ShowWindow( SW_SHOWMAXIMIZED /* m_nCmdShow */ );
 	pMainFrame->UpdateWindow();
 
 	return TRUE;
@@ -172,6 +180,10 @@ int CDeltaGraphApp::ExitInstance()
 {
 	//TODO: 추가한 추가 리소스를 처리합니다.
 	AfxOleTerm(FALSE);
+
+	TRACE( "\n ExitInstance..호출" );
+
+	//CDeltaGraphDoc::CloseMapData();
 
 	return CWinAppEx::ExitInstance();
 }
@@ -285,6 +297,7 @@ void CDeltaGraphApp::OnFileOpen()
 	}
 	else {
 		strPathName = m_strArgument;
+		RawDataOpen( & strPathName );
 		m_strArgument.Empty();
 	}
 
@@ -312,8 +325,8 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 	CDeltaGraphView *pView;
 	CChildFrame *pChild;
 
-// 	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
-// 	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;
+ 	//ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
+	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1 } ; //, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;
 // 
 // 	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
 // 	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
@@ -331,18 +344,19 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
  
  				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
 
- 				//pView = (CDeltaGraphView *) pChild->GetActiveView();
+ 				pView = (CDeltaGraphView *) pChild->GetActiveView();
  
- 				//if( true == pDoc->OpenFile( *pStrPathname ) ) {
-// 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
-// 						pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
-// 					}
-// 					else {
-// 						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
-// 						AfxMessageBox( warningMessage );
-// 						break;
-// 					}
- 				//}
+ 				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+ 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
+ 						//pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
+						pView->ShowGraph( viewPDWSubGraph[i] );
+ 					}
+ 					else {
+ 						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+ 						AfxMessageBox( warningMessage );
+ 						break;
+ 					}
+ 				}
 			}
 		}
 		else {

@@ -42,6 +42,8 @@ CDeltaGraphDoc::CDeltaGraphDoc()
 
 CDeltaGraphDoc::~CDeltaGraphDoc()
 {
+	CloseMapData( & m_strPathname );
+	
 }
 
 BOOL CDeltaGraphDoc::OnNewDocument()
@@ -204,6 +206,44 @@ void CDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 	pData = m_theDataFile.GetRawData();
 	if( pData != NULL ) {
 		m_gMapData.insert( make_pair( m_strPathname, pData ) );
+	}
+
+}
+
+/**
+ * @brief     
+ * @param     CString * pStrWindowTitle
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/09 15:27:11
+ * @warning   
+ */
+void CDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
+{
+	auto it=m_gMapData.begin();
+
+	if( pStrWindowTitle == NULL ) {
+		while( it != m_gMapData.end() ) {
+			it->second->Free();
+			delete it->second;
+
+			++ it;
+		}
+		m_gMapData.clear();
+	}
+	else {
+		while( it != m_gMapData.end() ) {
+			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
+				it->second->Free();
+				delete it->second;
+
+				m_gMapData.erase( it++ );
+			}
+			else {
+				++ it;
+			}
+		}
 	}
 
 }

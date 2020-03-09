@@ -22,6 +22,12 @@
     <Filter Include="소스 파일\PDW">
       <UniqueIdentifier>{2b36d8df-adb0-4715-8001-ca67cb483543}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\ListCtrl">
+      <UniqueIdentifier>{d21e16ed-94b0-4490-9a1d-2ff33c8cb28b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\EasySize">
+      <UniqueIdentifier>{75064501-4973-44a9-8138-3d1cec02e5cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -168,6 +174,24 @@
     <ClInclude Include="DeltaGraphView2.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\ListCtrl\ComboItem.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\ListCtrl\EditItem.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\ListCtrl\EditList.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\ListCtrl\ReportCtrl.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\EasySize\EasySize.h">
+      <Filter>소스 파일\EasySize</Filter>
+    </ClInclude>
+    <ClInclude Include="Show.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DeltaGraph.cpp">
@@ -213,6 +237,21 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="DeltaGraphView2.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\ListCtrl\ComboItem.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditItem.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditList.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\ListCtrl\ReportCtrl.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="Show.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

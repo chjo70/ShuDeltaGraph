@@ -329,6 +329,7 @@ void CShuDeltaGraphApp::OnFileOpen()
 	}
 	else {
 		strPathName = m_strArgument;
+		RawDataOpen( & strPathName );
 		m_strArgument.Empty();
 	}
 

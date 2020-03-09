@@ -59,6 +59,14 @@ void CDlgColList::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_TOTAL_RAW_LIST, m_CStaticTotalRawList);
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/09 10:12:59
+ * @warning   
+ */
 void CDlgColList::InitVar()
 {
 	m_uiLog = 1;	
@@ -162,6 +170,14 @@ END_MESSAGE_MAP()
 
 // CDlgColList ¸Þ½ÃÁö Ã³¸®±âÀÔ´Ï´Ù.
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/09 10:09:02
+ * @warning   
+ */
 void CDlgColList::InitButton()
 {
 
@@ -175,6 +191,15 @@ void CDlgColList::InitButton()
 	SetControl( false );
 }
 
+/**
+ * @brief     
+ * @param     CButtonST * pCButtonRouteSetup
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/09 10:09:00
+ * @warning   
+ */
 void CDlgColList::InitButtonST( CButtonST *pCButtonRouteSetup )
 {
 	short	shBtnColor = 30;
@@ -184,7 +209,14 @@ void CDlgColList::InitButtonST( CButtonST *pCButtonRouteSetup )
 
 }
 
-void CDlgColList::InitToolTip()
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/09 10:08:57
+ * @warning   
+ */void CDlgColList::InitToolTip()
 {
 	m_pTip = new CXInfoTip;
 	m_pTip->Create(this);
@@ -192,6 +224,14 @@ void CDlgColList::InitToolTip()
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/09 10:09:06
+ * @warning   
+ */
 void CDlgColList::InitStatic()
 {
 	m_CStaticTotalColList.SetTextColor(RGB(0,0,255), FALSE);

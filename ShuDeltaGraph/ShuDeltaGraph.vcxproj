@@ -163,6 +163,7 @@
     <ClInclude Include="DlgColList.h" />
     <ClInclude Include="DlgFilterSetup.h" />
     <ClInclude Include="DlgMulti.h" />
+    <ClInclude Include="EasySize\EasySize.h" />
     <ClInclude Include="EchoSocket\MyEchoSocket.h" />
     <ClInclude Include="Excel\ExcelLib.h" />
     <ClInclude Include="Excel\XLAutomation.h" />

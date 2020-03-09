@@ -46,6 +46,9 @@
     <Filter Include="소스 파일\Excel">
       <UniqueIdentifier>{2288c25c-a89c-48ea-8f5b-cc256f442619}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\EasySize">
+      <UniqueIdentifier>{cb3185eb-3372-4a86-ae41-096044f6d420}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="Excel\ExcelLib.h">
       <Filter>소스 파일\Excel</Filter>
+    </ClInclude>
+    <ClInclude Include="EasySize\EasySize.h">
+      <Filter>소스 파일\EasySize</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

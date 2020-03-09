@@ -38,7 +38,7 @@ void CPDW::Alloc()
 	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
-	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
+	m_PDWData.pllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
 
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
@@ -53,7 +53,7 @@ void CPDW::Free()
 	free(m_PDWData.pfDTOA);
 	free(m_PDWData.pfPA);
 
-	free( m_PDWData.pfllTOA );
+	free( m_PDWData.pllTOA );
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
@@ -80,7 +80,7 @@ void CPDW::ConvertArray()
 	float *pfTOA = m_PDWData.pfTOA;
 	float *pfDTOA = m_PDWData.pfDTOA;
 	float *pfPA = m_PDWData.pfPA;
-	_TOA *pfllTOA = m_PDWData.pfllTOA;
+	_TOA *pfllTOA = m_PDWData.pllTOA;
 
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
@@ -188,7 +188,7 @@ void CEPDW::Alloc()
 	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
-	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
+	m_PDWData.pllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
 
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
@@ -209,7 +209,7 @@ void CEPDW::Free()
 	free(m_PDWData.pfDTOA);
 	free(m_PDWData.pfPA);
 
-	free( m_PDWData.pfllTOA );
+	free( m_PDWData.pllTOA );
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
@@ -241,7 +241,7 @@ void CEPDW::ConvertArray()
 	float *pfTOA = m_PDWData.pfTOA;
 	float *pfDTOA = m_PDWData.pfDTOA;
 	float *pfPA = m_PDWData.pfPA;
-	_TOA *pfllTOA = m_PDWData.pfllTOA;
+	_TOA *pfllTOA = m_PDWData.pllTOA;
 
 	float *pfPh1 = m_PDWData.pfPh1;
 	float *pfPh2 = m_PDWData.pfPh2;
@@ -539,7 +539,7 @@ void CKFXPDW::Alloc()
 	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
-	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
+	m_PDWData.pllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
 
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
@@ -561,7 +561,7 @@ void CKFXPDW::Free()
 	free(m_PDWData.pfTOA);
 	free(m_PDWData.pfDTOA);
 	free(m_PDWData.pfPA);
-	free(m_PDWData.pfllTOA);
+	free(m_PDWData.pllTOA);
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
@@ -600,7 +600,7 @@ void CKFXPDW::ConvertArray()
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
-	_TOA *pfllTOA = m_PDWData.pfllTOA;
+	_TOA *pfllTOA = m_PDWData.pllTOA;
 
 	float fToa, /* firstToa, */ preToa;
 
@@ -691,13 +691,15 @@ C7PDW::~C7PDW(void)
  */
 void C7PDW::Alloc()
 {
+	Log( enNormal, _T("Alloc()을 [%d]개를 할당합니다.") , m_pRawData->uiDataItems );
+
 	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPW = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfAOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfDTOA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
 	m_PDWData.pfPA = (float *)malloc(sizeof(float) * m_pRawData->uiDataItems);
-	m_PDWData.pfllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
+	m_PDWData.pllTOA = (_TOA *)malloc(sizeof(_TOA) * m_pRawData->uiDataItems);
 
 	m_PDWData.pcType = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
 	m_PDWData.pcDV = (char *)malloc(sizeof(char) * m_pRawData->uiDataItems);
@@ -713,13 +715,15 @@ void C7PDW::Alloc()
  */
 void C7PDW::Free()
 {
+	Log( enNormal, _T("Free()를 해지합니다.") );
+
 	free(m_PDWData.pfFreq);
 	free(m_PDWData.pfPW);
 	free(m_PDWData.pfAOA);
 	free(m_PDWData.pfTOA);
 	free(m_PDWData.pfDTOA);
 	free(m_PDWData.pfPA);
-	free(m_PDWData.pfllTOA);
+	free(m_PDWData.pllTOA);
 
 	free(m_PDWData.pcType);
 	free(m_PDWData.pcDV);
@@ -755,10 +759,14 @@ void C7PDW::ConvertArray()
 	float *pfDTOA = m_PDWData.pfDTOA;
 	float *pfPA = m_PDWData.pfPA;
 
+	_TOA *pllTOA = m_PDWData.pllTOA;
+
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
 	float fToa, /* firstToa, */ preToa;
+
+	Log( enNormal, _T("ConvertArray()를 [%d]개를 변환합니다.") , m_pRawData->uiDataItems );
 
 	SRXPDWDataRGroup *pPDW = (SRXPDWDataRGroup *) & gstpRawDataBuffer[sizeof(SRxPDWHeader)];
 
@@ -1196,6 +1204,8 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 	bool bPDW=false, bSPDW=false, b7PDW=false, bIQ=false, bEPDW=false, bKFXPDW=false;
 
 	m_pData = NULL;
+
+	Log( enNormal, _T("파일[%s]을 오픈합니다."), strPathname.GetBuffer() );
 
 	strPathname.MakeLower();
 
