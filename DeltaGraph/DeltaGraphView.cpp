@@ -29,11 +29,14 @@ BEGIN_MESSAGE_MAP(CDeltaGraphView, CFormView)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 	ON_WM_SIZE()
+	ON_WM_SIZING()
 END_MESSAGE_MAP()
 
 
 BEGIN_EASYSIZE_MAP(CDeltaGraphView)
 	EASYSIZE(IDC_LIST_PDW,ES_BORDER,ES_BORDER,ES_BORDER,ES_BORDER,0)
+	EASYSIZE(IDC_BUTTON_PREVIOUS,ES_BORDER,ES_BORDER,ES_KEEPSIZE,ES_KEEPSIZE,0)
+	EASYSIZE(IDC_BUTTON_NEXT,ES_BORDER,ES_BORDER,ES_KEEPSIZE,ES_KEEPSIZE,0)
 END_EASYSIZE_MAP
 
 // CDeltaGraphView 생성/소멸
@@ -42,6 +45,7 @@ CDeltaGraphView::CDeltaGraphView()
 	: CFormView(CDeltaGraphView::IDD)
 {
 	// TODO: 여기에 생성 코드를 추가합니다.
+	CLEAR_EASYSIZE;
 
 }
 
@@ -63,8 +67,17 @@ BOOL CDeltaGraphView::PreCreateWindow(CREATESTRUCT& cs)
 	return CFormView::PreCreateWindow(cs);
 }
 
-void CDeltaGraphView::OnInitialUpdate()
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/10 10:05:12
+ * @warning   
+ */
+ void CDeltaGraphView::OnInitialUpdate()
 {
+
 	CFormView::OnInitialUpdate();
 	ResizeParentToFit();
 
@@ -126,10 +139,10 @@ CDeltaGraphDoc* CDeltaGraphView::GetDocument() const // 디버그되지 않은 버전은 �
 void CDeltaGraphView::InitListCtrl( bool bInit )
 {
 	int j=0;
-	CRect rt;
+	//CRect rt;
 
 	if( bInit == true ) {
-		m_CListPDW.GetWindowRect(&rt);
+		//m_CListPDW.GetWindowRect(&rt);
 		m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
 		m_CListPDW.InsertColumn( j++, _T("순 서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순 서")), -1 );
@@ -156,7 +169,18 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 	}
 }
 
-void CDeltaGraphView::OnSize(UINT nType, int cx, int cy)
+/**
+ * @brief     
+ * @param     UINT nType
+ * @param     int cx
+ * @param     int cy
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/10 10:04:38
+ * @warning   
+ */
+ void CDeltaGraphView::OnSize(UINT nType, int cx, int cy)
 {
 	CFormView::OnSize(nType, cx, cy);
 
@@ -168,8 +192,16 @@ void CDeltaGraphView::OnSize(UINT nType, int cx, int cy)
 	UPDATE_EASYSIZE;
 }
 
-
-void CDeltaGraphView::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
+/**
+ * @brief     
+ * @param     ENUM_SUB_GRAPH enSubGraph
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/10 9:39:40
+ * @warning   
+ */
+ void CDeltaGraphView::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
 {
 	ENUM_DataType enDataType;
 
@@ -242,7 +274,6 @@ void CDeltaGraphView::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
 					}
 					else {
 						m_CListPDW.SetItemText( i, j++, _T("X") ); 
-
 					}
 
 					strVal.Format( _T("%4.1f") , *pfAOA );
@@ -331,3 +362,11 @@ void CDeltaGraphView::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
 		}
 	}
 }
+
+// void CDeltaGraphView::OnSizing(UINT fwSide, LPRECT pRect)
+// {
+// 	__super::OnSizing(fwSide, pRect);
+// 
+// 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+// 	EASYSIZE_MINSIZE(280,250,fwSide,pRect);
+// }

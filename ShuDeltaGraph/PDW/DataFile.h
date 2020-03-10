@@ -7,7 +7,8 @@
 
 #include "../FFTW/fftw3.h"
 
-#define			MAX_RAWDATA_SIZE				(8000000)	// 2,432,052
+#define			MAX_RAWDATA_SIZE				(80000)	// 2,432,052
+#define			PDW_ITEMS						(1000)
 
 typedef enum {
 	en_UnknownData = 0,
@@ -57,6 +58,8 @@ typedef struct {
 typedef long long int _TOA;
 
 typedef struct {
+	int iDataItems;
+
 	float *pfFreq;			// [KHz]
 	float *pfPW;			// [ns]
 	float *pfAOA;			// [degree]
@@ -119,9 +122,9 @@ public:
 	CData(STR_RAWDATA *pRawData);
 	virtual ~CData();
 
-	virtual void Alloc()=0;
+	virtual void Alloc( int nItems=0 )=0;
 	virtual void Free()=0;
-	virtual void ConvertArray() = 0;
+	virtual void ConvertArray( int iDataItems ) = 0;
 	virtual void *GetData() = 0;
 };
 
@@ -134,9 +137,9 @@ public:
 	CPDW(STR_RAWDATA *pRawData);
 	virtual ~CPDW();
 
-	void Alloc();
+	void Alloc( int nItems=0 );
 	void Free();
-	void ConvertArray();
+	void ConvertArray( int iDataItems );
 	void *GetData();
 
 };
@@ -151,9 +154,9 @@ public:
 	CSPDW(STR_RAWDATA *pRawData);
 	virtual ~CSPDW();
 
-	void Alloc();
+	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray();
+	void ConvertArray( int iDataItems );
 	void *GetData();
 
 };
@@ -168,9 +171,9 @@ public:
 	CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~CEPDW();
 
-	void Alloc();
+	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray();
+	void ConvertArray( int iDataItems );
 	void *GetData();
 
 };
@@ -185,9 +188,9 @@ public:
 	C7PDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~C7PDW();
 
-	void Alloc();
+	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray();
+	void ConvertArray( int iDataItems );
 	void *GetData();
 
 };
@@ -202,9 +205,9 @@ public:
 	CKFXPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~CKFXPDW();
 
-	void Alloc();
+	void Alloc(int iItems=0);
 	void Free();
-	void ConvertArray();
+	void ConvertArray( int iDataItems );
 	void *GetData();
 
 public:
@@ -259,9 +262,9 @@ public:
 	CIQ(STR_RAWDATA *pRawData);
 	virtual ~CIQ();
 
-	void Alloc();
+	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray();
+	void ConvertArray( int iDataItems );
 	void ConvertArrayForELINT() { }
 	void *GetData();
 
@@ -270,10 +273,14 @@ public:
 class CDataFile
 {
 private:
+	bool m_bOpened;
+	DWORD m_dwFileEnd;
 	CFile m_RawDataFile;
 
 	STR_RAWDATA m_RawData;
 	CData *m_pData;
+
+	CString m_strPathname;
 
 public:
 	CDataFile(void);

@@ -317,7 +317,7 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 	int i;
 
 	CDocTemplate *pDocTemplate=nullptr;	
-	TCHAR warningMessage[100];
+	TCHAR warningMessage[200];
 
 	POSITION pos;
 	CMainFrame *pMainFrame=( CMainFrame * ) AfxGetMainWnd();
@@ -383,14 +383,14 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 			}
 		}
 
+		::PostMessage( m_pMainWnd->m_hWnd, WM_COMMAND, ID_WINDOW_TILE_HORZ, NULL );
+
 	}
 	else {
 		wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
 		AfxMessageBox( warningMessage );
 	}
 
-
-	::PostMessage( m_pMainWnd->m_hWnd, WM_COMMAND, ID_WINDOW_TILE_HORZ, NULL );
 
 }
 

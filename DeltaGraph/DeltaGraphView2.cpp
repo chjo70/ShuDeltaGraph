@@ -48,7 +48,7 @@ CDeltaGraphView2::CDeltaGraphView2()
 	: CFormView(CDeltaGraphView2::IDD)
 {
 	// TODO: 여기에 생성 코드를 추가합니다.
-
+	CLEAR_EASYSIZE;
 }
 
 CDeltaGraphView2::~CDeltaGraphView2()
@@ -188,31 +188,6 @@ void CDeltaGraphView2::InitGraph()
 		PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);
 		PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);
 
-		//PEszset(m_hPE, PEP_szMAINTITLE, TEXT("Units Sold per Month"));
-		//PEszset(m_hPE, PEP_szSUBTITLE, TEXT("")); 
-		//PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("Units Sold"));
-		//PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("Month"));
-
-		// subset labels //
-		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("Texas"));
-		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("Florida" ));
-		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 2, TEXT("Washington" ));
-		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 3, TEXT("California" ));
-
-		// point labels //
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 0, TEXT("January" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 1, TEXT("February" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 2, TEXT("March" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 3, TEXT("April" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 4, TEXT("May" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 5, TEXT("June" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 6, TEXT("July" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 7, TEXT("August" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 8, TEXT("September" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 9, TEXT("October" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 10, TEXT("November" ));
-// 		PEvsetcell( m_hPE, PEP_szaPOINTLABELS, 11, TEXT("December" ));
-
 		// subset colors //
 		DWORD dwArray[4] = { PERGB(128,198,0,0), PERGB(128,0, 198, 198 ), PERGB(128,198,198,0 ), PERGB(128,0,198,0 ) };
 		PEvsetEx(m_hPE, PEP_dwaSUBSETCOLORS, 0, 4, dwArray, 0);
@@ -247,10 +222,10 @@ void CDeltaGraphView2::InitGraph()
 		PEnset(m_hPE, PEP_bSUBTITLEBOLD, TRUE);
 		PEnset(m_hPE, PEP_bLABELBOLD, TRUE);
 		PEnset(m_hPE, PEP_nTEXTSHADOWS, PETS_BOLD_TEXT);
-		PEnset(m_hPE, PEP_nFONTSIZE, PEFS_LARGE);
+		PEnset(m_hPE, PEP_nFONTSIZE, PEFS_SMALL);
 
 		PEnset(m_hPE, PEP_nDATAPRECISION, 1);
-		PEnset(m_hPE, PEP_nGRAPHPLUSTABLE, PEGPT_BOTH);
+		PEnset(m_hPE, PEP_nGRAPHPLUSTABLE, /*PEGPT_BOTH*/PEGPT_GRAPH );
 		PEnset(m_hPE, PEP_bMARKDATAPOINTS, FALSE);
 
 		PEnset(m_hPE, PEP_nIMAGEADJUSTLEFT, 20);
@@ -313,23 +288,6 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
 	void *pData;
 	STR_PDW_DATA *pPDWData=NULL;
 	STR_IQ_DATA *pIQData=NULL;
-
-	// Enable MouseWheel and Pinch Smoothing //
-	PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
-	PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 3);
-	float fzf = 1.2F; PEvset(m_hPE, PEP_fMOUSEWHEELZOOMFACTOR, &fzf, 1);
-	fzf = 1.1F; PEvset(m_hPE, PEP_fPINCHZOOMFACTOR, &fzf, 1);
-
-	// Enable MouseWheel Zooming
-	PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZ_ZOOM);
-
-	// Disable some features not ideal for larger data sets.
-	PEnset(m_hPE, PEP_nPOINTGRADIENTSTYLE, 0);
-	PEnset(m_hPE, PEP_dwPOINTBORDERCOLOR, PERGB(0, 0, 0, 0));
-	PEnset(m_hPE, PEP_nLINESYMBOLTHICKNESS, 0);
-
-	// Enable ZoomWindow Feature //
-	PEnset(m_hPE, PEP_bZOOMWINDOW, TRUE );
 
 	uiDataItems = m_pDoc->GetDataItems();
 	enDataType = m_pDoc->GetDataType();
@@ -453,11 +411,11 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
 
 			for (i = 0; i < uiDataItems; ++i) {
 				if (*pcDV == PDW_DV) {
-					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
+					//PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
 
 				}
 				else {
-					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f1);
+					//PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f1);
 
 				}
 
@@ -470,6 +428,23 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
 	//PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  // v9
 
 	//////////////////////////////////////////////////////////////////////////
+	// Enable MouseWheel and Pinch Smoothing //
+	PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
+	PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 3);
+	float fzf = 1.2F; PEvset(m_hPE, PEP_fMOUSEWHEELZOOMFACTOR, &fzf, 1);
+	fzf = 1.1F; PEvset(m_hPE, PEP_fPINCHZOOMFACTOR, &fzf, 1);
+
+	// Enable MouseWheel Zooming
+	PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZ_ZOOM);
+
+	// Disable some features not ideal for larger data sets.
+	PEnset(m_hPE, PEP_nPOINTGRADIENTSTYLE, 0);
+	PEnset(m_hPE, PEP_dwPOINTBORDERCOLOR, PERGB(0, 0, 0, 0));
+	PEnset(m_hPE, PEP_nLINESYMBOLTHICKNESS, 0);
+
+	// Enable ZoomWindow Feature //
+	PEnset(m_hPE, PEP_bZOOMWINDOW, TRUE );
+
 	
 	// Set plotting method to line and allow zooming //
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE);

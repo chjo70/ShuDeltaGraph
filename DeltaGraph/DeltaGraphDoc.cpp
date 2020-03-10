@@ -208,6 +208,11 @@ void CDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 		m_gMapData.insert( make_pair( m_strPathname, pData ) );
 	}
 
+	// 아래는 테스트 입니다.
+	while( true ) {
+		m_theDataFile.ReadDataFile( m_strPathname, pstFilterSetup );
+	}
+
 }
 
 /**
