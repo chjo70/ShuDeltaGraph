@@ -33,6 +33,7 @@ typedef enum {
 class CDeltaGraphApp : public CWinAppEx
 {
 private:
+	UINT m_uiWindowNumber;
 	CString m_strArgument;
 
 private:

@@ -22,20 +22,24 @@ private:
 	static map<CString, CData *> m_gMapData;
 
 private:
-	void ReadDataFile( STR_FILTER_SETUP *pstFilterSetup );
 	
 
 public:
 	void CloseMapData( CString *pStrWindowTitle=NULL );
+	void ReadDataFile( DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
 
 	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	UINT GetPDWDataItems();
 
-	inline UINT GetDataItems() { return m_theDataFile.GetDataItems();}
+	inline DWORD GetFileNext() { return m_theDataFile.GetFileNext(); }
+	inline DWORD GetFilePrev() { return m_theDataFile.GetFilePrev(); }
+	
+	inline UINT GetDataItems() { return m_theDataFile.GetDataItems(); }
 	inline ENUM_DataType GetDataType() { return m_theDataFile.GetDataType(); }
 	inline ENUM_UnitType GetUnitType() { return m_theDataFile.GetUnitType(); }
-
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
-	inline void *GetData() { return m_theDataFile.GetData();}
+	inline void *GetData() { return m_theDataFile.GetData(); }
+	inline UINT GetWindowNumber() { return m_theDataFile.GetWindowNumber(); }
 
 
 protected: // serialization에서만 만들어집니다.

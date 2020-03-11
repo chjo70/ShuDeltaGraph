@@ -25,9 +25,10 @@ public:
 
 private:
 	void InitListCtrl( bool bInit=true );
+	void InitButton();
 
 public:
-	void ShowGraph( ENUM_SUB_GRAPH enSubGraph );
+	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
 
 public:
 	inline void SetWindowTitle( CString strWindowTitle ) { m_strPathName=strWindowTitle; }
@@ -72,6 +73,8 @@ protected:
 public:
 	CReportCtrl m_CListPDW;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnBnClickedButtonPrevious();
+	afx_msg void OnBnClickedButtonNext();
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

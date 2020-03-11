@@ -8,7 +8,6 @@
 
 #include "Pegrpapi.h"
 
-#include "./EasySize/EasySize.h"
 
 DWORD WINAPI FuncMulti( LPVOID lpData );
 

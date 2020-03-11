@@ -71,6 +71,7 @@ void CDeltaGraphDoc::Serialize(CArchive& ar)
 	else
 	{
 		// TODO: 여기에 로딩 코드를 추가합니다.
+		m_strPathname = ar.m_strFileName;
 	}
 }
 
@@ -161,7 +162,7 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
 	CString strMainTitle;
 	map<CString, CData *>::iterator it;
 	CChildFrame *pChild;
-	CDeltaGraphView *pView;
+	//CDeltaGraphView *pView;
 
 	pChild = ( CChildFrame * ) m_pFrame->GetActiveFrame();
 
@@ -170,7 +171,7 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
 	// 데이터 읽기
 	it = m_gMapData.find( m_strPathname );
 	if( it == m_gMapData.end() ) {
-		ReadDataFile( pstFilterSetup );
+		ReadDataFile( 0, pstFilterSetup );
 
 	}
 	else {
@@ -179,11 +180,11 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
 	}
 
 	// 타이틀 바 변경
-	strMainTitle.Format( _T("%s:%d") , m_strPathname, m_theDataFile.GetWindowNumber() );
-	pChild->SetWindowText( strMainTitle );
+	//strMainTitle.Format( _T("%s:%d") , m_strPathname, m_theDataFile.GetWindowNumber() );
+	//pChild->SetWindowText( strMainTitle );
 
-	pView = (CDeltaGraphView *) pChild->GetActiveView();
-	pView->SetWindowTitle( m_strPathname );
+	//pView = (CDeltaGraphView *) pChild->GetActiveView();
+	//pView->SetWindowTitle( m_strPathname );
 
 	return true;
 }
@@ -197,22 +198,33 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
  * @date      2020/03/08 22:36:03
  * @warning   
  */
-void CDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
+void CDeltaGraphDoc::ReadDataFile( DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup )
 {
 	CData *pData;
 
-	m_theDataFile.ReadDataFile( m_strPathname, pstFilterSetup );
+	m_theDataFile.ReadDataFile( m_strPathname, dwOffset, pstFilterSetup );
 
-	pData = m_theDataFile.GetRawData();
-	if( pData != NULL ) {
-		m_gMapData.insert( make_pair( m_strPathname, pData ) );
-	}
+// 	pData = m_theDataFile.GetRawData();
+// 	if( pData != NULL ) {
+// 		m_gMapData.insert( make_pair( m_strPathname, pData ) );
+// 	}
 
-	// 아래는 테스트 입니다.
-	while( true ) {
-		m_theDataFile.ReadDataFile( m_strPathname, pstFilterSetup );
-	}
+}
 
+/**
+ * @brief     
+ * @return    UINT
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/11 22:19:09
+ * @warning   
+ */
+UINT CDeltaGraphDoc::GetPDWDataItems()
+{ 
+	STR_PDW_DATA *pPDWData;
+
+	pPDWData = ( STR_PDW_DATA * ) m_theDataFile.GetData();
+	return pPDWData->iDataItems; 
 }
 
 /**

@@ -124,7 +124,7 @@ public:
 
 	virtual void Alloc( int nItems=0 )=0;
 	virtual void Free()=0;
-	virtual void ConvertArray( int iDataItems ) = 0;
+	virtual void ConvertArray( int iDataItems, int iOffset=0 ) = 0;
 	virtual void *GetData() = 0;
 };
 
@@ -139,7 +139,7 @@ public:
 
 	void Alloc( int nItems=0 );
 	void Free();
-	void ConvertArray( int iDataItems );
+	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
 
 };
@@ -156,7 +156,7 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray( int iDataItems );
+	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
 
 };
@@ -173,7 +173,7 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray( int iDataItems );
+	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
 
 };
@@ -190,7 +190,7 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray( int iDataItems );
+	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
 
 };
@@ -207,7 +207,7 @@ public:
 
 	void Alloc(int iItems=0);
 	void Free();
-	void ConvertArray( int iDataItems );
+	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
 
 public:
@@ -264,7 +264,7 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
-	void ConvertArray( int iDataItems );
+	void ConvertArray( int iDataItems, int iOffset );
 	void ConvertArrayForELINT() { }
 	void *GetData();
 
@@ -273,7 +273,8 @@ public:
 class CDataFile
 {
 private:
-	bool m_bOpened;
+	DWORD m_dwFilePrev;
+	DWORD m_dwFileNext;
 	DWORD m_dwFileEnd;
 	CFile m_RawDataFile;
 
@@ -286,12 +287,15 @@ public:
 	CDataFile(void);
 	virtual ~CDataFile(void);
 
-	void ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	void ReadDataFile( CString & strPathname, DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	void SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc=NULL, int iSizeOfEtc=0 );
 	void Alloc();
 	void Free();
 	void *GetData();
 	void SetData( CData *pData );
+
+	inline DWORD GetFileNext() { return m_dwFileNext; }
+	inline DWORD GetFilePrev() { return m_dwFilePrev; }
 
 	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_pRawData->uiDataItems; else return 0; }
 	inline ENUM_UnitType GetUnitType() { return m_pData->m_pRawData->enUnitType; }

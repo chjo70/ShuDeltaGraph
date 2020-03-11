@@ -74,7 +74,7 @@ void *CPDW::GetData()
   * @return 	void
   * @date       2019/06/07 10:10
 */
-void CPDW::ConvertArray( int iDataItems )
+void CPDW::ConvertArray( int iDataItems, int iOffset )
 {
 	UINT i;
 
@@ -240,7 +240,7 @@ void *CEPDW::GetData()
   * @return 	void
   * @date       2019/06/07 10:10
 */
-void CEPDW::ConvertArray( int iDataItems )
+void CEPDW::ConvertArray( int iDataItems, int iOffset )
 {
 	UINT i, uiDataItems;
 
@@ -444,7 +444,7 @@ void *CSPDW::GetData()
   * @return 	void
   * @date       2019/06/07 10:10
 */
-void CSPDW::ConvertArray( int iDataItems )
+void CSPDW::ConvertArray( int iDataItems, int iOffset )
 {
 	UINT i;
 
@@ -606,7 +606,7 @@ void *CKFXPDW::GetData()
   * @return 	void
   * @date       2019/06/07 10:10
 */
-void CKFXPDW::ConvertArray( int iDataItems )
+void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 {
 	UINT i;
 
@@ -775,7 +775,7 @@ void *C7PDW::GetData()
   * @return 	void
   * @date       2019/06/07 10:10
 */
-void C7PDW::ConvertArray( int iDataItems )
+void C7PDW::ConvertArray( int iDataItems, int iOffset )
 {
 	UINT i;
 
@@ -795,7 +795,7 @@ void C7PDW::ConvertArray( int iDataItems )
 
 	Log( enNormal, _T("ConvertArray()를 [%d]개를 변환합니다.") , m_pRawData->uiDataItems );
 
-	SRXPDWDataRGroup *pPDW = (SRXPDWDataRGroup *) & gstpRawDataBuffer[sizeof(SRxPDWHeader)];
+	SRXPDWDataRGroup *pPDW = (SRXPDWDataRGroup *) & gstpRawDataBuffer[iOffset];
 
 	_spOneSec = 20000000.;
 	_spOneMilli = FDIV( _spOneSec, 1000. );
@@ -936,7 +936,7 @@ void *CIQ::GetData()
   * @return 	void
   * @date       2019/06/07 10:11
 */
-void CIQ::ConvertArray( int iDataItems )
+void CIQ::ConvertArray( int iDataItems, int iOffset )
 {
 	UINT i;
 
@@ -1129,7 +1129,6 @@ void CData::swapByteOrder(unsigned int& ui)
  */
 CDataFile::CDataFile(void)
 {
-	m_bOpened = false;
 
 	Alloc();
 
@@ -1236,7 +1235,7 @@ void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, 
   * @return		성공시 true, 실패시 false
   * @date       2019/05/31 10:34
 */
-void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilterSetup )
+void CDataFile::ReadDataFile( CString & strPathname, DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup )
 {
 	int iDataItems;
 
@@ -1361,20 +1360,20 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 	}
 
 	else if( m_RawData.enDataType == en_PDW_DATA && m_RawData.enUnitType == en_701 ) {
-		if ( m_bOpened == false ) {
-			if( m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
-				SRxPDWHeader *pPDWHeader;
+		if( m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
+			SRxPDWHeader *pPDWHeader;
 
-				m_dwFileEnd = m_RawDataFile.SeekToEnd();
-				m_RawDataFile.Seek( 0, CFile::begin );
+			m_pData = new C7PDW( & m_RawData, pstFilterSetup );
 
-				m_bOpened = true;
+			m_dwFilePrev = dwOffset;
 
+			m_dwFileEnd = m_RawDataFile.SeekToEnd();
+			m_RawDataFile.Seek( dwOffset, CFile::begin );
+
+			if( dwOffset == 0 ) {
 				m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS );
-			
+
 				pPDWHeader = ( SRxPDWHeader * ) gstpRawDataBuffer;
-			
-				m_pData = new C7PDW( & m_RawData, pstFilterSetup );
 
 				m_pData->AllSwapData32( & pPDWHeader->uiAcqTime, sizeof(int)*4 );
 				m_pData->AllSwapData32( & pPDWHeader->iSearchBandID, sizeof(int)*4 );
@@ -1382,24 +1381,27 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 				m_RawData.uiDataItems = pPDWHeader->iNumOfPDW;
 
 				iDataItems = ( m_RawData.uiByte - sizeof(SRxPDWHeader) ) / sizeof(SRXPDWDataRGroup);
-				m_pData->ConvertArray( iDataItems );
 
+				m_pData->ConvertArray( iDataItems, sizeof(SRxPDWHeader) );
 			}
 			else {
-				m_RawData.uiByte = -1;
-				m_RawData.uiDataItems = 0;
+				m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS );
+
+				iDataItems = m_RawData.uiByte / sizeof(SRXPDWDataRGroup);
+
+				m_pData->ConvertArray( iDataItems, 0 );
 			}
+			
+			m_dwFileNext = m_RawDataFile.Seek( 0, CFile::current );
+
+			m_RawDataFile.Close();
+
+			Log( enNormal, _T("이전 위치[%ld], 다음 위치[%ld], 개수[%d]") , m_dwFilePrev, m_dwFileNext, iDataItems );
+
 		}
 		else {
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRXPDWDataRGroup)*PDW_ITEMS );
-
-			iDataItems = m_RawData.uiByte / sizeof(SRXPDWDataRGroup);
-			m_pData->ConvertArray( iDataItems );
-		}
-
-		
-		if( m_dwFileEnd == m_RawDataFile.GetPosition() ) {
-			m_RawDataFile.Close();
+			m_RawData.uiByte = -1;
+			m_RawData.uiDataItems = 0;
 		}
 
 	}
@@ -1415,8 +1417,6 @@ void CDataFile::ReadDataFile( CString & strPathname, STR_FILTER_SETUP *pstFilter
 			m_pData = new CKFXPDW( & m_RawData, pstFilterSetup );
 
 			m_RawData.uiDataItems = pPDWFile->uiSignalCount;
-
-			//m_pData->Alloc( PDW_ITEMS );
 
 			m_pData->ConvertArray( 0 );
 

@@ -34,6 +34,8 @@ END_MESSAGE_MAP()
 
 CDeltaGraphApp::CDeltaGraphApp()
 {
+	m_uiWindowNumber = 0;
+
 	m_bHiColorIcons = TRUE;
 
 	// 다시 시작 관리자 지원
@@ -161,7 +163,6 @@ BOOL CDeltaGraphApp::InitInstance()
 		//cmdInfo.m_nShellCommand = CCommandLineInfo::FileOpen;
 	}
 
-	
 
 	// 명령줄에 지정된 명령을 디스패치합니다.
 	// 응용 프로그램이 /RegServer, /Register, /Unregserver 또는 /Unregister로 시작된 경우 FALSE를 반환합니다.
@@ -335,28 +336,43 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 // 
 
 	if( true == IsExistFile( *pStrPathname ) ) {
+		++ m_uiWindowNumber;
+
 		if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
 			pos = GetFirstDocTemplatePosition();
 			for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
+				CString strMainTitle;
+
  				pDocTemplate = GetNextDocTemplate( pos );
  
- 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
+ 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(*pStrPathname);
  
  				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
 
  				pView = (CDeltaGraphView *) pChild->GetActiveView();
- 
- 				if( true == pDoc->OpenFile( *pStrPathname ) ) {
- 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
- 						//pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
-						pView->ShowGraph( viewPDWSubGraph[i] );
- 					}
- 					else {
- 						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
- 						AfxMessageBox( warningMessage );
- 						break;
- 					}
- 				}
+
+				//strMainTitle.Format( _T("%s:%d") , *pStrPathname, m_uiWindowNumber );
+				//pChild->SetWindowText( strMainTitle );
+				//pView->SetWindowTitle( strMainTitle );
+
+//  				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+// 					// 타이틀 바 변경
+// 					strMainTitle.Format( _T("%s:%d") , *pStrPathname, pDoc->GetWindowNumber() );
+// 					pChild->SetWindowText( strMainTitle );
+// 
+// 					pView = (CDeltaGraphView *) pChild->GetActiveView();
+// 					pView->SetWindowTitle( strMainTitle );
+// 
+//  					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
+//  						//pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
+// 						//pView->ShowGraph( viewPDWSubGraph[i] );
+//  					}
+//  					else {
+//  						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+//  						AfxMessageBox( warningMessage );
+//  						break;
+//  					}
+//  				}
 			}
 		}
 		else {

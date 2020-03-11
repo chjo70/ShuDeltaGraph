@@ -306,7 +306,7 @@ HCURSOR CShuSIMDlg::OnQueryDragIcon()
 */
 void CShuSIMDlg::InitSocketSetting()
 {
-	bool bRet;
+	//bool bRet;
 	UINT uiPortNum;
 	CString strPortNum;
 

@@ -1,18 +1,16 @@
 #pragma once
 #include "afxwin.h"
 
+#include "./EasySize/EasySize.h"
+
 
 // CDlgMulti 대화 상자입니다.
 
 class CDlgMulti : public CDialogEx
 {
+	DECLARE_EASYSIZE;
+
 public:
-	//DECLARE_EASYSIZE;
-	void __ES__RepositionControls(BOOL bInit);
-	void __ES__CalcBottomRight(CWnd *pThis, BOOL bBottom, int &bottomright, int &topleft, UINT id, UINT br, int es_br, CRect &rect, int clientbottomright);	
-#define INIT_EASYSIZE __ES__RepositionControls(TRUE); __ES__RepositionControls(FALSE)	
-#define UPDATE_EASYSIZE if(GetWindow(GW_CHILD)!=NULL) __ES__RepositionControls(FALSE)	
-#define EASYSIZE_MINSIZE(mx,my,s,r) if(r->right-r->left < mx) { if((s == WMSZ_BOTTOMLEFT)||(s == WMSZ_LEFT)||(s == WMSZ_TOPLEFT)) r->left = r->right-mx; else r->right = r->left+mx; } if(r->bottom-r->top < my) { if((s == WMSZ_TOP)||(s == WMSZ_TOPLEFT)||(s == WMSZ_TOPRIGHT)) r->top = r->bottom-my; else r->bottom = r->top+my; }
 
 private:
 	CRect m_rectCurDlg;

@@ -8,7 +8,7 @@
 
 #include "Pegrpapi.h"
 
-#include "./EasySize/EasySize.h"
+
 
 
 DWORD WINAPI Func2DHisto( LPVOID lpData );

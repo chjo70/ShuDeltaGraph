@@ -30,6 +30,8 @@ BEGIN_MESSAGE_MAP(CDeltaGraphView, CFormView)
 	ON_WM_RBUTTONUP()
 	ON_WM_SIZE()
 	ON_WM_SIZING()
+	ON_BN_CLICKED(IDC_BUTTON_PREVIOUS, &CDeltaGraphView::OnBnClickedButtonPrevious)
+	ON_BN_CLICKED(IDC_BUTTON_NEXT, &CDeltaGraphView::OnBnClickedButtonNext)
 END_MESSAGE_MAP()
 
 
@@ -82,8 +84,12 @@ BOOL CDeltaGraphView::PreCreateWindow(CREATESTRUCT& cs)
 	ResizeParentToFit();
 
 	InitListCtrl();
+	InitButton();
 
 	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
+
+	m_pDoc->ReadDataFile( 0 );
+	ShowGraph();
 
 	INIT_EASYSIZE;
 
@@ -126,8 +132,12 @@ CDeltaGraphDoc* CDeltaGraphView::GetDocument() const // 디버그되지 않은 버전은 �
 
 // CDeltaGraphView 메시지 처리기
 
-#define TEXT_WIDTH			(18)
+void CDeltaGraphView::InitButton()
+{
+	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( FALSE );
+}
 
+#define TEXT_WIDTH			(18)
 /**
  * @brief     
  * @return    void
@@ -139,13 +149,11 @@ CDeltaGraphDoc* CDeltaGraphView::GetDocument() const // 디버그되지 않은 버전은 �
 void CDeltaGraphView::InitListCtrl( bool bInit )
 {
 	int j=0;
-	//CRect rt;
 
 	if( bInit == true ) {
-		//m_CListPDW.GetWindowRect(&rt);
 		m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-		m_CListPDW.InsertColumn( j++, _T("순 서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순 서")), -1 );
+		m_CListPDW.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
 		m_CListPDW.InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호 형태")), -1 ); 
 		m_CListPDW.InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
 		m_CListPDW.InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("DTOA[us]")), -1 ); 
@@ -205,8 +213,6 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 {
 	ENUM_DataType enDataType;
 
-	RECT rect;
-
 	int i, j;
 	UINT uiDataItems;
 
@@ -223,11 +229,6 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 	void *pData;
 	STR_PDW_DATA *pPDWData=NULL;
 	STR_IQ_DATA *pIQData=NULL;
-
-	GetClientRect( &rect );
-
-	//CSize scrollSize( 500, 500);
-	//SetScrollSizes( MM_TEXT, scrollSize );
 
 	uiDataItems = m_pDoc->GetDataItems();
 
@@ -370,3 +371,43 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 // 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 // 	EASYSIZE_MINSIZE(280,250,fwSide,pRect);
 // }
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/12 0:45:50
+ * @warning   
+ */
+void CDeltaGraphView::OnBnClickedButtonPrevious()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	DWORD dwOffset=m_pDoc->GetFilePrev();
+
+	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( m_pDoc->GetFilePrev() != 0 );
+
+	m_pDoc->ReadDataFile( dwOffset );
+	ShowGraph();
+}
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/12 0:45:48
+ * @warning   
+ */
+void CDeltaGraphView::OnBnClickedButtonNext()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	DWORD dwOffset=m_pDoc->GetFileNext();
+
+	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( m_pDoc->GetFilePrev() != 0 );
+
+	m_pDoc->ReadDataFile( dwOffset );
+	ShowGraph();
+}
