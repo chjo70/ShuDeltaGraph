@@ -11,7 +11,11 @@
 
 #include "../ShuDeltaGraph/EasySize/EasySize.h"
 
+#include "../ShuDeltaGraph/SpinCtrl/NumSpinCtrl.h"
+
 #include "Show.h"
+
+
 
 class CDeltaGraphView : public CFormView, public CShow
 {
@@ -26,9 +30,10 @@ public:
 private:
 	void InitListCtrl( bool bInit=true );
 	void InitButton();
+	void InitSpinCtrl();
 
 public:
-	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
+	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
 
 public:
 	inline void SetWindowTitle( CString strWindowTitle ) { m_strPathName=strWindowTitle; }
@@ -75,6 +80,8 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnBnClickedButtonPrevious();
 	afx_msg void OnBnClickedButtonNext();
+	CNumSpinCtrl m_CSpinPage;
+	afx_msg void OnLvnGetdispinfoListPdw(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

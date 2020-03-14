@@ -7,8 +7,23 @@
 
 #include "../FFTW/fftw3.h"
 
-#define			MAX_RAWDATA_SIZE				(80000)	// 2,432,052
-#define			PDW_ITEMS						(1000)
+#define			PDW_ITEMS						(10000)
+#define			IQ_ITEMS						(1024)
+
+#define			MAX_RAWDATA_SIZE				(sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS)	// 2,432,052
+
+typedef enum {
+	enUnselectedSubGraph = -1,
+
+	enSubMenu_1 = 1,
+	enSubMenu_2,
+	enSubMenu_3,
+	enSubMenu_4,
+	enSubMenu_5,
+	enSubMenu_6,
+
+
+} ENUM_SUB_GRAPH ;
 
 typedef enum {
 	en_UnknownData = 0,
@@ -91,12 +106,18 @@ typedef struct {
 typedef struct {
 	double dToaMin;
 	double dToaMax;
+	double dDtoaMin;
+	double dDtoaMax;
 	double dAoaMin;
 	double dAoaMax;
 	double dFrqMin;
 	double dFrqMax;
-	double dPaMin;
-	double dPaMax;
+	double dPAMin;
+	double dPAMax;
+	double dPWMin;
+	double dPWMax;
+
+	ENUM_SUB_GRAPH enSubGraph;
 
 } STR_FILTER_SETUP;
 
@@ -113,10 +134,14 @@ public:
 
 	STR_FILTER_SETUP m_stFilterSetup;
 
+private:
+
 public:
+	void ClearFilterSetup();
 	void swapByteOrder(unsigned int& ui);
 	void swapByteOrder(unsigned long long& ull);
 	void AllSwapData32( void *pData, int iLength );
+	void AllSwapData64( void *pData, int iLength );
 
 public:
 	CData(STR_RAWDATA *pRawData);
@@ -187,6 +212,23 @@ private:
 public:
 	C7PDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
 	virtual ~C7PDW();
+
+	void Alloc( int iItems=0 );
+	void Free();
+	void ConvertArray( int iDataItems, int iOffset=0 );
+	void *GetData();
+
+};
+
+// 701 IQ
+class C7IQ : public CData
+{
+private:
+	STR_IQ_DATA m_IQData;
+
+public:
+	C7IQ(STR_RAWDATA *pRawData );
+	virtual ~C7IQ();
 
 	void Alloc( int iItems=0 );
 	void Free();
@@ -273,8 +315,7 @@ public:
 class CDataFile
 {
 private:
-	DWORD m_dwFilePrev;
-	DWORD m_dwFileNext;
+	int m_iFileIndex;
 	DWORD m_dwFileEnd;
 	CFile m_RawDataFile;
 
@@ -287,22 +328,26 @@ public:
 	CDataFile(void);
 	virtual ~CDataFile(void);
 
-	void ReadDataFile( CString & strPathname, DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	bool ReadDataFile( CString & strPathname, int iFileIndex=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	void SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc=NULL, int iSizeOfEtc=0 );
 	void Alloc();
 	void Free();
 	void *GetData();
 	void SetData( CData *pData );
 
-	inline DWORD GetFileNext() { return m_dwFileNext; }
-	inline DWORD GetFilePrev() { return m_dwFilePrev; }
+	ENUM_DataType WhatDataType( CString *pStrPathname );
+	ENUM_UnitType WhatUnitType( CString *pStrPathname );
+
+	inline int GetFileIndex() { return m_iFileIndex; }
 
 	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_pRawData->uiDataItems; else return 0; }
 	inline ENUM_UnitType GetUnitType() { return m_pData->m_pRawData->enUnitType; }
 	inline ENUM_DataType GetDataType() { return m_pData->m_pRawData->enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
-	
+	inline STR_FILTER_SETUP *GetFilterSetup() { return & m_pData->m_stFilterSetup; }
+	inline void ClearFilterSetup() { m_pData->ClearFilterSetup(); }
+
 	inline bool IsPhaseData() { return m_pData->m_bPhaseData; }
 	
 private:

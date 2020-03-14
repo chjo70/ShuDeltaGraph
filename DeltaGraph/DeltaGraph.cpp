@@ -285,7 +285,7 @@ void CDeltaGraphApp::SaveCustomState()
 // CDeltaGraphApp 메시지 처리기
 
 #define PDW_MULTI_WINDOWS			(2)//(1)
-#define IQ_MULTI_WINDOWS			(1)//(5)
+#define IQ_MULTI_WINDOWS			(2)//(5)
 void CDeltaGraphApp::OnFileOpen()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
@@ -341,61 +341,19 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 		if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
 			pos = GetFirstDocTemplatePosition();
 			for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
-				CString strMainTitle;
-
  				pDocTemplate = GetNextDocTemplate( pos );
  
  				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(*pStrPathname);
- 
- 				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
-
- 				pView = (CDeltaGraphView *) pChild->GetActiveView();
-
-				//strMainTitle.Format( _T("%s:%d") , *pStrPathname, m_uiWindowNumber );
-				//pChild->SetWindowText( strMainTitle );
-				//pView->SetWindowTitle( strMainTitle );
-
-//  				if( true == pDoc->OpenFile( *pStrPathname ) ) {
-// 					// 타이틀 바 변경
-// 					strMainTitle.Format( _T("%s:%d") , *pStrPathname, pDoc->GetWindowNumber() );
-// 					pChild->SetWindowText( strMainTitle );
-// 
-// 					pView = (CDeltaGraphView *) pChild->GetActiveView();
-// 					pView->SetWindowTitle( strMainTitle );
-// 
-//  					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
-//  						//pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
-// 						//pView->ShowGraph( viewPDWSubGraph[i] );
-//  					}
-//  					else {
-//  						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
-//  						AfxMessageBox( warningMessage );
-//  						break;
-//  					}
-//  				}
 			}
 		}
 		else {
+			pos = GetFirstDocTemplatePosition();
+
 			for( i=0 ; i < IQ_MULTI_WINDOWS ; ++i ) {
-				pos = GetFirstDocTemplatePosition();
-				 
-// 				pDocTemplate = GetNextDocTemplate( pos );
-// 
-// 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(NULL);
-// 
-// 				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
-// 				pView = (CDeltaGraphView *) pChild->GetActiveView();
-// 
-// 				if( true == pDoc->OpenFile( *pStrPathname ) ) {
-// 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
-// 						pView->ShowGraph( viewIQGraph[i], viewIQSubGraph[i] );
-// 					}
-// 					else {
-// 						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
-// 						AfxMessageBox( warningMessage );
-// 						break;
-// 					}
-//				}
+ 				pDocTemplate = GetNextDocTemplate( pos );
+ 
+ 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(*pStrPathname);
+
 			}
 		}
 

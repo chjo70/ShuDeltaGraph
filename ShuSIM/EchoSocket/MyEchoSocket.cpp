@@ -101,7 +101,7 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 		STR_MESSAGE *pstRxMessage;
 		STR_DATA_CONTENTS *pstRxData;
 
-		int iLenOfData;
+		//int iLenOfData;
 		UINT uiReceivedData=0, uiDataLength = 0, uiReceivedMessage;
 
 		pRxBuffer = ( char * ) & m_stQueueMsg;

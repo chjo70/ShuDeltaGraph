@@ -248,6 +248,31 @@ typedef struct {
 
 } SRXPDWDataRGroup;
 
+typedef struct {
+	unsigned int uiAcqTime;
+	unsigned int uiAcqTimeMilSec;
+	int iGain;
+	int iTaskType;
+	int iSDFID;
+	int iPDWSetID;
+	unsigned char aucTaskID[_701_LENGTH_OF_TASK_ID];
+	long long int llToa;
+	int iSearchBandID;
+	unsigned int uiRelatedPDWSN;
+	int iChannelNumber;
+	int	iAETID;	
+	int	iLOBID;
+	unsigned int uiNumOfSample;
+	unsigned int _reserved;
+
+} SRxIQHeader;
+
+typedef struct {
+	short sQ;
+	short sI;
+
+} SRXIQDataRGroup;
+
 #pragma pack(pop)
 
 

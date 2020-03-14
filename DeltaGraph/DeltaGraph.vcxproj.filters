@@ -192,6 +192,9 @@
     <ClInclude Include="Show.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\SpinCtrl\NumSpinCtrl.h">
+      <Filter>소스 파일\SpinCtrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DeltaGraph.cpp">
@@ -253,6 +256,9 @@
     </ClCompile>
     <ClCompile Include="Show.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\SpinCtrl\NumSpinCtrl.cpp">
+      <Filter>소스 파일\SpinCtrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,18 +4,7 @@
 
 #pragma once
 
-typedef enum {
-	enUnselectedSubGraph = -1,
-
-	enSubMenu_1 = 1,
-	enSubMenu_2,
-	enSubMenu_3,
-	enSubMenu_4,
-	enSubMenu_5,
-	enSubMenu_6,
-
-
-} ENUM_SUB_GRAPH ;
+#include "../ShuDeltaGraph/PDW/DataFile.h"
 
 
 class CShow
@@ -26,7 +15,7 @@ public:
 	CShow();
 	virtual ~CShow();
 
-	virtual void ShowGraph( ENUM_SUB_GRAPH enSubGraph )=0;
+	virtual void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enSubMenu_1, int iFileIndex=0 )=0;
 	
 };
 

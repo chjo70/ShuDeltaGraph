@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CDeltaGraphView, CFormView)
 	ON_WM_SIZING()
 	ON_BN_CLICKED(IDC_BUTTON_PREVIOUS, &CDeltaGraphView::OnBnClickedButtonPrevious)
 	ON_BN_CLICKED(IDC_BUTTON_NEXT, &CDeltaGraphView::OnBnClickedButtonNext)
+	ON_NOTIFY(LVN_GETDISPINFO, IDC_LIST_PDW, &CDeltaGraphView::OnLvnGetdispinfoListPdw)
 END_MESSAGE_MAP()
 
 
@@ -59,6 +60,7 @@ void CDeltaGraphView::DoDataExchange(CDataExchange* pDX)
 {
 	CFormView::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_PDW, m_CListPDW);
+	DDX_Control(pDX, IDC_SPIN_FRQ_LOW, m_CSpinPage);
 }
 
 BOOL CDeltaGraphView::PreCreateWindow(CREATESTRUCT& cs)
@@ -79,17 +81,21 @@ BOOL CDeltaGraphView::PreCreateWindow(CREATESTRUCT& cs)
  */
  void CDeltaGraphView::OnInitialUpdate()
 {
+	bool bRet;
 
 	CFormView::OnInitialUpdate();
 	ResizeParentToFit();
 
 	InitListCtrl();
 	InitButton();
+	InitSpinCtrl();
 
 	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
 
-	m_pDoc->ReadDataFile( 0 );
+	bRet = m_pDoc->ReadDataFile( 0 );
 	ShowGraph();
+
+	GetDlgItem( IDC_BUTTON_NEXT )->EnableWindow( ! bRet );
 
 	INIT_EASYSIZE;
 
@@ -137,6 +143,16 @@ void CDeltaGraphView::InitButton()
 	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( FALSE );
 }
 
+void CDeltaGraphView::InitSpinCtrl()
+{
+
+	m_CSpinPage.SetDecimalPlaces(0);
+	m_CSpinPage.SetTrimTrailingZeros(FALSE);
+	m_CSpinPage.SetRangeAndDelta( 0, 10000, 10.0 );
+	m_CSpinPage.SetPos( (double) 0 );
+
+}
+
 #define TEXT_WIDTH			(18)
 /**
  * @brief     
@@ -166,6 +182,8 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 		m_CListPDW.SetGridLines(TRUE);
 		//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
 		//m_ColList.SetCheckboxes(TRUE);
+
+		m_CListPDW.SetItemCount( PDW_ITEMS );
 
 	}
 	else {
@@ -209,12 +227,12 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
  * @date      2020/03/10 9:39:40
  * @warning   
  */
- void CDeltaGraphView::ShowGraph( ENUM_SUB_GRAPH enSubGraph )
+ void CDeltaGraphView::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 {
 	ENUM_DataType enDataType;
 
 	int i, j;
-	UINT uiDataItems;
+	UINT uiPDWDataItems;
 
 	char *pcDV, *pcType;
 	float *pfTOA, *pfDTOA;
@@ -230,9 +248,11 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 	STR_PDW_DATA *pPDWData=NULL;
 	STR_IQ_DATA *pIQData=NULL;
 
-	uiDataItems = m_pDoc->GetDataItems();
+	uiPDWDataItems = m_pDoc->GetPDWDataItems();
 
-	if( uiDataItems != 0 ) {
+	m_CListPDW.DeleteAllItems();
+
+	if( uiPDWDataItems != 0 ) {
 		bPhaseData = m_pDoc->IsPhaseData();
 		enDataType = m_pDoc->GetDataType();
 		pData = m_pDoc->GetData();
@@ -254,10 +274,10 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 				pfPh2 = pPDWData->pfPh2;
 				pfPh3 = pPDWData->pfPh3;
 				pfPh4 = pPDWData->pfPh4;
-				for( i=0 ; i < (int) uiDataItems && i < 1000 ; ++i ) {
+				for( i=0 ; i < (int) uiPDWDataItems ; ++i ) {
 					j = 1;
 
-					strVal.Format( _T("%7d") , i+1 );
+					strVal.Format( _T("%7d") , (m_pDoc->GetFileIndex()*PDW_ITEMS)+i+1 );
 					m_CListPDW.InsertItem( i, strVal );
 
 					strVal.Format( _T("%d") , *pcType );
@@ -384,12 +404,12 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 void CDeltaGraphView::OnBnClickedButtonPrevious()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	DWORD dwOffset=m_pDoc->GetFilePrev();
+	int iFileIndex=m_pDoc->GetFileIndex();
 
-	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( m_pDoc->GetFilePrev() != 0 );
-
-	m_pDoc->ReadDataFile( dwOffset );
+	m_pDoc->ReadDataFile( iFileIndex-1 );
 	ShowGraph();
+
+	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( m_pDoc->GetFileIndex() != 0 );
 }
 
 
@@ -404,10 +424,68 @@ void CDeltaGraphView::OnBnClickedButtonPrevious()
 void CDeltaGraphView::OnBnClickedButtonNext()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	DWORD dwOffset=m_pDoc->GetFileNext();
+	int iFileIndex=m_pDoc->GetFileIndex();
 
-	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( m_pDoc->GetFilePrev() != 0 );
-
-	m_pDoc->ReadDataFile( dwOffset );
+	m_pDoc->ReadDataFile( iFileIndex+1 );
 	ShowGraph();
+
+	GetDlgItem(IDC_BUTTON_PREVIOUS)->EnableWindow( m_pDoc->GetFileIndex() != 0 );
+}
+
+
+void CDeltaGraphView::OnLvnGetdispinfoListPdw(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	//LV_DISPINFO* pDispInfo = (LV_DISPINFO*)pNMHDR;
+	LV_ITEM* pItem= &(pDispInfo)->item;
+
+	if(pItem == NULL) return;
+
+
+	int nRow = pItem->iItem;
+
+	int nCol = pItem->iSubItem;
+
+
+
+	if (nRow<0 || nRow >= PDW_ITEMS/*전체 리스트 갯수*/)
+
+		return;
+
+
+
+
+
+	//m_List.GetItemText(i, 1);   //<-코드는 문제를 일으킴.
+
+
+
+	if(pItem->pszText) //이값이 널로 올 때도 당연히 있음.
+
+	{
+
+		switch(nCol)
+
+		{
+
+		case 0:
+
+			lstrcpy(pItem->pszText, _T("")/*nRow, 0번 열에 들어갈 문자열*/);
+
+			break;
+
+		case 1:
+
+			lstrcpy(pItem->pszText, _T("")/*nRow, 1번 열에 들어갈 문자열*/);
+
+			break;
+
+			//... 열 번호별로 작성
+
+		}
+
+	}
+
+	*pResult = 0;
 }

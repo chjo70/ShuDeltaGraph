@@ -19,26 +19,34 @@ private:
 
 	CDataFile m_theDataFile;
 
-	static map<CString, CData *> m_gMapData;
+	ENUM_UnitType m_enUnitType;
+	ENUM_DataType m_enDataType;
+
+	//static map<CString, CData *> m_gMapData;
 
 private:
 	
 
 public:
 	void CloseMapData( CString *pStrWindowTitle=NULL );
-	void ReadDataFile( DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	bool ReadDataFile( DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
 
 	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	UINT GetPDWDataItems();
 
-	inline DWORD GetFileNext() { return m_theDataFile.GetFileNext(); }
-	inline DWORD GetFilePrev() { return m_theDataFile.GetFilePrev(); }
+	ENUM_UnitType WhatUnitType();
+	ENUM_DataType WhatDataType();
+
+	inline int GetFileIndex() { return m_theDataFile.GetFileIndex(); }
 	
 	inline UINT GetDataItems() { return m_theDataFile.GetDataItems(); }
-	inline ENUM_DataType GetDataType() { return m_theDataFile.GetDataType(); }
-	inline ENUM_UnitType GetUnitType() { return m_theDataFile.GetUnitType(); }
+	inline ENUM_DataType GetDataType() { return m_enDataType; /* m_theDataFile.GetDataType(); */ }
+	inline ENUM_UnitType GetUnitType() { return m_enUnitType; /* .GetUnitType(); */ }
+	
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
 	inline void *GetData() { return m_theDataFile.GetData(); }
+	inline STR_FILTER_SETUP *GetFilterSetup() { return m_theDataFile.GetFilterSetup(); }
+	inline void ClearFilterSetup() { m_theDataFile.ClearFilterSetup(); }
 	inline UINT GetWindowNumber() { return m_theDataFile.GetWindowNumber(); }
 
 

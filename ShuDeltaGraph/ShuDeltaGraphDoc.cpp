@@ -247,7 +247,7 @@ void CShuDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 {
 	CData *pData;
 
-	m_theDataFile.ReadDataFile( m_strPathname, pstFilterSetup );
+	m_theDataFile.ReadDataFile( m_strPathname, 0, pstFilterSetup );
 
 	pData = m_theDataFile.GetRawData();
 	if( pData != NULL ) {

@@ -140,6 +140,7 @@
     <ClInclude Include="..\ShuDeltaGraph\PDW\_iq.h" />
     <ClInclude Include="..\ShuDeltaGraph\PDW\_macro.h" />
     <ClInclude Include="..\ShuDeltaGraph\PDW\_pdw.h" />
+    <ClInclude Include="..\ShuDeltaGraph\SpinCtrl\NumSpinCtrl.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="DeltaGraph.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\ReportCtrl.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\Log\LogDebug.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\PDW\DataFile.cpp" />
+    <ClCompile Include="..\ShuDeltaGraph\SpinCtrl\NumSpinCtrl.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="DeltaGraph.cpp" />

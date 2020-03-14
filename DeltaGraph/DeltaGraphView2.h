@@ -28,12 +28,13 @@ private:
 public:
 
 private:
-	void InitGraph();
+	void InitGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
+	void InitCombo( ENUM_SUB_GRAPH enSubGraph );
 	void CloseGraph();
-
+	void DrawGraph( ENUM_SUB_GRAPH enSubGraph );
 
 public:
-	void ShowGraph( ENUM_SUB_GRAPH enSubGraph );
+	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
 
 	inline void SetWindowTitle( CString strWindowTitle ) { m_strPathName=strWindowTitle; }
 
@@ -77,6 +78,12 @@ protected:
 public:
 	CStatic m_CStaticGraph;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	CComboBox m_CComboYAxis;
+	afx_msg void OnCbnSelchangeComboYaxis();
+	CComboBox m_ComboLineType;
+	afx_msg void OnCbnSelchangeComboLinetype();
+	afx_msg void OnBnClickedButtonFilterApply();
+	afx_msg void OnBnClickedButtonFilterDeapply();
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

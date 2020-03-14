@@ -47,7 +47,7 @@
 							void __ES__CalcBottomRight(CWnd *pThis, BOOL bBottom, int &bottomright, int &topleft, UINT id, UINT br, int es_br, CRect &rect, int clientbottomright);
 #define CLEAR_EASYSIZE __bInitEasySize = false;
 #define INIT_EASYSIZE __ES__RepositionControls(TRUE), __ES__RepositionControls(FALSE), __bInitEasySize = true;
-#define UPDATE_EASYSIZE if(__bInitEasySize == true && GetWindow(GW_CHILD)!=NULL) { TRACE("\n***" );__ES__RepositionControls(FALSE);  }
+#define UPDATE_EASYSIZE if(__bInitEasySize == true && GetWindow(GW_CHILD)!=NULL) { __ES__RepositionControls(FALSE);  }
 #define EASYSIZE_MINSIZE(mx,my,s,r) if(r->right-r->left < mx) { if((s == WMSZ_BOTTOMLEFT)||(s == WMSZ_LEFT)||(s == WMSZ_TOPLEFT)) r->left = r->right-mx; else r->right = r->left+mx; } if(r->bottom-r->top < my) { if((s == WMSZ_TOP)||(s == WMSZ_TOPLEFT)||(s == WMSZ_TOPRIGHT)) r->top = r->bottom-my; else r->bottom = r->top+my; }
 
 #define BEGIN_EASYSIZE_MAP(class) \
@@ -65,7 +65,7 @@ void class::__ES__RepositionControls(BOOL bInit) { CRect rect,rect2,client; GetC
 static int id##_es_l, id##_es_t, id##_es_r, id##_es_b;\
 if(bInit) {\
 GetDlgItem(id)->GetWindowRect(rect); ScreenToClient(rect);\
-TRACE( "\n*left=%d, top=%d, right=%d, bottom=%d", rect.left, rect.top, rect.right, rect.bottom );		\
+/* TRACE( "\n*left=%d, top=%d, right=%d, bottom=%d", rect.left, rect.top, rect.right, rect.bottom );	*/	\
 if(o & ES_HCENTER) id##_es_l = rect.Width()/2; else {\
 if(l==ES_BORDER) id##_es_l = rect.left; else if(l==ES_KEEPSIZE) id##_es_l = rect.Width(); else {\
 	GetDlgItem(l)->GetWindowRect(rect2); ScreenToClient(rect2);\
@@ -80,7 +80,7 @@ if(o & ES_HCENTER) id##_es_r = rect.Width(); else { if(r==ES_BORDER) id##_es_r =
 if(o & ES_VCENTER) id##_es_b = rect.Height(); else  { if(b==ES_BORDER) id##_es_b = client.bottom-rect.bottom; else if(b==ES_KEEPSIZE) id##_es_b = rect.Height(); else {\
 	GetDlgItem(b)->GetWindowRect(rect2); ScreenToClient(rect2);\
 	id##_es_b = rect2.top-rect.bottom;}	\
-TRACE( "\nbInit[%d], left=%d, top=%d,right=%d, bottom=%d", bInit, id##_es_l, id##_es_t, id##_es_r, id##_es_b );		\
+/* TRACE( "\nbInit[%d], left=%d, top=%d,right=%d, bottom=%d", bInit, id##_es_l, id##_es_t, id##_es_r, id##_es_b );	*/	\
 }\
 } else {\
 int left,top,right,bottom; BOOL bR = FALSE,bB = FALSE;\
@@ -101,6 +101,6 @@ else if(t==ES_KEEPSIZE) { __ES__CalcBottomRight(this,TRUE,bottom,top,id,b,id##_e
 } else { GetDlgItem(t)->GetWindowRect(rect2); ScreenToClient(rect2); top = rect2.bottom + id##_es_t; }\
 if(t != ES_KEEPSIZE) __ES__CalcBottomRight(this,TRUE,bottom,top,id,b,id##_es_b,rect,client.bottom);}\
 GetDlgItem(id)->MoveWindow(left,top,right-left,bottom-top,FALSE);\
-TRACE( "\nbInit[%d], left=%d, top=%d,right=%d, bottom=%d", bInit, left, top, right-left, bottom-top );		\
+/* TRACE( "\nbInit[%d], left=%d, top=%d,right=%d, bottom=%d", bInit, left, top, right-left, bottom-top );	*/	\
 } 
 #endif //__EASYSIZE_H_

@@ -21,7 +21,7 @@
 #define new DEBUG_NEW
 #endif
 
-map<CString, CData *> CDeltaGraphDoc::m_gMapData;
+//map<CString, CData *> CDeltaGraphDoc::m_gMapData;
 
 // CDeltaGraphDoc
 
@@ -42,7 +42,7 @@ CDeltaGraphDoc::CDeltaGraphDoc()
 
 CDeltaGraphDoc::~CDeltaGraphDoc()
 {
-	CloseMapData( & m_strPathname );
+	// CloseMapData( & m_strPathname );
 	
 }
 
@@ -72,7 +72,12 @@ void CDeltaGraphDoc::Serialize(CArchive& ar)
 	{
 		// TODO: 여기에 로딩 코드를 추가합니다.
 		m_strPathname = ar.m_strFileName;
+
 	}
+
+	m_enUnitType = WhatUnitType();
+	m_enDataType = WhatDataType();
+
 }
 
 #ifdef SHARED_HANDLERS
@@ -146,6 +151,31 @@ void CDeltaGraphDoc::Dump(CDumpContext& dc) const
 
 // CDeltaGraphDoc 명령
 
+/**
+ * @brief     
+ * @return    ENUM_UnitType
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/12 19:42:44
+ * @warning   
+ */
+ ENUM_UnitType CDeltaGraphDoc::WhatUnitType()
+{
+	return m_theDataFile.WhatUnitType( & m_strPathname );
+}
+
+/**
+ * @brief     
+ * @return    ENUM_DataType
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/12 19:42:42
+ * @warning   
+ */
+ ENUM_DataType CDeltaGraphDoc::WhatDataType()
+{
+	return m_theDataFile.WhatDataType( & m_strPathname );
+}
 
 /**
  * @brief     
@@ -168,16 +198,16 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
 
 	m_strPathname = strPathname;
 
-	// 데이터 읽기
-	it = m_gMapData.find( m_strPathname );
-	if( it == m_gMapData.end() ) {
-		ReadDataFile( 0, pstFilterSetup );
-
-	}
-	else {
-		m_theDataFile.SetData( it->second );
-
-	}
+// 	// 데이터 읽기
+// 	it = m_gMapData.find( m_strPathname );
+// 	if( it == m_gMapData.end() ) {
+// 		ReadDataFile( 0, pstFilterSetup );
+// 
+// 	}
+// 	else {
+// 		m_theDataFile.SetData( it->second );
+// 
+// 	}
 
 	// 타이틀 바 변경
 	//strMainTitle.Format( _T("%s:%d") , m_strPathname, m_theDataFile.GetWindowNumber() );
@@ -198,11 +228,11 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
  * @date      2020/03/08 22:36:03
  * @warning   
  */
-void CDeltaGraphDoc::ReadDataFile( DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup )
+bool CDeltaGraphDoc::ReadDataFile( DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup )
 {
-	CData *pData;
+	// CData *pData;
 
-	m_theDataFile.ReadDataFile( m_strPathname, dwOffset, pstFilterSetup );
+	return m_theDataFile.ReadDataFile( m_strPathname, dwOffset, pstFilterSetup );
 
 // 	pData = m_theDataFile.GetRawData();
 // 	if( pData != NULL ) {
@@ -238,29 +268,29 @@ UINT CDeltaGraphDoc::GetPDWDataItems()
  */
 void CDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
 {
-	auto it=m_gMapData.begin();
-
-	if( pStrWindowTitle == NULL ) {
-		while( it != m_gMapData.end() ) {
-			it->second->Free();
-			delete it->second;
-
-			++ it;
-		}
-		m_gMapData.clear();
-	}
-	else {
-		while( it != m_gMapData.end() ) {
-			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
-				it->second->Free();
-				delete it->second;
-
-				m_gMapData.erase( it++ );
-			}
-			else {
-				++ it;
-			}
-		}
-	}
+// 	auto it=m_gMapData.begin();
+// 
+// 	if( pStrWindowTitle == NULL ) {
+// 		while( it != m_gMapData.end() ) {
+// 			it->second->Free();
+// 			delete it->second;
+// 
+// 			++ it;
+// 		}
+// 		m_gMapData.clear();
+// 	}
+// 	else {
+// 		while( it != m_gMapData.end() ) {
+// 			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
+// 				it->second->Free();
+// 				delete it->second;
+// 
+// 				m_gMapData.erase( it++ );
+// 			}
+// 			else {
+// 				++ it;
+// 			}
+// 		}
+// 	}
 
 }
