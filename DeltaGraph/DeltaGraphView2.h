@@ -85,12 +85,14 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	CComboBox m_CComboYAxis;
 	afx_msg void OnCbnSelchangeComboYaxis();
-	CComboBox m_ComboLineType;
+	CComboBox m_CComboLineType;
 	afx_msg void OnCbnSelchangeComboLinetype();
 	afx_msg void OnBnClickedButtonFilterApply();
 	afx_msg void OnBnClickedButtonFilterDeapply();
 	CStatic m_CStaticDataItems;
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	CComboBox m_CComboPointSize;
+	afx_msg void OnCbnSelchangeComboPointsize();
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

@@ -25,6 +25,8 @@
 
 static TCHAR strLineType[3][30] = { _T("없음"), _T("실선"), _T("점선") };
 
+static TCHAR strPointSize[4][30] = { _T("Small"), _T("Medium"), _T("Large"), _T("Micro") };
+
 static TCHAR strMainTitleLabel[2][5][30] = { { _T("방위"), _T("주파수"), _T("DTOA"), _T("신호세기"), _T("펄스폭") },
 											 { _T("I/Q 데이터"), _T("순시진폭"), _T("위상차"), _T("FFT") } };
 
@@ -43,6 +45,7 @@ BEGIN_MESSAGE_MAP(CDeltaGraphView2, CFormView)
 	ON_CBN_SELCHANGE(IDC_COMBO_LINETYPE, &CDeltaGraphView2::OnCbnSelchangeComboLinetype)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_APPLY, &CDeltaGraphView2::OnBnClickedButtonFilterApply)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_DEAPPLY, &CDeltaGraphView2::OnBnClickedButtonFilterDeapply)
+	ON_CBN_SELCHANGE(IDC_COMBO_POINTSIZE, &CDeltaGraphView2::OnCbnSelchangeComboPointsize)
 END_MESSAGE_MAP()
 
 BEGIN_EASYSIZE_MAP(CDeltaGraphView2)
@@ -71,8 +74,9 @@ void CDeltaGraphView2::DoDataExchange(CDataExchange* pDX)
 	CFormView::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_STATIC_GRAPH, m_CStaticGraph);
 	DDX_Control(pDX, IDC_COMBO_YAXIS, m_CComboYAxis);
-	DDX_Control(pDX, IDC_COMBO_LINETYPE, m_ComboLineType);
+	DDX_Control(pDX, IDC_COMBO_LINETYPE, m_CComboLineType);
 	DDX_Control(pDX, IDC_STATIC_DATAITEMS, m_CStaticDataItems);
+	DDX_Control(pDX, IDC_COMBO_LINETYPE2, m_CComboPointSize);
 }
 
 BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
@@ -230,16 +234,22 @@ void CDeltaGraphView2::InitCombo()
 	iDataType = (int) m_pDoc->GetDataType();
 
 	m_CComboYAxis.ResetContent();
-	for( i=0 ; i < 5 ; ++i ) {
+	for( i=0 ; i < enSubMenu_5 ; ++i ) {
 		m_CComboYAxis.AddString( strMainTitleLabel[iDataType-1][i] );
 	}
 	m_CComboYAxis.SetCurSel( 0 );
 
-	m_ComboLineType.ResetContent();
+	m_CComboLineType.ResetContent();
 	for( i=0 ; i <= 2 ; ++i ) {
-		m_ComboLineType.AddString( strLineType[i] );
+		m_CComboLineType.AddString( strLineType[i] );
 	}
-	m_ComboLineType.SetCurSel( 0 );
+	m_CComboLineType.SetCurSel( 0 );
+
+	m_CComboPointSize.ResetContent();
+	for( i=0 ; i <= 3 ; ++i ) {
+		m_CComboPointSize.AddString( strPointSize[i] );
+	}
+	m_CComboPointSize.SetCurSel( 3 );
 
 }
 
@@ -247,7 +257,7 @@ void CDeltaGraphView2::SetCombo( ENUM_SUB_GRAPH enSubGraph )
 {
 	m_CComboYAxis.SetCurSel( enSubGraph-1 );
 
-	m_ComboLineType.SetCurSel( 0 );
+	m_CComboLineType.SetCurSel( 0 );
 
 }
 
@@ -424,6 +434,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  // v9
 		PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
 		PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TRACKING_TOOLTIP);
+		PEnset(m_hPE, PEP_nTRACKINGTOOLTIPMAXWIDTH, 200);
 
 		PEnset(m_hPE, PEP_bTRACKINGCUSTOMDATATEXT, TRUE);
 		PEnset(m_hPE, PEP_bTRACKINGCUSTOMOTHERTEXT, TRUE);
@@ -482,6 +493,8 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("DI" ));
 
 		OnCbnSelchangeComboLinetype();
+
+		OnCbnSelchangeComboPointsize();
 
 	}
 
@@ -946,7 +959,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
  void CDeltaGraphView2::OnCbnSelchangeComboLinetype()
  {
 	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	 int iCombo= m_ComboLineType.GetCurSel();
+	 int iCombo= m_CComboLineType.GetCurSel();
 
 	 switch( iCombo ) {
 		case 0 :
@@ -1255,4 +1268,42 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 	return __super::OnCommand(wParam, lParam);
 
+ }
+
+
+ void CDeltaGraphView2::OnCbnSelchangeComboPointsize()
+ {
+	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	 int iCombo= m_CComboPointSize.GetCurSel();
+
+	 switch( iCombo ) {
+	 case 0 :
+		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_SMALL);
+		 break;
+
+	 case 1 :
+		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MEDIUM);
+		 break;
+
+	 case 2 :
+		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_LARGE);
+		 break;
+
+	 case 3 :
+		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+		 break;
+
+	 default :
+		 break;
+
+	 }
+
+	 //PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
+
+	 ::InvalidateRect(m_hPE, NULL, FALSE);
+	 ::UpdateWindow(m_hPE);
  }

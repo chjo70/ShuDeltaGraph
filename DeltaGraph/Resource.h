@@ -87,7 +87,6 @@
 #define IDS_FIND_TAB                    302
 #define IDS_EXPLORER                    305
 #define IDS_EDIT_MENU                   306
-#define IDI_ICON1                       314
 #define IDC_LIST_PDW                    1001
 #define IDC_STATIC_GRAPH                1002
 #define IDC_STATIC_REV                  1003
@@ -101,6 +100,7 @@
 #define IDC_COMBO2                      1007
 #define IDC_COMBO_LINETYPE              1007
 #define IDC_COMBO_LINETYPE2             1008
+#define IDC_COMBO_POINTSIZE             1008
 #define IDC_BUTTON_FILTER_APPLY         1009
 #define IDC_BUTTON_FILTER_DEAPPLY       1010
 #define IDC_STATIC_DATAITEMS            1011
