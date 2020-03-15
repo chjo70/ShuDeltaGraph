@@ -72,7 +72,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\DeltaGraph.ico"
+IDR_MAINFRAME           ICON                    "res\\chartingtocpict.ico"
 IDR_DeltaGraphTYPE      ICON                    "res\\DeltaGraphDoc.ico"
 IDI_FILE_VIEW           ICON                    "res\\file_view.ico"
 IDI_FILE_VIEW_HC        ICON                    "res\\file_view_hc.ico"

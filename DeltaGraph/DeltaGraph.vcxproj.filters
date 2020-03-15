@@ -112,6 +112,18 @@
     <None Include="res\Toolbar256.bmp">
       <Filter>리소스 파일</Filter>
     </None>
+    <None Include="..\..\..\TEMP\chartingtocpict.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\icon1.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="..\..\..\TEMP\chartingtocpict.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\chartingtocpict.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeltaGraph.h">
