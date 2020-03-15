@@ -293,8 +293,8 @@ void CShuDeltaGraphView::ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph )
 			break;
 
 		case enSubMenu_4 :
-			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dPaMin ); 
-			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dPaMax ); 
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dPAMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dPAMax ); 
 			break;
 	}
 

@@ -204,7 +204,15 @@ CDeltaGraphDoc* CDeltaGraphView2::GetDocument() const // 디버그되지 않은 버전은 
 
 // CDeltaGraphView 메시지 처리기
 
-void CDeltaGraphView2::InitCombo( ENUM_SUB_GRAPH enSubGraph )
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/15 17:14:07
+ * @warning   
+ */
+void CDeltaGraphView2::InitCombo()
 {
 	int i, iDataType;
 
@@ -924,7 +932,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 			{
 				PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE);
 				// subset line types //
-				int nLineTypes[] = { PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, 
+				int nLineTypes[] = { PELT_THINSOLID, PELT_THINSOLID, 
 					PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, 
 					PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID};
 				PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 2);
@@ -944,7 +952,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 			{
 				PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE);
 				// subset line types //
-				int nLineTypes[] = { PELT_MEDIUMDASHDOT, PELT_MEDIUMDASHDOT, 
+				int nLineTypes[] = { PELT_DOT, PELT_DOT, 
 					PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, 
 					PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID};
 				PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 2);

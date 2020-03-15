@@ -29,7 +29,7 @@ public:
 
 private:
 	void InitGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
-	void InitCombo( ENUM_SUB_GRAPH enSubGraph );
+	void InitCombo();
 	void SetCombo( ENUM_SUB_GRAPH enSubGraph );
 	void CloseGraph();
 	void DrawGraph( ENUM_SUB_GRAPH enSubGraph );

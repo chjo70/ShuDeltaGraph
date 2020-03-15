@@ -129,6 +129,8 @@
     <None Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ShuDeltaGraph\ButtonST\BCMenu.h" />
+    <ClInclude Include="..\ShuDeltaGraph\ButtonST\BtnST.h" />
     <ClInclude Include="..\ShuDeltaGraph\EasySize\EasySize.h" />
     <ClInclude Include="..\ShuDeltaGraph\FFTW\fftw3.h" />
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\ComboItem.h" />
@@ -159,6 +161,8 @@
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\ShuDeltaGraph\ButtonST\BCMenu.cpp" />
+    <ClCompile Include="..\ShuDeltaGraph\ButtonST\BtnST.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\ComboItem.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditItem.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditList.cpp" />

@@ -26,18 +26,18 @@ typedef enum {
 
 } ENUM_GRAPH_VIEW ;
 
-typedef enum {
-	enUnselectedSubGraph = -1,
-
-	enSubMenu_1 = 1,
-	enSubMenu_2,
-	enSubMenu_3,
-	enSubMenu_4,
-	enSubMenu_5,
-	enSubMenu_6,
-
-
-} ENUM_SUB_GRAPH ;
+// typedef enum {
+// 	enUnselectedSubGraph = -1,
+// 
+// 	enSubMenu_1 = 1,
+// 	enSubMenu_2,
+// 	enSubMenu_3,
+// 	enSubMenu_4,
+// 	enSubMenu_5,
+// 	enSubMenu_6,
+// 
+// 
+// } ENUM_SUB_GRAPH ;
 
 
 class CShuDeltaGraphView : public CFormView
