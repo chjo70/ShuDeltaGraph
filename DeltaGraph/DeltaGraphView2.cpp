@@ -71,6 +71,7 @@ void CDeltaGraphView2::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_GRAPH, m_CStaticGraph);
 	DDX_Control(pDX, IDC_COMBO_YAXIS, m_CComboYAxis);
 	DDX_Control(pDX, IDC_COMBO_LINETYPE, m_ComboLineType);
+	DDX_Control(pDX, IDC_STATIC_DATAITEMS, m_CStaticDataItems);
 }
 
 BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
@@ -97,10 +98,11 @@ BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
 
 	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
 
+	InitCombo();
+
 	InitGraph();
 
 	DrawGraph( enSubMenu_1 );
-
 
 	INIT_EASYSIZE;
 
@@ -115,15 +117,18 @@ BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
   * @date      2020/03/12 22:43:37
   * @warning   
   */
- void CDeltaGraphView2::DrawGraph( ENUM_SUB_GRAPH enSubGraph )
- {
+void CDeltaGraphView2::DrawGraph( ENUM_SUB_GRAPH enSubGraph )
+{
 	bool bRet;
- 	int iFileIndex=0;
+ 	int iFileIndex=0, iFilteredDataItems=0;
 
-	InitCombo( enSubGraph );
+	TCHAR szDataItems[100];
+
+	//SetCombo( enSubGraph );
 
 	do {
 		bRet = m_pDoc->ReadDataFile( iFileIndex );
+		iFilteredDataItems += m_pDoc->GetFilteredDataItems();;
 
 		if( iFileIndex == 0 ) {
 			InitGraph( enSubGraph );
@@ -134,7 +139,33 @@ BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
 		++ iFileIndex;
 	} while( bRet == false );
 
- }
+	swprintf( szDataItems, _T("%d"), iFilteredDataItems );
+	m_CStaticDataItems.SetWindowText( szDataItems );
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/15 16:52:33
+ * @warning   
+ */
+void CDeltaGraphView2::ClearGraph()
+{
+	UINT i;
+	float f1 = -9999.0F;
+	
+	UINT uiPDWDataItems = m_pDoc->GetDataItems();
+
+	for ( i = 0; i < uiPDWDataItems; ++i) {
+		PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & f1);
+		PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
+
+	}
+
+}
 
 void CDeltaGraphView2::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
@@ -183,12 +214,20 @@ void CDeltaGraphView2::InitCombo( ENUM_SUB_GRAPH enSubGraph )
 	for( i=0 ; i < 5 ; ++i ) {
 		m_CComboYAxis.AddString( strMainTitleLabel[iDataType-1][i] );
 	}
-	m_CComboYAxis.SetCurSel( enSubGraph-1 );
+	m_CComboYAxis.SetCurSel( 0 );
 
 	m_ComboLineType.ResetContent();
 	for( i=0 ; i <= 2 ; ++i ) {
 		m_ComboLineType.AddString( strLineType[i] );
 	}
+	m_ComboLineType.SetCurSel( 0 );
+
+}
+
+void CDeltaGraphView2::SetCombo( ENUM_SUB_GRAPH enSubGraph )
+{
+	m_CComboYAxis.SetCurSel( enSubGraph-1 );
+
 	m_ComboLineType.SetCurSel( 0 );
 
 }
@@ -307,7 +346,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 	// 서브 그래프 형태에 따른 설정
 	else {
 		TCHAR szBuffer[100];
-		UINT uiPDWDataItems;
+		UINT uiDataItems;
 
 		ENUM_DataType enDataType;
 
@@ -317,17 +356,17 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 
 		DWORD dwColor[2];
 
-		uiPDWDataItems = m_pDoc->GetPDWDataItems();
+		uiDataItems = m_pDoc->GetDataItems();
 		enDataType = m_pDoc->GetDataType();
 		pData = m_pDoc->GetData();
 
 		if (enDataType == en_PDW_DATA) {
-			wsprintf(szBuffer, _T("시간대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiPDWDataItems);
+			wsprintf(szBuffer, _T("시간대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
 			pPDWData = (STR_PDW_DATA *)pData;
 		}
 		else {
-			wsprintf(szBuffer, _T("인덱스대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiPDWDataItems);
+			wsprintf(szBuffer, _T("인덱스대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
 			pIQData = (STR_IQ_DATA *)pData;
 		}
@@ -339,7 +378,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		// 그래프 데이터 그룹 개수 설정
 		PEnset(m_hPE, PEP_nSUBSETS, 2 );
 
-		PEnset(m_hPE, PEP_nPOINTS, uiPDWDataItems);
+		PEnset(m_hPE, PEP_nPOINTS, uiDataItems);
 
 		// This allows plotting of zero values //
 		double dNill = -9999.0F;
@@ -730,7 +769,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 		}
 
 		if (enDataType == en_PDW_DATA) {
-			int i;
+			UINT i;
 			float f1 = -9999.0F;
 
 			if( uiPDWDataItems > 0 ) {
@@ -765,8 +804,8 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 				}
 			}
 			else {
-				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
-				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
+				//PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
+				//PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
 			}
 
 		}
@@ -795,6 +834,8 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 	::InvalidateRect(m_hPE, NULL, FALSE);
 	::UpdateWindow(m_hPE);
+
+	Log( enNormal, _T("%d 개수를 그립니다."), uiPDWDataItems );
 
 }
 
@@ -844,6 +885,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	 int iCombo= m_CComboYAxis.GetCurSel() + 1;
 
+	 ClearGraph();
 	 DrawGraph( (ENUM_SUB_GRAPH) iCombo );
 
  }
@@ -861,8 +903,6 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
  {
 	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	 int iCombo= m_ComboLineType.GetCurSel();
-
-	 
 
 	 switch( iCombo ) {
 		case 0 :
@@ -1026,8 +1066,14 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
  }
 
-
-
+ /**
+  * @brief     
+  * @return    void
+  * @author    조철희 (churlhee.jo@lignex1.com)
+  * @version   0.0.1
+  * @date      2020/03/15 16:26:20
+  * @warning   
+  */
  void CDeltaGraphView2::OnBnClickedButtonFilterDeapply()
  {
 	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.

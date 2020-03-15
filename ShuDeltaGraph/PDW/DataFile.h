@@ -104,6 +104,8 @@ typedef struct {
 } STR_IQ_DATA ;
 
 typedef struct {
+	//UINT uiDataItems;
+
 	double dToaMin;
 	double dToaMax;
 	double dDtoaMin;
@@ -133,6 +135,8 @@ public:
 	bool m_bPhaseData;
 
 	STR_FILTER_SETUP m_stFilterSetup;
+
+	_TOA m_ll1stToa;
 
 private:
 
@@ -347,6 +351,7 @@ public:
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
 	inline STR_FILTER_SETUP *GetFilterSetup() { return & m_pData->m_stFilterSetup; }
 	inline void ClearFilterSetup() { m_pData->ClearFilterSetup(); }
+	inline UINT GetFilteredDataItems() { STR_PDW_DATA *pPDWData=(STR_PDW_DATA *) m_pData->GetData(); return pPDWData->iDataItems; }
 
 	inline bool IsPhaseData() { return m_pData->m_bPhaseData; }
 	

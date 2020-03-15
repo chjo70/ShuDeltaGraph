@@ -42,11 +42,12 @@ public:
 	inline UINT GetDataItems() { return m_theDataFile.GetDataItems(); }
 	inline ENUM_DataType GetDataType() { return m_enDataType; /* m_theDataFile.GetDataType(); */ }
 	inline ENUM_UnitType GetUnitType() { return m_enUnitType; /* .GetUnitType(); */ }
-	
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
 	inline void *GetData() { return m_theDataFile.GetData(); }
+
 	inline STR_FILTER_SETUP *GetFilterSetup() { return m_theDataFile.GetFilterSetup(); }
 	inline void ClearFilterSetup() { m_theDataFile.ClearFilterSetup(); }
+	inline int GetFilteredDataItems() { return m_theDataFile.GetFilteredDataItems(); }
 	inline UINT GetWindowNumber() { return m_theDataFile.GetWindowNumber(); }
 
 

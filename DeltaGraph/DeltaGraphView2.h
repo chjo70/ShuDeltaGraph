@@ -30,8 +30,10 @@ public:
 private:
 	void InitGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
 	void InitCombo( ENUM_SUB_GRAPH enSubGraph );
+	void SetCombo( ENUM_SUB_GRAPH enSubGraph );
 	void CloseGraph();
 	void DrawGraph( ENUM_SUB_GRAPH enSubGraph );
+	void ClearGraph();
 
 public:
 	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
@@ -84,6 +86,7 @@ public:
 	afx_msg void OnCbnSelchangeComboLinetype();
 	afx_msg void OnBnClickedButtonFilterApply();
 	afx_msg void OnBnClickedButtonFilterDeapply();
+	CStatic m_CStaticDataItems;
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

@@ -323,8 +323,8 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 	POSITION pos;
 	CMainFrame *pMainFrame=( CMainFrame * ) AfxGetMainWnd();
 	CDeltaGraphDoc *pDoc;
-	CDeltaGraphView *pView;
-	CChildFrame *pChild;
+	//CDeltaGraphView *pView;
+	//CChildFrame *pChild;
 
  	//ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
 	ENUM_SUB_GRAPH viewPDWSubGraph[PDW_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_1 } ; //, enSubMenu_1, enSubMenu_3, enSubMenu_1, enSubMenu_1 } ;

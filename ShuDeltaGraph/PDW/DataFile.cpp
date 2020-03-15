@@ -625,7 +625,7 @@ void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 
 	float fToa, /* firstToa, */ preToa;
 
-	_TOA llToa, ll1stToa;
+	_TOA llToa;
 	UDRCPDW *pPDW = (UDRCPDW *) & gstpRawDataBuffer[iOffset];
 
 	_spOneSec = 20000000.;
@@ -643,13 +643,15 @@ void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 		llToa = (_TOA) ( pPDW->sPDWFormat.m_LSBTOA ) | ( (_TOA) pPDW->sPDWFormat.m_MSBTOA << 32 );
 		*pfllTOA = llToa;
  		if (i == 0) {
-			ll1stToa = llToa;
- 			*pfTOA = DecodeTOA( llToa-ll1stToa );
+			if( iOffset != 0 ) {
+				m_ll1stToa = llToa;
+			}
+ 			*pfTOA = DecodeTOA( llToa-m_ll1stToa );
  			*pfDTOA = 0;
  			preToa = *pfTOA;
  		}
  		else {
-			*pfTOA = DecodeTOA( llToa-ll1stToa );
+			*pfTOA = DecodeTOA( llToa-m_ll1stToa );
 
  			*pfDTOA = ( *pfTOA - preToa );
  
@@ -673,6 +675,8 @@ void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 		// 필터링 조건
 		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
 			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
 			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
 			++pfFreq;
 			++pfAOA;
@@ -686,12 +690,14 @@ void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 
 			++ m_PDWData.iDataItems;
 
+			//++ m_stFilterSetup.uiDataItems;
+
 		}
 
 		++pPDW;
 	}
 
-	Log( enNormal, _T("PDW 개수는 %d 입니다.") , m_PDWData.iDataItems );
+	Log( enNormal, _T("필터링 PDW 개수는 %d 입니다.") , m_PDWData.iDataItems );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -848,7 +854,11 @@ void C7PDW::ConvertArray( int iDataItems, int iOffset )
  		*pcDV = pPDW->iDirectionVaild ^ 1;
 
 		// 필터링 조건
-		if( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) {
+		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
 			++pfFreq;
 			++pfAOA;
 			++pfPW;
@@ -859,12 +869,16 @@ void C7PDW::ConvertArray( int iDataItems, int iOffset )
 			++pcDV;
 
 			++ m_PDWData.iDataItems;
+
+			//++ m_stFilterSetup.uiDataItems;
 		}
 
 		// printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
 		++pPDW;
 	}
+
+	Log( enNormal, _T("PDW 개수는 %d 입니다.") , m_PDWData.iDataItems );
 
 }
 
@@ -1269,10 +1283,12 @@ void CData::ClearFilterSetup()
 	m_stFilterSetup.dAoaMax = DBL_MAX;
 	m_stFilterSetup.dFrqMin = 0;
 	m_stFilterSetup.dFrqMax = DBL_MAX;
-	m_stFilterSetup.dPAMin = 0;
+	m_stFilterSetup.dPAMin = -DBL_MAX;
 	m_stFilterSetup.dPAMax = DBL_MAX;
 	m_stFilterSetup.dPWMin = 0;
 	m_stFilterSetup.dPWMax = DBL_MAX;
+
+	//m_stFilterSetup.uiDataItems = 0;
 
 }
 
@@ -1570,7 +1586,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 */
 bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_SETUP *pstFilterSetup )
 {
-	int iDataItems;
+	int iDataItems, iFilteredDataItems;
 	DWORD dwFileRead;
 
 	if( m_strPathname.IsEmpty() == true ) {
@@ -1662,6 +1678,8 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 		}
 		SRxPDWHeader *pPDWHeader;
 		if( iFileIndex <= 0 ) {
+			//m_pData->m_stFilterSetup.uiDataItems = 0;
+
 			m_iFileIndex = 0;
 
 			m_dwFileEnd = m_RawDataFile.SeekToEnd();
@@ -1694,10 +1712,6 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 
 		// m_RawDataFile.Close();
 	}
-// 		else {
-// 			m_RawData.uiByte = -1;
-// 			m_RawData.uiDataItems = 0;
-// 		}
 
 	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_701 ) {
 		if( m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
@@ -1753,6 +1767,7 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 			if( m_pData == NULL ) {
 				m_pData = new CKFXPDW( & m_RawData, pstFilterSetup );
 			}
+
 		}
 		STR_PDWFILE_HEADER *pPDWFile;
 
@@ -1815,7 +1830,10 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 
 	dwFileRead = m_RawDataFile.Seek( 0, CFile::current );
 
-	Log( enNormal, _T("현재 위치[%d], 개수[%d]") , m_iFileIndex, iDataItems );
+	STR_PDW_DATA *pData=(STR_PDW_DATA *) m_pData->GetData();
+	iFilteredDataItems = pData->iDataItems;
+
+	Log( enNormal, _T("현재 위치[%d], 총 개수[%d], 필터링 개수[%d]") , m_iFileIndex, iDataItems, iFilteredDataItems );
 
 	return dwFileRead == m_dwFileEnd;
 
