@@ -7,7 +7,7 @@
 
 #include "../FFTW/fftw3.h"
 
-#define			PDW_ITEMS						(10000)
+#define			PDW_ITEMS						(50)
 #define			IQ_ITEMS						(1024)
 
 #define			MAX_RAWDATA_SIZE				(sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS)	// 2,432,052
@@ -195,6 +195,8 @@ class CEPDW : public CData
 {
 private:
 	STR_PDW_DATA m_PDWData;
+
+	ENUM_BANDWIDTH m_enBandWidth;
 
 public:
 	CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );

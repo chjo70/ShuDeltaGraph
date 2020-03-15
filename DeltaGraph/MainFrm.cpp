@@ -6,6 +6,7 @@
 #include "DeltaGraph.h"
 
 #include "MainFrm.h"
+#include "ChildFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -429,4 +430,11 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CMDIFrameWndEx::OnSettingChange(uFlags, lpszSection);
 	m_wndOutput.UpdateFonts();
+}
+
+void CMainFrame::SetChildWindowText( TCHAR *pWindowTitle )
+{
+	CChildFrame *pChild = ( CChildFrame * ) GetActiveFrame();
+
+	pChild->SetWindowText( pWindowTitle );
 }

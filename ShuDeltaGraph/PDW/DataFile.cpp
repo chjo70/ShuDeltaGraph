@@ -165,7 +165,7 @@ void CPDW::ConvertArray( int iDataItems, int iOffset )
 //////////////////////////////////////////////////////////////////////////
 CEPDW::CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
 {
-	STR_PDWDATA *pPDWData;
+	//STR_PDWDATA *pPDWData;
 
 	Alloc( PDW_ITEMS );
  
@@ -254,7 +254,7 @@ void *CEPDW::GetData()
 */
 void CEPDW::ConvertArray( int iDataItems, int iOffset )
 {
-	UINT i, uiDataItems;
+	int i;
 
 	float *pfFreq = m_PDWData.pfFreq;
 	float *pfPW = m_PDWData.pfPW;
@@ -272,39 +272,45 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
-	_TOA uiToa, firstToa, preToa;
+	_TOA uiToa, /*firstToa*/ preToa;
 
 	STR_PDWDATA *pPDWData = (STR_PDWDATA *) gstpRawDataBuffer;
-	_PDW *pPDW = (_PDW *) pPDWData->stPDW;
+	_PDW *pPDW = (_PDW *) & gstpRawDataBuffer[iOffset];
 
-	_spOneSec = FDIV( 1000000000, _toaRes[pPDWData->enBandWidth] );
-	_spOneMilli = FDIV( 1000000, _toaRes[pPDWData->enBandWidth] );
-	_spOneMicrosec = FDIV( 1000, _toaRes[pPDWData->enBandWidth] );
-	_spOneNanosec = FDIV( 1, _toaRes[pPDWData->enBandWidth] );
+	if( iOffset != 0 ) {
+		m_enBandWidth = pPDWData->enBandWidth;
+	}
+
+	_spOneSec = FDIV( 1000000000, _toaRes[m_enBandWidth] );
+	_spOneMilli = FDIV( 1000000, _toaRes[m_enBandWidth] );
+	_spOneMicrosec = FDIV( 1000, _toaRes[m_enBandWidth] );
+	_spOneNanosec = FDIV( 1, _toaRes[m_enBandWidth] );
 
 	_spAMPres = (float) (0.25);
 	_spPWres = _spOneMicrosec;
 
-	for (i = uiDataItems = 0; i < m_pRawData->uiDataItems ; ++i ) {
+	m_PDWData.iDataItems = 0;
+
+	for ( i=0; i < iDataItems ; ++i ) {
 		if (i == 0) {
-			if( pPDWData->iIsStorePDW == 1 ) {
-				firstToa = pPDW->llTOA;
+			if( pPDWData->iIsStorePDW == 1 && iOffset != 0 ) {
+				m_ll1stToa = pPDW->llTOA;
 			}
 			else {
-				firstToa = 0;
+				// m_ll1stToa = 0;
 			}
 
 			*pfDTOA = 0;
-			*pfTOA = 0;
-			preToa = 0; // pPDW->llTOA;
+			*pfTOA = FDIV(pPDW->llTOA-m_ll1stToa, _spOneMicrosec );
+			preToa = *pfTOA;
 		}
 		else {
-			uiToa = pPDW->llTOA - firstToa;
-			*pfTOA = FDIV(uiToa, _spOneMicrosec );
+			//uiToa = pPDW->llTOA - m_ll1stToa;
+			*pfTOA = FDIV(pPDW->llTOA-m_ll1stToa, _spOneMicrosec );
 
-			*pfDTOA = (float) ( uiToa - preToa );
-			*pfDTOA = FDIV(*pfDTOA, _spOneMicrosec );
-			preToa = pPDW->llTOA - firstToa;
+			//*pfDTOA = (float) ( uiToa - preToa );
+			*pfDTOA = FDIV( *pfTOA-preToa, _spOneMicrosec );
+			preToa = *pfTOA;
 		}
 
 		*pfllTOA = pPDW->llTOA;
@@ -340,8 +346,14 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[kHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
-		if( ( (double) *pfAOA >= m_stFilterSetup.dAoaMin && (double) *pfAOA <= m_stFilterSetup.dAoaMax ) &&
-			( (double) *pfFreq >= m_stFilterSetup.dFrqMin && (double) *pfFreq <= m_stFilterSetup.dFrqMax ) ) {
+		// 필터링 조건
+		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
+// 		if( ( (double) *pfAOA >= m_stFilterSetup.dAoaMin && (double) *pfAOA <= m_stFilterSetup.dAoaMax ) &&
+// 			( (double) *pfFreq >= m_stFilterSetup.dFrqMin && (double) *pfFreq <= m_stFilterSetup.dFrqMax ) ) {
 			++pfFreq;
 			++pfAOA;
 			++pfPW;
@@ -360,7 +372,7 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 				++ pfPh4;
 			}
 
-			++ uiDataItems;
+			++ m_PDWData.iDataItems;
 		}
 
 		if( m_bPhaseData == true ) {
@@ -376,7 +388,8 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 		}
 	}
 
-	m_pRawData->uiDataItems = uiDataItems;
+	//m_pRawData->uiDataItems = uiDataItems;
+	Log( enNormal, _T("필터링 PDW 개수는 %d 입니다.") , m_PDWData.iDataItems );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -634,7 +647,7 @@ void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 
 	_TOA *pfllTOA = m_PDWData.pllTOA;
 
-	float fToa, /* firstToa, */ preToa;
+	float /*fToa,*/ /* firstToa, */ preToa;
 
 	_TOA llToa;
 	UDRCPDW *pPDW = (UDRCPDW *) & gstpRawDataBuffer[iOffset];
@@ -821,7 +834,7 @@ void C7PDW::ConvertArray( int iDataItems, int iOffset )
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
-	float fToa, /* firstToa, */ preToa;
+	float /*fToa*/ /* firstToa, */ preToa;
 
 	Log( enNormal, _T("ConvertArray()를 [%d]개를 변환합니다.") , iDataItems );
 
@@ -1680,7 +1693,7 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW)) + sizeof(_PDW)*PDW_ITEMS );
 			pPDWData = ( STR_PDWDATA * ) gstpRawDataBuffer;
 			m_RawData.uiDataItems = pPDWData->count;
-			iDataItems = 0;
+
 			if( m_dwFileEnd == (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW) ) + sizeof(_PDW)*m_RawData.uiDataItems ) {
 				m_pData->m_bPhaseData = true;
 			}
@@ -1688,17 +1701,18 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 				m_pData->m_bPhaseData = false;
 			}
 
+			iDataItems = ( m_RawData.uiByte - (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW)) ) / sizeof(_PDW);
 			m_pData->ConvertArray( iDataItems, (sizeof(STR_PDWDATA)-sizeof(pPDWData->stPDW)) );
 
 		}
 		else {
 			m_iFileIndex = iFileIndex;
 
-			m_RawDataFile.Seek( sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*(m_iFileIndex*PDW_ITEMS), CFile::begin );
+			//m_RawDataFile.Seek( sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*(m_iFileIndex*PDW_ITEMS), CFile::begin );
 
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRXPDWDataRGroup)*PDW_ITEMS );
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(_PDW)*PDW_ITEMS );
 
-			iDataItems = m_RawData.uiByte / sizeof(SRXPDWDataRGroup);
+			iDataItems = m_RawData.uiByte / sizeof(_PDW);
 
 			m_pData->ConvertArray( iDataItems, 0 );
 		}

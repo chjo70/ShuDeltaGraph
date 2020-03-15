@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>"D:\RAWDATA\2020_03_05\7PDW\감탕골\2020-02-14_06_38_42.033_G20200214153848_0_249_TE_20200214131809842_1_NA_NA_NA_NA_NA_E4.dat"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"D:\RAWDATA\2020_03_05\EPDW\_COL1_GR_00001_07.EPDW"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

@@ -25,11 +25,14 @@ private:
 
 	CDeltaGraphDoc *m_pDoc;
 
+	CChildFrame *m_pChild;
+
 public:
 
 private:
 	void InitGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
 	void InitCombo();
+	void InitButton();
 	void SetCombo( ENUM_SUB_GRAPH enSubGraph );
 	void CloseGraph();
 	void DrawGraph( ENUM_SUB_GRAPH enSubGraph );
@@ -87,6 +90,7 @@ public:
 	afx_msg void OnBnClickedButtonFilterApply();
 	afx_msg void OnBnClickedButtonFilterDeapply();
 	CStatic m_CStaticDataItems;
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

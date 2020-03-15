@@ -10,6 +10,7 @@
 #endif
 
 #include "MainFrm.h"
+#include "ChildFrm.h"
 
 #include "DeltaGraphDoc.h"
 #include "DeltaGraphView2.h"
@@ -92,13 +93,17 @@ BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
  */
  void CDeltaGraphView2::OnInitialUpdate()
 {
+	CMainFrame *pMainFrame = ( CMainFrame * ) AfxGetMainWnd();
 
 	CFormView::OnInitialUpdate();
 	ResizeParentToFit();
 
+	m_pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+
 	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
 
 	InitCombo();
+	InitButton();
 
 	InitGraph();
 
@@ -139,7 +144,7 @@ void CDeltaGraphView2::DrawGraph( ENUM_SUB_GRAPH enSubGraph )
 		++ iFileIndex;
 	} while( bRet == false );
 
-	swprintf( szDataItems, _T("%d"), iFilteredDataItems );
+	swprintf_s( szDataItems, _countof(szDataItems), _T("%d"), iFilteredDataItems );
 	m_CStaticDataItems.SetWindowText( szDataItems );
 
 }
@@ -204,6 +209,12 @@ CDeltaGraphDoc* CDeltaGraphView2::GetDocument() const // 디버그되지 않은 버전은 
 
 // CDeltaGraphView 메시지 처리기
 
+void CDeltaGraphView2::InitButton()
+{
+	GetDlgItem(IDC_BUTTON_FILTER_DEAPPLY)->EnableWindow( FALSE );
+
+}
+
 /**
  * @brief     
  * @return    void
@@ -251,7 +262,7 @@ void CDeltaGraphView2::SetCombo( ENUM_SUB_GRAPH enSubGraph )
 void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 {
 	RECT rect;
-	TCHAR  szBuffer[200]; 
+	//TCHAR szBuffer[200]; 
 
 	if( enSubGraph == enUnselectedSubGraph ) {
 		GetClientRect( &rect );
@@ -259,8 +270,6 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 
 		if( m_hPE )
 		{
-			PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  // v9
-
 			// Enable Bar Glass Effect //
 			PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
 
@@ -347,6 +356,19 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 			PEszset(m_hPE, PEP_szEXPORTUNITXDEF, TEXT("1280"));
 			PEszset(m_hPE, PEP_szEXPORTUNITYDEF, TEXT("768"));
 			PEnset(m_hPE, PEP_nEXPORTIMAGEDPI, 300 );
+
+			// Set cursor related properties 
+			// v9 feature
+			//PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TRACKING_TOOLTIP);
+			//PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_YVALUE);
+			//PEnset(m_hPE, PEP_bTRACKINGCUSTOMDATATEXT, TRUE);
+
+			// Set up cursor //
+			PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
+
+			// Help see data points //
+			PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
+
 		}
 
 	}
@@ -399,6 +421,22 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEvset( m_hPE, PEP_dwaSUBSETCOLORS, dwColor, 2 );
 
 		//////////////////////////////////////////////////////////////////////////
+		PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  // v9
+		PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
+		PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TRACKING_TOOLTIP);
+
+		PEnset(m_hPE, PEP_bTRACKINGCUSTOMDATATEXT, TRUE);
+		PEnset(m_hPE, PEP_bTRACKINGCUSTOMOTHERTEXT, TRUE);
+
+		// No need to actually click data point, click close to the data point //
+		// v9 feature
+		PEnset(m_hPE, PEP_bMOUSECURSORCONTROLCLOSESTPOINT, TRUE);
+
+		// This will allow you to move cursor by clicking data point //
+		PEnset(m_hPE, PEP_bMOUSECURSORCONTROL, TRUE);
+		PEnset(m_hPE, PEP_bALLOWDATAHOTSPOTS, TRUE);
+
+
 		// Enable MouseWheel and Pinch Smoothing //
 		PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
 		PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 3);
@@ -819,8 +857,6 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 		}
 	}
 
-	PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  // v9
-
  	PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
 
 	//
@@ -996,6 +1032,8 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 	STR_FILTER_SETUP *pFilterSetup;
 
+	GetDlgItem( IDC_BUTTON_FILTER_DEAPPLY )->EnableWindow( TRUE );
+
 	enDataType = m_pDoc->GetDataType();
 
 	pFilterSetup =m_pDoc->GetFilterSetup();
@@ -1069,7 +1107,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 		break;
 	}
 	
-	// DrawGraph( m_stFilterSetup.enSubGraph );
+	DrawGraph( enSubGraph );
 
 
  }
@@ -1085,8 +1123,136 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
  void CDeltaGraphView2::OnBnClickedButtonFilterDeapply()
  {
 	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	 GetDlgItem(IDC_BUTTON_FILTER_DEAPPLY)->EnableWindow( FALSE );
 
 	 m_pDoc->ClearFilterSetup();
 
-	 
+	 ENUM_SUB_GRAPH enSubGraph= (ENUM_SUB_GRAPH ) ( m_CComboYAxis.GetCurSel() + 1 );
+	 DrawGraph( enSubGraph );
+
+ }
+
+
+ /**
+  * @brief     
+  * @param     WPARAM wParam
+  * @param     LPARAM lParam
+  * @return    BOOL
+  * @author    조철희 (churlhee.jo@lignex1.com)
+  * @version   0.0.1
+  * @date      2020/03/15 21:10:27
+  * @warning   
+  */
+ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
+ {
+	 // TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	 if (lParam != (LPARAM) m_hPE)
+		return __super::OnCommand(wParam, lParam);
+	 else {
+		if( (HIWORD(wParam) == PEWN_CUSTOMTRACKINGDATATEXT) ) {
+			double dX, dY;
+			
+			ENUM_DataType enDataType;
+
+			TCHAR buffer[200]; 
+			TCHAR szBuffer[200]; 
+
+			PEvget(m_hPE, PEP_fCURSORVALUEX, &dX);
+			PEvget(m_hPE, PEP_fCURSORVALUEY, &dY);
+
+			int iCombo= m_CComboYAxis.GetCurSel();
+
+			enDataType = m_pDoc->GetDataType();
+
+			wsprintf(szBuffer, _T("%s"), strMainTitleLabel[enDataType - 1][iCombo] );
+			PEszset( m_hPE, PEP_szTRACKINGTOOLTIPTITLE, szBuffer );
+
+			switch( iCombo+1 ) {
+				case enSubMenu_1 :
+					_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n방위: %.3f[도]"), dX, dY );
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					break;
+				case enSubMenu_2 :
+					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n주파수: %.3f[MHz]"), dX, dY );
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					break;
+				case enSubMenu_3 :
+					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\nDTOA: %.3f[us]"), dX, dY );
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					break;
+				case enSubMenu_4 :
+					_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n세기: %.3f[dBm]"), dX, dY );
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					break;
+				case enSubMenu_5 :
+					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n펄스폭: %.3f[ns]"), dX, dY );
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					break;
+			}
+
+			PEszset(m_hPE, PEP_szTRACKINGTEXT, buffer);
+			
+		}
+		else if( HIWORD(wParam) == PEWN_MOUSEMOVE ) {
+			POINT pt;
+			HOTSPOTDATA hsd;
+			TCHAR buffer[128];
+			TCHAR buffer2[128];
+
+			// get last mouse location within control //
+			PEvget(m_hPE, PEP_ptLASTMOUSEMOVE, &pt);
+
+			// call PEgethotspot //
+			PEgethotspot(m_hPE, pt.x, pt.y);
+
+			// now look at HotSpotData structure //
+			PEvget(m_hPE, PEP_structHOTSPOTDATA, &hsd);
+
+			if (hsd.nHotSpotType == PEHS_DATAPOINT) {
+				// get ydata value at hot spot //
+				float yvalue;
+				PEvgetcellEx(m_hPE, PEP_faYDATA, hsd.w1, hsd.w2, &yvalue);
+				_stprintf(buffer, TEXT("DataPoint value %.2f, s=%d,p=%d"), yvalue, hsd.w1, hsd.w2);
+			}
+			else if (hsd.nHotSpotType == PEHS_SUBSET) {
+				PEvgetcell(m_hPE, PEP_szaSUBSETLABELS, hsd.w1, buffer2);
+				_stprintf(buffer, TEXT("Subset Legend is %s"), buffer2);
+			}
+			else if (hsd.nHotSpotType == PEHS_POINT) {
+				PEvgetcell(m_hPE, PEP_szaPOINTLABELS, hsd.w1, buffer2);
+				_stprintf(buffer, TEXT("Point Label is %s"), buffer2);
+			}
+			else {
+				// v9 features 
+				int nResult;
+				nResult = PEsearchsubsetpointindex(m_hPE, pt.x, pt.y);
+				if (nResult)
+				{
+					int nCS = PEnget(m_hPE, PEP_nCLOSESTSUBSETINDEX);
+					int nCP = PEnget(m_hPE, PEP_nCLOSESTPOINTINDEX);
+					{
+						lstrcpy(buffer, TEXT(" "));
+						_stprintf(buffer, TEXT("Closest Subset Point s=%d,p=%d"), nCS, nCP);
+					}
+				}
+				else {
+					lstrcpy(buffer, TEXT("No hotspot, Outside of charting area"));
+				}
+			}
+
+ 			CMainFrame *pMainFrame = ( CMainFrame * ) AfxGetMainWnd();
+ 			pMainFrame->SetChildWindowText( buffer );
+
+			//CWnd* pParent = GetParent()->GetParent();
+			//if (pParent) {pParent->SetWindowText(buffer);}
+		}
+	}
+
+	return __super::OnCommand(wParam, lParam);
+
  }
