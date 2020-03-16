@@ -272,7 +272,8 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 	char *pcType = m_PDWData.pcType;
 	char *pcDV = m_PDWData.pcDV;
 
-	_TOA uiToa, /*firstToa*/ preToa;
+	//_TOA uiToa /*firstToa*/ ;
+	float fPreToa;
 
 	STR_PDWDATA *pPDWData = (STR_PDWDATA *) gstpRawDataBuffer;
 	_PDW *pPDW = (_PDW *) & gstpRawDataBuffer[iOffset];
@@ -302,15 +303,15 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 
 			*pfDTOA = 0;
 			*pfTOA = FDIV(pPDW->llTOA-m_ll1stToa, _spOneMicrosec );
-			preToa = *pfTOA;
+			fPreToa = *pfTOA;
 		}
 		else {
 			//uiToa = pPDW->llTOA - m_ll1stToa;
 			*pfTOA = FDIV(pPDW->llTOA-m_ll1stToa, _spOneMicrosec );
 
 			//*pfDTOA = (float) ( uiToa - preToa );
-			*pfDTOA = FDIV( *pfTOA-preToa, _spOneMicrosec );
-			preToa = *pfTOA;
+			*pfDTOA = FDIV( *pfTOA-fPreToa, _spOneMicrosec );
+			fPreToa = *pfTOA;
 		}
 
 		*pfllTOA = pPDW->llTOA;
@@ -633,7 +634,7 @@ void *CKFXPDW::GetData()
 */
 void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 {
-	UINT i;
+	int i;
 
 	float *pfFreq = m_PDWData.pfFreq;
 	float *pfPW = m_PDWData.pfPW;
@@ -993,7 +994,7 @@ void *C7IQ::GetData()
 */
 void C7IQ::ConvertArray( int iDataItems, int iOffset )
 {
-	UINT i;
+	int i;
 
 	float *psI = m_IQData.pfI;
 	float *psQ = m_IQData.pfQ;
@@ -1003,11 +1004,20 @@ void C7IQ::ConvertArray( int iDataItems, int iOffset )
 
 	float fVal1, fVal2;
 
-	SRXIQDataRGroup *pIQ = (SRXIQDataRGroup *) gstpRawDataBuffer;
+	SRXIQDataRGroup *pIQ;
+
+	if( iOffset <= 0 ) {
+		pIQ = (SRXIQDataRGroup *) & gstpRawDataBuffer[0];
+	}
+	else {
+		pIQ = (SRXIQDataRGroup *) & gstpRawDataBuffer[iOffset];
+	}
+
+	m_IQData.iDataItems = 0;
 
 	for (i = 0; i < iDataItems ; ++i ) {
-		*psI = (float) pIQ->sI;
-		*psQ = (float) pIQ->sQ;
+		*psI = (float) ( (short) ( pIQ->sI ^ (0x8A5A) ) );
+		*psQ = (float) ( (short) ( pIQ->sQ ^ (0x8A5A) ) );
 
 		// ¼ø½Ã ÁøÆø
 		*psPA = sqrt( *psI * *psI + *psQ * *psQ );
@@ -1039,58 +1049,14 @@ void C7IQ::ConvertArray( int iDataItems, int iOffset )
 		++psQ;
 		++psPA;
 		++psIP;
+
+		++ m_IQData.iDataItems;
 		
 		++pIQ;
 	}
 
-	fftw_complex *pIn, *pOut;
-	fftw_complex *pP;
-	fftw_plan plan;
+	ExecuteFFT( iDataItems, & m_IQData );
 
-	UINT N = m_pRawData->uiDataItems, nShift;
-
-	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
-	pOut = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
-	plan = fftw_plan_dft_1d( N, pIn, pOut, FFTW_FORWARD, FFTW_ESTIMATE );
-
-	psI = m_IQData.pfI;
-	psQ = m_IQData.pfQ;
-
-	pP = pIn;
-	for( i=0 ; i < N ; ++i ) {
-		pP[i][0] = *psI;
-		pP[i][1] = *psQ;
-
-		++ psI;
-		++ psQ;
-	}
-
-	fftw_execute( plan );
-
-	nShift = ( N / 2 );
-	fftw_complex swap;
-	for( i=0 ; i < (unsigned int) (N/2) ; ++i ) {
- 		swap[0] = pOut[i][0];
- 		swap[1] = pOut[i][1];
- 
- 		pOut[i][0] = pOut[nShift][0];
-		pOut[i][1] = pOut[nShift][1];
-
-		pOut[nShift][0] = swap[0];
-		pOut[nShift][1] = swap[1];
- 
- 		++ nShift;
-	}	
-
-	for( i=0 ; i < N ; ++i ) {
-		*psFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
-		++ psFFT;
-
-	}
-
-	fftw_destroy_plan( plan );
-	fftw_free( pIn );
-	fftw_free( pOut );
 }
 
 
@@ -1227,55 +1193,160 @@ void CIQ::ConvertArray( int iDataItems, int iOffset )
 		++pIQ;
 	}
 
-	fftw_complex *pIn, *pOut;
-	fftw_complex *pP;
-	fftw_plan plan;
+	ExecuteFFT( iDataItems, & m_IQData );
 
-	UINT N = m_pRawData->uiDataItems, nShift;
-
-	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
-	pOut = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
-	plan = fftw_plan_dft_1d( N, pIn, pOut, FFTW_FORWARD, FFTW_ESTIMATE );
-
-	psI = m_IQData.pfI;
-	psQ = m_IQData.pfQ;
-
-	pP = pIn;
-	for( i=0 ; i < N ; ++i ) {
-		pP[i][0] = *psI;
-		pP[i][1] = *psQ;
-
-		++ psI;
-		++ psQ;
-	}
-
-	fftw_execute( plan );
-
-	nShift = ( N / 2 );
-	fftw_complex swap;
-	for( i=0 ; i < (unsigned int) (N/2) ; ++i ) {
- 		swap[0] = pOut[i][0];
- 		swap[1] = pOut[i][1];
- 
- 		pOut[i][0] = pOut[nShift][0];
-		pOut[i][1] = pOut[nShift][1];
-
-		pOut[nShift][0] = swap[0];
-		pOut[nShift][1] = swap[1];
- 
- 		++ nShift;
-	}	
-
-	for( i=0 ; i < N ; ++i ) {
-		*psFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
-		++ psFFT;
-
-	}
-
-	fftw_destroy_plan( plan );
-	fftw_free( pIn );
-	fftw_free( pOut );
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+
+CEIQ::CEIQ(STR_RAWDATA *pRawData) : CData(pRawData )
+{
+	Alloc( IQ_ITEMS );
+}
+
+/**
+ * @brief     
+ * @param     void
+ * @return    
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:06
+ * @warning   
+ */
+CEIQ::~CEIQ(void)
+{
+	Free();
+}
+
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:08
+ * @warning   
+ */
+void CEIQ::Alloc( int iItems )
+{
+
+	if( iItems == 0 ) {
+		iItems = m_pRawData->uiDataItems;
+	}
+
+	m_IQData.pfI = (float *)malloc( sizeof(float) * iItems );
+	m_IQData.pfQ = (float *)malloc( sizeof(float) * iItems );
+	m_IQData.pfPA = (float *)malloc( sizeof(float) * iItems );
+	m_IQData.pfIP = (float *)malloc( sizeof(float) * iItems );
+	m_IQData.pfFFT = (float *)malloc( sizeof(float) * iItems );
+	
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:09
+ * @warning   
+ */
+void CEIQ::Free()
+{
+	free(m_IQData.pfI);
+	free(m_IQData.pfQ);
+	free(m_IQData.pfPA);
+	free(m_IQData.pfIP);
+	free(m_IQData.pfFFT);
+}
+
+/**
+ * @brief     
+ * @return    void *
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/27 21:44:12
+ * @warning   
+ */
+void *CEIQ::GetData()
+{
+	return & m_IQData;
+}
+
+/**
+  * @brief		IQ µ¥ÀÌÅÍ ±¸Á¶¿¡ ÀúÀåÇÑ´Ù.
+  * @return 	void
+  * @date       2019/06/07 10:11
+*/
+void CEIQ::ConvertArray( int iDataItems, int iOffset )
+{
+	int i;
+
+	float *psI = m_IQData.pfI;
+	float *psQ = m_IQData.pfQ;
+	float *psPA = m_IQData.pfPA;
+	float *psIP = m_IQData.pfIP;
+	float *psFFT = m_IQData.pfFFT;
+
+	float fVal1, fVal2;
+
+	TNEW_IQ *pIQ;
+
+	if( iOffset <= 0 ) {
+		pIQ = (TNEW_IQ *) & gstpRawDataBuffer[0];
+	}	
+	else {
+		pIQ = (TNEW_IQ *) & gstpRawDataBuffer[iOffset];
+	}
+
+	Log( enNormal, _T("ConvertArray()¸¦ [%d]°³¸¦ º¯È¯ÇÕ´Ï´Ù.") , iDataItems );
+
+	m_IQData.iDataItems = 0;
+
+	for (i = 0; i < iDataItems ; ++i ) {
+		*psI = (float) pIQ->sI;
+		*psQ = (float) pIQ->sQ;
+
+		// ¼ø½Ã ÁøÆø
+		*psPA = sqrt( *psI * *psI + *psQ * *psQ );
+		*psPA = (float) (20.*log10( *psPA ) ) - (float) 80.;
+
+		// ¼ø½Ã À§»óÂ÷
+		if( i == 0 ) {
+			*psIP = 0.0;
+			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+		}
+		else {
+			fVal1 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+			*psIP = fVal1 - fVal2;
+			fVal2 = fVal1;
+		}
+		if( *psIP > 180. ) {
+			*psIP -= ( 2 * 180. );
+		}
+		else if( *psIP < -180 ) {
+			*psIP += ( 2 * 180. );
+		}
+		else {
+
+		}
+
+		// printf( "\n [%3d] %10d %10d" , i+1, *psI, *psQ );
+
+		++psI;
+		++psQ;
+		++psPA;
+		++psIP;
+
+		++ m_IQData.iDataItems;
+		
+		++pIQ;
+	}
+
+	ExecuteFFT( iDataItems, & m_IQData );
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -1380,6 +1451,73 @@ void CData::swapByteOrder(unsigned int& ui)
 		(ui << 24);
 }
 
+/**
+ * @brief     
+ * @param     int iDataItems
+ * @param     STR_IQ_DATA * pIQData
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/16 22:31:50
+ * @warning   
+ */
+void CData::ExecuteFFT( int iDataItems, STR_IQ_DATA *pIQData )
+{
+	int i;
+
+	float *psI, *psQ;
+
+	float *psFFT = pIQData->pfFFT;
+
+	fftw_complex *pIn, *pOut;
+	fftw_complex *pP;
+	fftw_plan plan;
+
+	int N = iDataItems, nShift;
+
+	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
+	pOut = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
+	plan = fftw_plan_dft_1d( N, pIn, pOut, FFTW_FORWARD, FFTW_ESTIMATE );
+
+	psI = pIQData->pfI;
+	psQ = pIQData->pfQ;
+
+	pP = pIn;
+	for( i=0 ; i < N ; ++i ) {
+		pP[i][0] = *psI;
+		pP[i][1] = *psQ;
+
+		++ psI;
+		++ psQ;
+	}
+
+	fftw_execute( plan );
+
+	nShift = ( N / 2 );
+	fftw_complex swap;
+	for( i=0 ; i < (N/2) ; ++i ) {
+		swap[0] = pOut[i][0];
+		swap[1] = pOut[i][1];
+
+		pOut[i][0] = pOut[nShift][0];
+		pOut[i][1] = pOut[nShift][1];
+
+		pOut[nShift][0] = swap[0];
+		pOut[nShift][1] = swap[1];
+
+		++ nShift;
+	}	
+
+	for( i=0 ; i < N ; ++i ) {
+		*psFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
+		++ psFFT;
+
+	}
+
+	fftw_destroy_plan( plan );
+	fftw_free( pIn );
+	fftw_free( pOut );
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -1515,7 +1653,7 @@ void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, 
  */
 ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 {
-	ENUM_DataType enDataType;
+	ENUM_DataType enDataType=en_UnknownData;
 
 #ifdef _MBCS
 	if( NULL != strcmp( pStrPathname->GetBuffer(), _T(".pdw") ) || NULL != strcmp( pStrPathname->GetBuffer(), _T(".npw") ) ||
@@ -1526,7 +1664,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 		enDataType = en_PDW_DATA;
 	}
 	else if( NULL != strcmp( pStrPathname->GetBuffer(), _T(".iq") ) || NULL != strcmp( pStrPathname->GetBuffer(), _T(".siq") ||
-			 NULL != wcsstr( pStrPathname->GetBuffer(), L"e2.dat" ) ) {
+			 NULL != wcsstr( pStrPathname->GetBuffer(), L"e2.dat" ) || NULL != wcsstr( pStrPathname->GetBuffer(), L".eiq" ) ) {
 		enDataType = en_IQ_DATA;
 	}
 	else if( NULL != strcmp( pStrPathname->GetBuffer(), _T(".epdw") ) || NULL != strcmp( pStrPathname->GetBuffer(), _T(".enpw") ) ) {
@@ -1544,7 +1682,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 		enDataType = en_PDW_DATA;
 	}
 	else if( NULL != wcsstr( pStrPathname->GetBuffer(), L".iq" ) || NULL != wcsstr( pStrPathname->GetBuffer(), L".siq" ) || 
-			 NULL != wcsstr( pStrPathname->GetBuffer(), L"e2.dat" ) ) {
+			 NULL != wcsstr( pStrPathname->GetBuffer(), L"e2.dat" ) || NULL != wcsstr( pStrPathname->GetBuffer(), L".eiq" ) ) {
 		enDataType = en_IQ_DATA;
 	}
 	else if( NULL != wcsstr( pStrPathname->GetBuffer(), L".epdw" ) || NULL != wcsstr( pStrPathname->GetBuffer(), L".enpw" ) ) {
@@ -1617,7 +1755,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_SETUP *pstFilterSetup )
 {
 	int iDataItems, iFilteredDataItems;
-	DWORD dwFileRead;
+	ULONGLONG dwFileRead;
 
 	if( m_strPathname.IsEmpty() == true ) {
 		Log( enNormal, _T("ÆÄÀÏ[%s]À» ¿ÀÇÂÇÕ´Ï´Ù."), strPathname.GetBuffer() );
@@ -1761,50 +1899,44 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 	}
 
 	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_701 ) {
-		if( m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
-			SRxIQHeader *pIQHeader;
-
+		if( m_RawDataFile.m_hFile == (HANDLE) -1 && m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
 			if( m_pData == NULL ) {
 				m_pData = new C7IQ( & m_RawData );
 			}
+		}
+
+		//SRxIQHeader *pIQHeader;
+		if( iFileIndex <= 0 ) {
+			m_iFileIndex = 0;
 
 			m_dwFileEnd = m_RawDataFile.SeekToEnd();
+			m_RawDataFile.Seek( 0, CFile::begin );
 
-			if( iFileIndex <= 0 ) {
-				m_iFileIndex = 0;
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRXIQDataRGroup)*IQ_ITEMS );
 
-				m_RawDataFile.Seek( 0, CFile::begin );
+			//pIQHeader = ( SRxIQHeader * ) gstpRawDataBuffer;
 
-				m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRXIQDataRGroup)*IQ_ITEMS );
+			//m_pData->AllSwapData32( & pIQHeader->uiAcqTime, sizeof(int)*6 );
+			//m_pData->AllSwapData64( & pIQHeader->llToa, sizeof(int)*6 );
+			//m_pData->AllSwapData32( & pIQHeader->iSearchBandID, sizeof(int)*7 );
 
-				//pIQHeader = ( SRxIQHeader * ) gstpRawDataBuffer;
+			m_RawData.uiDataItems = m_RawData.uiByte /*m_dwFileEnd*/ / sizeof(SRXIQDataRGroup);
 
-				//m_pData->AllSwapData32( & pIQHeader->uiAcqTime, sizeof(int)*6 );
-				//m_pData->AllSwapData64( & pIQHeader->llToa, sizeof(int)*6 );
-				//m_pData->AllSwapData32( & pIQHeader->iSearchBandID, sizeof(int)*7 );
+			iDataItems = m_RawData.uiByte / sizeof(SRXIQDataRGroup);
 
-				m_RawData.uiDataItems = 9437184;
-
-				iDataItems = m_RawData.uiByte / sizeof(SRXIQDataRGroup);
-
-				m_pData->ConvertArray( iDataItems, 0 );
-			}
-			else {
-				m_iFileIndex = iFileIndex;
-
-				m_RawDataFile.Seek( sizeof(SRXIQDataRGroup)*m_iFileIndex, CFile::begin );
-
-				m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS );
-
-				iDataItems = m_RawData.uiByte / sizeof(SRXPDWDataRGroup);
-
-				m_pData->ConvertArray( iDataItems, 0 );
-			}
-
+			m_pData->ConvertArray( iDataItems, 0 );
 		}
 		else {
-			m_RawData.uiByte = -1;
-			m_RawData.uiDataItems = 0;
+			m_iFileIndex = iFileIndex;
+
+			m_RawDataFile.Seek( sizeof(SRXIQDataRGroup)*m_iFileIndex, CFile::begin );
+
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS );
+
+			iDataItems = m_RawData.uiByte / sizeof(SRXPDWDataRGroup);
+
+			m_pData->ConvertArray( iDataItems, 0 );
+
 		}
 
 	}
@@ -1870,6 +2002,44 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 		}
 		
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_ELINT ) {
+		if( m_RawDataFile.m_hFile == (HANDLE) -1 && m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
+			if( m_pData == NULL ) {
+				m_pData = new CEIQ( & m_RawData );
+			}
+		}
+
+		if( iFileIndex <= 0 ) {
+			m_iFileIndex = 0;
+
+			m_dwFileEnd = m_RawDataFile.SeekToEnd();
+			m_RawDataFile.Seek( 0, CFile::begin );
+
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(TNEW_IQ)*IQ_ITEMS );
+
+			m_RawData.uiDataItems = m_RawData.uiByte /*m_dwFileEnd*/ / sizeof(TNEW_IQ);
+
+			iDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
+
+			m_pData->ConvertArray( iDataItems, -1 );
+
+		}
+		else {
+			m_iFileIndex = iFileIndex;
+
+			//m_RawDataFile.Seek( sizeof(STR_PDWFILE_HEADER) + sizeof(UDRCPDW)*(m_iFileIndex*IQ_ITEMS), CFile::begin );
+
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(TNEW_IQ)*IQ_ITEMS );
+
+			iDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
+
+			m_pData->ConvertArray( iDataItems, 0 );
+		}
+
+	}
+
 	else {
 		printf("\n Error !!");
 
@@ -1881,8 +2051,14 @@ bool CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, STR_FILTER_
 		Log( enNormal, _T("ÆÄÀÏÀ» ´Ý½À´Ï´Ù.") );
 	}
 
-	STR_PDW_DATA *pData=(STR_PDW_DATA *) m_pData->GetData();
-	iFilteredDataItems = pData->iDataItems;
+	if( m_RawData.enDataType == en_PDW_DATA ) {
+		STR_PDW_DATA *pData=(STR_PDW_DATA *) m_pData->GetData();
+		iFilteredDataItems = pData->iDataItems;
+	}
+	else {
+		STR_IQ_DATA *pData=(STR_IQ_DATA *) m_pData->GetData();
+		iFilteredDataItems = pData->iDataItems;
+	}
 
 	Log( enNormal, _T("ÇöÀç À§Ä¡[%d], ÃÑ °³¼ö[%d], ÇÊÅÍ¸µ °³¼ö[%d]") , m_iFileIndex, iDataItems, iFilteredDataItems );
 

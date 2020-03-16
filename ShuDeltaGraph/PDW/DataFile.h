@@ -7,10 +7,10 @@
 
 #include "../FFTW/fftw3.h"
 
-#define			PDW_ITEMS						(50)
-#define			IQ_ITEMS						(1024)
+#define			PDW_ITEMS						(1024*128)
+#define			IQ_ITEMS						(1024*128)
 
-#define			MAX_RAWDATA_SIZE				(sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS)	// 2,432,052
+#define			MAX_RAWDATA_SIZE				_max( (sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS), sizeof(TNEW_IQ)*IQ_ITEMS )	// 2,432,052
 
 typedef enum {
 	enUnselectedSubGraph = -1,
@@ -95,6 +95,8 @@ typedef struct {
 } STR_PDW_DATA ;
 
 typedef struct {
+	int iDataItems;
+
 	float *pfI;
 	float *pfQ;
 	float *pfPA;
@@ -146,6 +148,7 @@ public:
 	void swapByteOrder(unsigned long long& ull);
 	void AllSwapData32( void *pData, int iLength );
 	void AllSwapData64( void *pData, int iLength );
+	void ExecuteFFT( int iDataItems, STR_IQ_DATA *pIQData );
 
 public:
 	CData(STR_RAWDATA *pRawData);
@@ -318,11 +321,28 @@ public:
 
 };
 
+class CEIQ : public CData
+{
+private:
+	STR_IQ_DATA m_IQData;
+
+public:
+	CEIQ(STR_RAWDATA *pRawData);
+	virtual ~CEIQ();
+
+	void Alloc( int iItems=0 );
+	void Free();
+	void ConvertArray( int iDataItems, int iOffset );
+	void ConvertArrayForELINT() { }
+	void *GetData();
+
+};
+
 class CDataFile
 {
 private:
 	int m_iFileIndex;
-	DWORD m_dwFileEnd;
+	ULONGLONG m_dwFileEnd;
 	CFile m_RawDataFile;
 
 	STR_RAWDATA m_RawData;

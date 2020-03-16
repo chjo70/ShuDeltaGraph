@@ -476,7 +476,7 @@ bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPEN
 	// 로그 파일을 오픈할 FILE Dialog창을 생성한다.
 	switch( enOpenType ) {
 		case enOpenPDW :
-			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.siq;*.dat)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.siq;*.dat|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.eiq;*.siq;*.dat)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.eiq;*.siq;*.dat|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.EIQ|All Files (*.*)|*.*||") );
 			szinitDir[0] = NULL;
 			break;
 
@@ -488,7 +488,7 @@ bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPEN
 			break;
 
 		case enSavePDW :
-			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
 			szinitDir[0] = NULL;
 			break;
 

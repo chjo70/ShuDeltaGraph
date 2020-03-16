@@ -99,13 +99,16 @@
 #define IDC_COMBO_YAXIS                 1006
 #define IDC_COMBO2                      1007
 #define IDC_COMBO_LINETYPE              1007
-#define IDC_COMBO_LINETYPE2             1008
 #define IDC_COMBO_POINTSIZE             1008
 #define IDC_BUTTON_FILTER_APPLY         1009
 #define IDC_BUTTON_FILTER_DEAPPLY       1010
 #define IDC_STATIC_DATAITEMS            1011
 #define IDC_BUTTON_FILTER_ZOOMOUT       1012
+#define IDC_STATIC_X1                   1013
 #define IDC_SPIN_FRQ_LOW                1014
+#define IDC_STATIC_X2                   1014
+#define IDC_STATIC_DTOA3                1015
+#define IDC_STATIC_DTOA                 1015
 #define IDC_EDIT_FREQ                   1023
 
 // Next default values for new objects

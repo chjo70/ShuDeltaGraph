@@ -11,7 +11,7 @@
 
 #include "../ShuDeltaGraph/EasySize/EasySize.h"
 
-
+#include "Pegrpapi.h"
 
 
 class CDeltaGraphView2 : public CFormView, public CShow
@@ -27,9 +27,15 @@ private:
 
 	CChildFrame *m_pChild;
 
+	bool m_bX;
+	float m_fX1;
+	float m_fX2;
+
 public:
 
 private:
+	void InitVar();
+	void InitStatic();
 	void InitGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
 	void InitCombo();
 	void InitButton();
@@ -37,6 +43,7 @@ private:
 	void CloseGraph();
 	void DrawGraph( ENUM_SUB_GRAPH enSubGraph );
 	void ClearGraph();
+	void SetData( HOTSPOTDATA *pHSD );
 
 public:
 	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
@@ -93,6 +100,9 @@ public:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	CComboBox m_CComboPointSize;
 	afx_msg void OnCbnSelchangeComboPointsize();
+	CStatic m_CStaticX1;
+	CStatic m_CStaticX2;
+	CStatic m_CStaticDTOA;
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

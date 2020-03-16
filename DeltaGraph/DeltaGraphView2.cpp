@@ -12,10 +12,10 @@
 #include "MainFrm.h"
 #include "ChildFrm.h"
 
+
 #include "DeltaGraphDoc.h"
 #include "DeltaGraphView2.h"
 
-#include "Pegrpapi.h"
 
 #include "../ShuDeltaGraph/Log/LogDebug.h"
 
@@ -30,7 +30,8 @@ static TCHAR strPointSize[4][30] = { _T("Small"), _T("Medium"), _T("Large"), _T(
 static TCHAR strMainTitleLabel[2][5][30] = { { _T("방위"), _T("주파수"), _T("DTOA"), _T("신호세기"), _T("펄스폭") },
 											 { _T("I/Q 데이터"), _T("순시진폭"), _T("위상차"), _T("FFT") } };
 
-static TCHAR strYAxisLabel[6][30] = { _T(""), _T("방위[도]"), _T("주파수[MHz]"), _T("DTOA[us]"), _T("신호세기[dBm]"), _T("펄스폭[ns]") };
+static TCHAR strYAxisLabel[2][6][30] = { { _T(""), _T("방위[도]"), _T("주파수[MHz]"), _T("DTOA[us]"), _T("신호세기[dBm]"), _T("펄스폭[ns]") } ,
+										 { _T(""), _T("값"), _T("순시진폭[dB]"), _T("도"), _T("세기"), _T("") } };
 
 
 // CDeltaGraphView
@@ -76,7 +77,10 @@ void CDeltaGraphView2::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_YAXIS, m_CComboYAxis);
 	DDX_Control(pDX, IDC_COMBO_LINETYPE, m_CComboLineType);
 	DDX_Control(pDX, IDC_STATIC_DATAITEMS, m_CStaticDataItems);
-	DDX_Control(pDX, IDC_COMBO_LINETYPE2, m_CComboPointSize);
+	DDX_Control(pDX, IDC_COMBO_POINTSIZE, m_CComboPointSize);
+	DDX_Control(pDX, IDC_STATIC_X1, m_CStaticX1);
+	DDX_Control(pDX, IDC_STATIC_X2, m_CStaticX2);
+	DDX_Control(pDX, IDC_STATIC_DTOA, m_CStaticDTOA);
 }
 
 BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
@@ -97,15 +101,14 @@ BOOL CDeltaGraphView2::PreCreateWindow(CREATESTRUCT& cs)
  */
  void CDeltaGraphView2::OnInitialUpdate()
 {
-	CMainFrame *pMainFrame = ( CMainFrame * ) AfxGetMainWnd();
+	
 
 	CFormView::OnInitialUpdate();
 	ResizeParentToFit();
 
-	m_pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+	InitVar();
 
-	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
-
+	InitStatic();
 	InitCombo();
 	InitButton();
 
@@ -133,20 +136,29 @@ void CDeltaGraphView2::DrawGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	TCHAR szDataItems[100];
 
-	//SetCombo( enSubGraph );
+	if( m_pDoc->GetDataType() == en_PDW_DATA ) {
+		do {
+			bRet = m_pDoc->ReadDataFile( iFileIndex );
+			iFilteredDataItems += m_pDoc->GetFilteredDataItems();
 
-	do {
+			if( iFileIndex == 0 ) {
+				InitGraph( enSubGraph );
+			}
+
+			ShowGraph( enSubGraph, iFileIndex );
+
+			++ iFileIndex;
+		} while( bRet == false );
+	}
+	else {
 		bRet = m_pDoc->ReadDataFile( iFileIndex );
-		iFilteredDataItems += m_pDoc->GetFilteredDataItems();;
 
-		if( iFileIndex == 0 ) {
-			InitGraph( enSubGraph );
-		}
+		iFilteredDataItems += m_pDoc->GetFilteredDataItems();
 
-		ShowGraph( enSubGraph, iFileIndex );
-
-		++ iFileIndex;
-	} while( bRet == false );
+ 		InitGraph( enSubGraph );
+ 
+ 		ShowGraph( enSubGraph, iFileIndex );
+	}
 
 	swprintf_s( szDataItems, _countof(szDataItems), _T("%d"), iFilteredDataItems );
 	m_CStaticDataItems.SetWindowText( szDataItems );
@@ -176,6 +188,16 @@ void CDeltaGraphView2::ClearGraph()
 
 }
 
+/**
+ * @brief     
+ * @param     UINT
+ * @param     CPoint point
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/17 0:32:33
+ * @warning   
+ */
 void CDeltaGraphView2::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
 	ClientToScreen(&point);
@@ -213,6 +235,50 @@ CDeltaGraphDoc* CDeltaGraphView2::GetDocument() const // 디버그되지 않은 버전은 
 
 // CDeltaGraphView 메시지 처리기
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/17 1:04:34
+ * @warning   
+ */
+void CDeltaGraphView2::InitVar()
+{
+	CMainFrame *pMainFrame = ( CMainFrame * ) AfxGetMainWnd();
+
+	m_bX = true;
+	m_fX1 = m_fX2 = 0.0;
+
+	m_pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
+
+	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/17 1:04:31
+ * @warning   
+ */
+void CDeltaGraphView2::InitStatic()
+{
+	GetDlgItem(IDC_STATIC_X1)->SetWindowText( _T("-") );
+	GetDlgItem(IDC_STATIC_X2)->SetWindowText( _T("-") );
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/17 1:03:15
+ * @warning   
+ */
 void CDeltaGraphView2::InitButton()
 {
 	GetDlgItem(IDC_BUTTON_FILTER_DEAPPLY)->EnableWindow( FALSE );
@@ -234,8 +300,15 @@ void CDeltaGraphView2::InitCombo()
 	iDataType = (int) m_pDoc->GetDataType();
 
 	m_CComboYAxis.ResetContent();
-	for( i=0 ; i < enSubMenu_5 ; ++i ) {
-		m_CComboYAxis.AddString( strMainTitleLabel[iDataType-1][i] );
+	if( iDataType == (int) en_PDW_DATA ) {
+		for( i=0 ; i < enSubMenu_5 ; ++i ) {
+			m_CComboYAxis.AddString( strMainTitleLabel[iDataType-1][i] );
+		}
+	}
+	else {
+		for( i=0 ; i < enSubMenu_4 ; ++i ) {
+			m_CComboYAxis.AddString( strMainTitleLabel[iDataType-1][i] );
+		}
 	}
 	m_CComboYAxis.SetCurSel( 0 );
 
@@ -272,7 +345,6 @@ void CDeltaGraphView2::SetCombo( ENUM_SUB_GRAPH enSubGraph )
 void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 {
 	RECT rect;
-	//TCHAR szBuffer[200]; 
 
 	if( enSubGraph == enUnselectedSubGraph ) {
 		GetClientRect( &rect );
@@ -390,7 +462,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 
 		ENUM_DataType enDataType;
 
-		void *pData;
+		//void *pData;
 		STR_PDW_DATA *pPDWData=NULL;
 		STR_IQ_DATA *pIQData=NULL;
 
@@ -398,17 +470,17 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 
 		uiDataItems = m_pDoc->GetDataItems();
 		enDataType = m_pDoc->GetDataType();
-		pData = m_pDoc->GetData();
+		//pData = m_pDoc->GetData();
 
 		if (enDataType == en_PDW_DATA) {
 			wsprintf(szBuffer, _T("시간대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
-			pPDWData = (STR_PDW_DATA *)pData;
+			//pPDWData = (STR_PDW_DATA *)pData;
 		}
 		else {
 			wsprintf(szBuffer, _T("인덱스대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
-			pIQData = (STR_IQ_DATA *)pData;
+			//pIQData = (STR_IQ_DATA *)pData;
 		}
 
 		// 그래프 타이틀 표시
@@ -489,8 +561,14 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		//PEnset(m_hPE, PEP_bFORCE3DXVERTICEREBUILD, 1);
 
 		// subset labels //
-		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("DV"));
-		PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("DI" ));
+		if (enDataType == en_PDW_DATA) {
+			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("DV"));
+			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("DI" ));
+		}
+		else {
+			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("I Data"));
+			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("Q Data" ));
+		}
 
 		OnCbnSelchangeComboLinetype();
 
@@ -552,12 +630,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfY = pPDWData->pfAOA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
 					//dMin = pPDWData->pfTOA[0];
@@ -580,16 +658,16 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfY2 = pIQData->pfQ;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("인덱스"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, _T("값"));
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					dMin = 1.0;
-					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					dMax = (double) uiPDWDataItems;
-					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
+					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					//dMin = 1.0;
+					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					//dMax = (double) uiPDWDataItems;
+					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 					//dMin = 0;
@@ -608,12 +686,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfY = pPDWData->pfFreq;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
 					//dMin = pPDWData->pfTOA[0];
@@ -632,20 +710,19 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
 
-					pfY = pIQData->pfI;
-					pfY2 = pIQData->pfQ;
+					pfY = pIQData->pfPA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("인덱스"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, _T("값"));
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					dMin = 1.0;
-					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					dMax = (double) uiPDWDataItems;
-					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
+// 					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+// 					dMin = 1.0;
+// 					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+// 					dMax = (double) uiPDWDataItems;
+// 					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 					//dMin = 0;
@@ -664,12 +741,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfY = pPDWData->pfDTOA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
 					//dMin = pPDWData->pfTOA[0];
@@ -688,20 +765,19 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
 
-					pfY = pIQData->pfI;
-					pfY2 = pIQData->pfQ;
+					pfY = pIQData->pfIP;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("인덱스"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, _T("값"));
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					dMin = 1.0;
-					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					dMax = (double) uiPDWDataItems;
-					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
+					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					//dMin = 1.0;
+					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					//dMax = (double) uiPDWDataItems;
+					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 					//dMin = 0;
@@ -720,12 +796,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfY = pPDWData->pfPA;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
 					//dMin = pPDWData->pfTOA[0];
@@ -744,20 +820,19 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
 
-					pfY = pIQData->pfI;
-					pfY2 = pIQData->pfQ;
+					pfY = pIQData->pfFFT;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("인덱스"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, _T("값"));
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					dMin = 1.0;
-					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					dMax = (double) uiPDWDataItems;
-					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
+					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+					//dMin = 1.0;
+					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+					//dMax = (double) uiPDWDataItems;
+					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 					//dMin = 0;
@@ -776,12 +851,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfY = pPDWData->pfPW;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enSubGraph] );
+					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
-					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enSubGraph] );
+					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
 					//dMin = pPDWData->pfTOA[0];
@@ -867,6 +942,43 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 				//PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
 			}
 
+		}
+		else {
+			UINT i;
+			float f1 = -9999.0F;
+
+			if( uiPDWDataItems > 0 ) {
+				for (i = 0; i < uiPDWDataItems; ++i) {
+					float fVal;
+
+					fVal = (float) ( i + 1 );
+
+					if( _finite( *pfY ) == 0 ) {
+						TRACE( "\n %d, %f" , i , *pfY );
+						*pfY = -100.0;
+					}
+
+					PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i+(iFileIndex*IQ_ITEMS), & fVal );
+					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i+(iFileIndex*IQ_ITEMS), pfY);
+
+					if( enSubGraph == enSubMenu_1 ) {
+						PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i+(iFileIndex*IQ_ITEMS), & fVal );
+						PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i+(iFileIndex*IQ_ITEMS), pfY2 );
+
+						++pfY2;
+					}
+
+					++pfY;
+					
+				}
+
+				// 첫번재 시간 마크 없애기
+				if( enSubGraph == enSubMenu_3 ) {
+					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
+					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
+				}
+
+			}
 		}
 	}
 
@@ -1156,12 +1268,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
   * @date      2020/03/15 21:10:27
   * @warning   
   */
- BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
- {
-	 // TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-	 if (lParam != (LPARAM) m_hPE)
+BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	if (lParam != (LPARAM) m_hPE)
 		return __super::OnCommand(wParam, lParam);
-	 else {
+	else {
 		if( (HIWORD(wParam) == PEWN_CUSTOMTRACKINGDATATEXT) ) {
 			double dX, dY;
 			
@@ -1230,15 +1342,15 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 				// get ydata value at hot spot //
 				float yvalue;
 				PEvgetcellEx(m_hPE, PEP_faYDATA, hsd.w1, hsd.w2, &yvalue);
-				_stprintf(buffer, TEXT("DataPoint value %.2f, s=%d,p=%d"), yvalue, hsd.w1, hsd.w2);
+				_stprintf_s(buffer, _countof(buffer), TEXT("DataPoint value %.2f, s=%d,p=%d"), yvalue, hsd.w1, hsd.w2);
 			}
 			else if (hsd.nHotSpotType == PEHS_SUBSET) {
 				PEvgetcell(m_hPE, PEP_szaSUBSETLABELS, hsd.w1, buffer2);
-				_stprintf(buffer, TEXT("Subset Legend is %s"), buffer2);
+				_stprintf_s(buffer, _countof(buffer), TEXT("Subset Legend is %s"), buffer2);
 			}
 			else if (hsd.nHotSpotType == PEHS_POINT) {
 				PEvgetcell(m_hPE, PEP_szaPOINTLABELS, hsd.w1, buffer2);
-				_stprintf(buffer, TEXT("Point Label is %s"), buffer2);
+				_stprintf_s(buffer, _countof(buffer), TEXT("Point Label is %s"), buffer2);
 			}
 			else {
 				// v9 features 
@@ -1250,7 +1362,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					int nCP = PEnget(m_hPE, PEP_nCLOSESTPOINTINDEX);
 					{
 						lstrcpy(buffer, TEXT(" "));
-						_stprintf(buffer, TEXT("Closest Subset Point s=%d,p=%d"), nCS, nCP);
+						_stprintf_s(buffer, _countof(buffer), TEXT("가까운 점 s=%d,p=%d"), nCS, nCP);
 					}
 				}
 				else {
@@ -1264,46 +1376,118 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 			//CWnd* pParent = GetParent()->GetParent();
 			//if (pParent) {pParent->SetWindowText(buffer);}
 		}
+
+		else if( HIWORD(wParam) == PEWN_CLICKED ) {
+			HOTSPOTDATA hsd;
+
+			// now look at HotSpotData structure //
+			PEvget(m_hPE, PEP_structHOTSPOTDATA, &hsd);
+
+			SetData( & hsd );
+
+		}
 	}
 
 	return __super::OnCommand(wParam, lParam);
 
+}
+
+ /**
+  * @brief     
+  * @param     HOTSPOTDATA * pHSD
+  * @return    void
+  * @author    조철희 (churlhee.jo@lignex1.com)
+  * @version   0.0.1
+  * @date      2020/03/17 0:38:15
+  * @warning   
+  */
+void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
+{
+	ENUM_DataType enDataType;
+
+	TCHAR szBuffer[100];
+
+	float fValue;
+
+	enDataType = m_pDoc->GetDataType();
+
+	if( pHSD->w1 == 0xbaadf00d || pHSD->w2 == 0xbaadf00d )
+		return;
+
+	if (enDataType == en_PDW_DATA) {
+		STR_PDW_DATA *pPDWData = (STR_PDW_DATA *) m_pDoc->GetData();
+
+		fValue = pPDWData->pfTOA[pHSD->w2];
+		swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), fValue );
+
+	}
+	else {
+		STR_IQ_DATA *pIQData = (STR_IQ_DATA *) m_pDoc->GetData();
+
+		fValue = (float) pHSD->w2;
+		swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), fValue );
+	}
+
+	if( m_bX ) {
+		m_CStaticX1.SetWindowText( szBuffer );
+		m_fX1 = fValue;
+		swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), m_fX1-m_fX2 );
+		
+	 }
+	 else {
+		 m_CStaticX2.SetWindowText( szBuffer );
+		 m_fX2 = fValue;
+		 swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), m_fX2-m_fX1 );
+	 }
+
+	 m_CStaticDTOA.SetWindowText( szBuffer );
+
+	 m_bX = ! m_bX;
+
  }
 
 
- void CDeltaGraphView2::OnCbnSelchangeComboPointsize()
- {
-	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	 int iCombo= m_CComboPointSize.GetCurSel();
+ /**
+  * @brief     
+  * @return    void
+  * @author    조철희 (churlhee.jo@lignex1.com)
+  * @version   0.0.1
+  * @date      2020/03/17 0:32:16
+  * @warning   
+  */
+void CDeltaGraphView2::OnCbnSelchangeComboPointsize()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int iCombo= m_CComboPointSize.GetCurSel();
 
-	 switch( iCombo ) {
-	 case 0 :
-		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
-		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_SMALL);
-		 break;
+	switch( iCombo ) {
+	case 0 :
+		PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_SMALL);
+		break;
 
-	 case 1 :
-		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
-		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MEDIUM);
-		 break;
+	case 1 :
+		PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MEDIUM);
+		break;
 
-	 case 2 :
-		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
-		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_LARGE);
-		 break;
+	case 2 :
+		PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_LARGE);
+		break;
 
-	 case 3 :
-		 PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
-		 PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
-		 break;
+	case 3 :
+		PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+		break;
 
-	 default :
-		 break;
+	default :
+		break;
 
 	 }
 
-	 //PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
+	//PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
 
-	 ::InvalidateRect(m_hPE, NULL, FALSE);
-	 ::UpdateWindow(m_hPE);
- }
+	::InvalidateRect(m_hPE, NULL, FALSE);
+	::UpdateWindow(m_hPE);
+}
