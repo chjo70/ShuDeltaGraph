@@ -8,6 +8,7 @@
 #include "afxcmn.h"
 
 #include "../ShuDeltaGraph/ListCtrl/ReportCtrl.h"
+#include "../ShuDeltaGraph/ListCtrl/CBSpeedListCtrl.h"
 
 #include "../ShuDeltaGraph/EasySize/EasySize.h"
 
@@ -76,7 +77,7 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	DECLARE_MESSAGE_MAP()
 public:
-	CReportCtrl m_CListPDW;
+	CCBSpeedListCtrl m_CListPDW;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnBnClickedButtonPrevious();
 	afx_msg void OnBnClickedButtonNext();

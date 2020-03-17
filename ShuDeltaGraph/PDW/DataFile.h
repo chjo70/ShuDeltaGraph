@@ -106,8 +106,6 @@ typedef struct {
 } STR_IQ_DATA ;
 
 typedef struct {
-	//UINT uiDataItems;
-
 	double dToaMin;
 	double dToaMax;
 	double dDtoaMin;

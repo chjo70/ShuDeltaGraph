@@ -137,6 +137,7 @@
     <ClInclude Include="..\ShuDeltaGraph\ButtonST\BtnST.h" />
     <ClInclude Include="..\ShuDeltaGraph\EasySize\EasySize.h" />
     <ClInclude Include="..\ShuDeltaGraph\FFTW\fftw3.h" />
+    <ClInclude Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.h" />
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\ComboItem.h" />
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\EditItem.h" />
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\EditList.h" />
@@ -167,6 +168,7 @@
   <ItemGroup>
     <ClCompile Include="..\ShuDeltaGraph\ButtonST\BCMenu.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ButtonST\BtnST.cpp" />
+    <ClCompile Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\ComboItem.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditItem.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditList.cpp" />

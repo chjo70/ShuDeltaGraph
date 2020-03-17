@@ -216,6 +216,9 @@
     <ClInclude Include="..\ShuDeltaGraph\ButtonST\BtnST.h">
       <Filter>소스 파일\ButtonST</Filter>
     </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.h">
+      <Filter>소스 파일\ListCtrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DeltaGraph.cpp">
@@ -286,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="..\ShuDeltaGraph\ButtonST\BtnST.cpp">
       <Filter>소스 파일\ButtonST</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.cpp">
+      <Filter>소스 파일\ListCtrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

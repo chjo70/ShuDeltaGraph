@@ -167,7 +167,8 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 	int j=0;
 
 	if( bInit == true ) {
-		m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
+		m_CListPDW.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | 0x00004000);
+		//m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
 		m_CListPDW.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
 		m_CListPDW.InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호 형태")), -1 ); 
@@ -179,18 +180,18 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 		m_CListPDW.InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호세기[dBm]")), -1 ); 
 		m_CListPDW.InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("펄스폭[ns]")), -1 ); 
 
-		m_CListPDW.SetGridLines(TRUE);
+		//m_CListPDW.SetGridLines(TRUE);
 		//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
 		//m_ColList.SetCheckboxes(TRUE);
 
-		m_CListPDW.SetItemCount( PDW_ITEMS );
+		//m_CListPDW.SetItemCount( PDW_ITEMS );
 
 	}
 	else {
 		int i;
 
 		for( i=0 ; i < m_CListPDW.GetItemCount() ; ++i ) {
-			m_CListPDW.SetItemBkColor( i, -1, RGB(255, 255, 255) );
+			//m_CListPDW.SetItemBkColor( i, -1, RGB(255, 255, 255) );
 		}
 	}
 }
@@ -258,7 +259,7 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 		pData = m_pDoc->GetData();
 
 		if (enDataType == en_PDW_DATA) {
-
+			Log( enNormal, _T("목록창에 데이터 삽입 시작합니다.") );
 			pPDWData = (STR_PDW_DATA *) pData;
 			if( pPDWData != NULL ) {
 				pfTOA = pPDWData->pfTOA;
@@ -278,7 +279,9 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 					j = 1;
 
 					strVal.Format( _T("%7d") , (m_pDoc->GetFileIndex()*PDW_ITEMS)+i+1 );
-					m_CListPDW.InsertItem( i, strVal );
+					//m_CListPDW.InsertItem( i, strVal );
+					m_CListPDW.AddItem(strVal);
+					//m_CListPDW.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%d") , *pcType );
 					m_CListPDW.SetItemText( i, j++, strVal ); 
@@ -333,6 +336,9 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 
 				}
 			}
+
+			m_CListPDW.Complete();
+			Log( enNormal, _T("목록창에 데이터 삽입 완료 합니다.") );
 		}
 		else {
 // 			j = 1;

@@ -28,7 +28,7 @@ CPDW::CPDW(STR_RAWDATA *pRawData) : CData(pRawData )
 
 CPDW::~CPDW(void)
 {
-
+	Free();
 }
 
 void CPDW::Alloc( int iItems )
@@ -410,7 +410,7 @@ CSPDW::CSPDW(STR_RAWDATA *pRawData) : CData(pRawData )
  */
 CSPDW::~CSPDW(void)
 {
-
+	Free();
 }
 
 void CSPDW::Alloc( int iItems )
@@ -1079,7 +1079,7 @@ CIQ::CIQ(STR_RAWDATA *pRawData) : CData(pRawData )
  */
 CIQ::~CIQ(void)
 {
-
+	Free();
 }
 
 

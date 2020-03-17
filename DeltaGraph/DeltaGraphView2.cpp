@@ -67,7 +67,7 @@ CDeltaGraphView2::CDeltaGraphView2()
 CDeltaGraphView2::~CDeltaGraphView2()
 {
 	CloseGraph();
-	//FreeBuffer();
+	
 }
 
 void CDeltaGraphView2::DoDataExchange(CDataExchange* pDX)
@@ -362,9 +362,9 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 			PEnset(m_hPE, PEP_nSPLINEBEVELSTYLE, PESBS_MEDIUM_SMOOTH);
 
 			// v7.2 new features //
-			PEnset(m_hPE, PEP_nPOINTGRADIENTSTYLE, PEPGS_VERTICAL_ASCENT_INVERSE);
-			PEnset(m_hPE, PEP_dwPOINTBORDERCOLOR, PERGB(100, 0, 0, 0));
-			PEnset(m_hPE, PEP_nLINESYMBOLTHICKNESS, 3);
+			//PEnset(m_hPE, PEP_nPOINTGRADIENTSTYLE, PEPGS_VERTICAL_ASCENT_INVERSE);
+			//PEnset(m_hPE, PEP_dwPOINTBORDERCOLOR, PERGB(100, 0, 0, 0));
+			//PEnset(m_hPE, PEP_nLINESYMBOLTHICKNESS, 3);
 			PEnset(m_hPE, PEP_nAREABORDER, 1);
 			PEnset(m_hPE, PEP_bALLOWSVGEXPORT, 1);
 
@@ -410,7 +410,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 			// Various other features //
 			PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
 			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
-			PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
+			//PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
 
 			PEnset(m_hPE, PEP_nGRADIENTBARS, 8);
 			PEnset(m_hPE, PEP_bLINESHADOWS, TRUE);
@@ -475,27 +475,43 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		if (enDataType == en_PDW_DATA) {
 			wsprintf(szBuffer, _T("시간대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
-			//pPDWData = (STR_PDW_DATA *)pData;
+			// 그래프 타이틀 표시
+			PEszset(m_hPE, PEP_szMAINTITLE, szBuffer);
+			PEszset(m_hPE, PEP_szSUBTITLE, _T("") ); // no subtitle
+
+			// 그래프 데이터 그룹 개수 설정
+			PEnset(m_hPE, PEP_nSUBSETS, 2 );
+
+			PEnset(m_hPE, PEP_nPOINTS, uiDataItems);
+
+			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("DV"));
+			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("DI" ));
 		}
 		else {
 			wsprintf(szBuffer, _T("인덱스대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
-			//pIQData = (STR_IQ_DATA *)pData;
+			// 그래프 타이틀 표시
+			PEszset(m_hPE, PEP_szMAINTITLE, szBuffer);
+			PEszset(m_hPE, PEP_szSUBTITLE, _T("") ); // no subtitle
+
+			// 그래프 데이터 그룹 개수 설정
+			if( enSubGraph == enSubMenu_1 ) {
+				PEnset(m_hPE, PEP_nSUBSETS, 2 );
+
+				PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("I Data"));
+				PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("Q Data" ));
+			}
+			else {
+				PEnset(m_hPE, PEP_nSUBSETS, 1 );
+			}
+
+			PEnset(m_hPE, PEP_nPOINTS, uiDataItems );
 		}
-
-		// 그래프 타이틀 표시
-		PEszset(m_hPE, PEP_szMAINTITLE, szBuffer);
-		PEszset(m_hPE, PEP_szSUBTITLE, _T("") ); // no subtitle
-
-		// 그래프 데이터 그룹 개수 설정
-		PEnset(m_hPE, PEP_nSUBSETS, 2 );
-
-		PEnset(m_hPE, PEP_nPOINTS, uiDataItems);
 
 		// This allows plotting of zero values //
 		double dNill = -9999.0F;
 		PEvset(m_hPE, PEP_fNULLDATAVALUE, &dNill, 1);
-		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dNill, 1);
+		//PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dNill, 1);
 
 		// subset colors
 		dwColor[0] = RGB(0, 198, 0 );
@@ -549,7 +565,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
 
 		PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
-		PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_LIGHT_SHADOW);
+		PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
 		PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_NONE);
 
 		PEnset(m_hPE, PEP_bALLOWEMFEXPORT, FALSE);
@@ -559,16 +575,6 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		//PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT3D);
 		//PEnset(m_hPE, PEP_bFORCE3DXNEWCOLORS, 1);
 		//PEnset(m_hPE, PEP_bFORCE3DXVERTICEREBUILD, 1);
-
-		// subset labels //
-		if (enDataType == en_PDW_DATA) {
-			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("DV"));
-			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("DI" ));
-		}
-		else {
-			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("I Data"));
-			PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 1, TEXT("Q Data" ));
-		}
 
 		OnCbnSelchangeComboLinetype();
 
@@ -907,6 +913,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 			float f1 = -9999.0F;
 
 			if( uiPDWDataItems > 0 ) {
+				Log( enNormal, _T("그래프에 데이터를 삽입 시작합니다.") );
 				for (i = 0; i < uiPDWDataItems; ++i) {
 					PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i+(iFileIndex*PDW_ITEMS), pfX);
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i+(iFileIndex*PDW_ITEMS), pfY);
@@ -917,6 +924,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					++pfX;
 					++pfY;
 				}
+				Log( enNormal, _T("그래프에 데이터를 삽입 완료했습니다.") );
 
 				// 첫번재 시간 마크 없애기
 				if( enSubGraph == enSubMenu_3 ) {
@@ -924,6 +932,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
 				}
 
+				Log( enNormal, _T("그래프에 데이터를 삭체 처리 시작합니다.") );
 				for (i = 0; i < uiPDWDataItems; ++i) {
 					if (*pcDV == PDW_DV) {
 						PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i+(iFileIndex*PDW_ITEMS), & f1);
@@ -936,6 +945,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 					++pcDV;
 				}
+				Log( enNormal, _T("그래프에 데이터를 삭제 완료했습니다.") );
 			}
 			else {
 				//PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
@@ -947,8 +957,15 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 			UINT i;
 			float f1 = -9999.0F;
 
+			// Disable some features not ideal for larger data sets.
+			PEnset(m_hPE, PEP_nPOINTGRADIENTSTYLE, 0);
+			PEnset(m_hPE, PEP_dwPOINTBORDERCOLOR, PERGB(0, 0, 0, 0));
+			PEnset(m_hPE, PEP_nLINESYMBOLTHICKNESS, 0);
+
+
 			if( uiPDWDataItems > 0 ) {
-				for (i = 0; i < uiPDWDataItems; ++i) {
+				
+				for (i = 0; i < uiPDWDataItems ; ++i) {
 					float fVal;
 
 					fVal = (float) ( i + 1 );
@@ -964,23 +981,44 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					if( enSubGraph == enSubMenu_1 ) {
 						PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i+(iFileIndex*IQ_ITEMS), & fVal );
 						PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i+(iFileIndex*IQ_ITEMS), pfY2 );
-
 						++pfY2;
 					}
 
 					++pfY;
-					
 				}
 
+				//PEvset( m_hPE, PEP_faYDATA, pIQData->pfI, uiPDWDataItems );
+				//PEvset( m_hPE, PEP_faYDATAPTR, pIQData->pfQ, uiPDWDataItems );
+
+// 				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i+(iFileIndex*IQ_ITEMS), & fVal );
+// 				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i+(iFileIndex*IQ_ITEMS), pfY);
+// 
+// 				if( enSubGraph == enSubMenu_1 ) {
+// 					PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i+(iFileIndex*IQ_ITEMS), & fVal );
+// 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i+(iFileIndex*IQ_ITEMS), pfY2 );
+// 
+// 					++pfY2;
+// 				}
+// 
+// 
+// 					
+// 				}
+
 				// 첫번재 시간 마크 없애기
-				if( enSubGraph == enSubMenu_3 ) {
-					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
-					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
-				}
+// 				if( enSubGraph == enSubMenu_3 ) {
+// 					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1);
+// 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, 0, & f1);
+// 				}
 
 			}
 		}
 	}
+
+	// This empties PointLabels array and invokes virtual point labels //
+	// which are the point number.
+	PEvsetcell(m_hPE, PEP_szaPOINTLABELS, -1, TEXT("0"));
+
+
 
  	PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
 
@@ -990,16 +1028,20 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 	PEnset(m_hPE, PEP_nLEGENDSTYLE, PELS_1_LINE);
 
 	// Allow stacked type graphs //
-	PEnset(m_hPE, PEP_bNOSTACKEDDATA, FALSE);
+	//PEnset(m_hPE, PEP_bNOSTACKEDDATA, FALSE);
 
 	// Various other features //
-	PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
-	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
-	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
+	//PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+	//PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
+	//PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
 
-	PEnset(m_hPE, PEP_nDATAPRECISION, 1);
+	//PEnset(m_hPE, PEP_nDATAPRECISION, 1);
 	PEnset(m_hPE, PEP_nGRAPHPLUSTABLE, PEGPT_BOTH);
 	//PEnset(m_hPE, PEP_bMARKDATAPOINTS, FALSE);
+
+// 	PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT3D);
+// 	PEnset(m_hPE, PEP_bFORCE3DXNEWCOLORS, 1);
+// 	PEnset(m_hPE, PEP_bFORCE3DXVERTICEREBUILD, 1);
 
 	::InvalidateRect(m_hPE, NULL, FALSE);
 	::UpdateWindow(m_hPE);
@@ -1271,9 +1313,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-	if (lParam != (LPARAM) m_hPE)
-		return __super::OnCommand(wParam, lParam);
-	else {
+	if (lParam == (LPARAM) m_hPE) {
 		if( (HIWORD(wParam) == PEWN_CUSTOMTRACKINGDATATEXT) ) {
 			double dX, dY;
 			
@@ -1295,13 +1335,13 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			switch( iCombo+1 ) {
 				case enSubMenu_1 :
 					_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n방위: %.3f[도]"), dX, dY );
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
 					break;
 				case enSubMenu_2 :
 					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n주파수: %.3f[MHz]"), dX, dY );
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
 					break;
 				case enSubMenu_3 :
 					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\nDTOA: %.3f[us]"), dX, dY );
@@ -1386,7 +1426,7 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			SetData( & hsd );
 
 		}
-	}
+	}		
 
 	return __super::OnCommand(wParam, lParam);
 
