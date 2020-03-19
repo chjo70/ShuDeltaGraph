@@ -240,7 +240,7 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 	float *pfAOA, *pfFreq, *pfPA, *pfPW;
 	float *pfPh1, *pfPh2, *pfPh3, *pfPh4;
 	float *pfI, *pfQ, *pfIP, *pfFFT;
-	_TOA *pfllTOA;
+	_TOA *pllTOA;
 	CString strVal;
 
 	bool bPhaseData;
@@ -269,7 +269,7 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 				pfPA = pPDWData->pfPA;
 				pfPW = pPDWData->pfPW;
 				pcDV = pPDWData->pcDV;
-				pfllTOA = pPDWData->pllTOA;
+				pllTOA = pPDWData->pllTOA;
 				pcType = pPDWData->pcType;
 				pfPh1 = pPDWData->pfPh1;
 				pfPh2 = pPDWData->pfPh2;
@@ -286,8 +286,8 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 					strVal.Format( _T("%d") , *pcType );
 					m_CListPDW.SetItemText( i, j++, strVal ); 
 
-					//strVal.Format( _T("%12.3f/%12llu") , *pfTOA*1., *pfllTOA );
-					strVal.Format( _T("%12.3f") , *pfTOA*1. );
+					strVal.Format( _T("%12.3f/%llu") , *pfTOA*1., *pllTOA );
+					//strVal.Format( _T("%12.3f") , *pfTOA*1. );
 					m_CListPDW.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
@@ -324,7 +324,7 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 					++ pfPA;
 					++ pfPW;
 
-					++ pfllTOA;
+					++ pllTOA;
 
 					++ pcDV;
 					++ pcType;

@@ -59,7 +59,7 @@ void CShuDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
 
 	if( pStrWindowTitle == NULL ) {
 		while( it != m_gMapData.end() ) {
-			it->second->Free();
+			//it->second->Free();
 			delete it->second;
 
 			++ it;
@@ -69,7 +69,7 @@ void CShuDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
 	else {
 		while( it != m_gMapData.end() ) {
 			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
-				it->second->Free();
+				//it->second->Free();
 				delete it->second;
 
 				m_gMapData.erase( it++ );

@@ -1097,7 +1097,21 @@ void CDlgColList::OnBnClickedButtonModifyList()
 
 }
 
-void CDlgColList::MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList )
+/**
+ * @brief     
+ * @param     CString * pstrNum
+ * @param     CString * pstrMode
+ * @param     CString * pstrCenterFreq
+ * @param     CString * pstrColTime
+ * @param     CString * pstrThreshold
+ * @param     STR_COL_LIST * pstColList
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/19 16:58:48
+ * @warning   
+ */
+ void CDlgColList::MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList )
 {
 	pstrNum->Format(_T("%d"), pstColList->stColItem.uiNo );
 
@@ -1830,7 +1844,7 @@ void CDlgColList::MakePDWFile( int iItem )
 
 	ConvertRAWData( iItem, en_PDW_DATA );
 
-	//m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+	m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
 
 }
 
@@ -1955,9 +1969,15 @@ UINT CDlgColList::GetFreqBand( UINT uiFreqMHz )
 	return( i );
 }
 
-
-
-
+/**
+ * @brief     
+ * @param     int iItem
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/19 22:34:30
+ * @warning   
+ */
 void CDlgColList::MakeIQFile( int iItem )
 {
 	CString strPathname, strFolderName;
@@ -1979,6 +1999,16 @@ void CDlgColList::MakeIQFile( int iItem )
 
 }
 
+/**
+ * @brief     
+ * @param     STR_DATA_CONTENTS * pstData
+ * @param     int iItem
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/19 22:34:32
+ * @warning   
+ */
 void CDlgColList::InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 {
 	int nIndex;

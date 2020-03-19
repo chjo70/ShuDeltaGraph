@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+
+using namespace std;
 
 #include "_iq.h"
 #include "_pdw.h"
@@ -70,7 +73,7 @@ typedef struct {
 
 } STR_RAWDATA ;
 
-typedef long long int _TOA;
+typedef unsigned long long int _TOA;
 
 typedef struct {
 	int iDataItems;
@@ -347,6 +350,8 @@ private:
 	CData *m_pData;
 
 	CString m_strPathname;
+
+	static map<CString, CData *> m_gMapData;
 
 public:
 	CDataFile(void);

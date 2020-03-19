@@ -416,6 +416,7 @@ void CDlg2DHisto::InitThread()
  */
 void CDlg2DHisto::FreeBuffer()
 {
+	m_theThread.Stop();
 	//KillTimer( CLK_TIMER );
 
 	CloseHandle( m_hHisto[en_ReceiveData] );

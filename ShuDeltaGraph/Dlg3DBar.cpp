@@ -351,6 +351,7 @@ void CDlg3DBar::InitThread()
  */
 void CDlg3DBar::FreeBuffer()
 {
+	m_theThread.Stop();
 	//KillTimer( CLK_TIMER );
 
 	CloseHandle( m_h3DBar );

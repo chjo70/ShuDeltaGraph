@@ -83,7 +83,9 @@ CShuDeltaGraphView::~CShuDeltaGraphView()
 		PEdestroy(m_hPE);
 	}
 
-	delete m_pListCtrl;
+	if( m_pListCtrl != NULL ) {
+		delete m_pListCtrl;
+	}
 
 	if( m_pDlgFilterSetup != NULL ) {
 		delete m_pDlgFilterSetup;
@@ -2333,8 +2335,7 @@ void CShuDeltaGraphView::OnDestroy()
 
 	int iIndex=strWindowTitle.ReverseFind( ':' );
 	strPathName = strWindowTitle.Left( iIndex );
-	//AfxExtractSubString( strPathName, strWindowTitle, 1, ':' );
-
+	
 	bool bRet=true;
 	//int iCompare;
 	//POSITION pos;

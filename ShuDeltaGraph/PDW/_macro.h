@@ -110,6 +110,7 @@ extern float _spFreqMax;
 #define UADD( A, B )            (UINT) ( (float) (A) + (float) (B) + 0.5 )
 #define FADD( A, B )            (float) ( (float) (A) + (float) (B) )
 #define FMUL( A, B )            ( (float) (A) * (float) (B) )
+#define FDMUL( A, B )           (float) ( (double) (A) * (double) (B) )
 #define UMUL( A, B )            (UINT) ( ( (float) (A) * (float) (B) ) + 0.5 )
 #define NMUL( A, B )            (UINT) ( (float) (A) * (float) (B) - 0.5 )
 #define F_MUL( A, B )           (UINT) ( ( (float) (A) * (float) (B) ) - 0.5 )
