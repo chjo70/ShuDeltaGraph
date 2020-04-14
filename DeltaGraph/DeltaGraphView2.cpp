@@ -31,7 +31,7 @@ static TCHAR strMainTitleLabel[2][5][30] = { { _T("방위"), _T("주파수"), _T("DTO
 											 { _T("I/Q 데이터"), _T("순시진폭"), _T("위상차"), _T("FFT") } };
 
 static TCHAR strYAxisLabel[2][6][30] = { { _T(""), _T("방위[도]"), _T("주파수[MHz]"), _T("DTOA[us]"), _T("신호세기[dBm]"), _T("펄스폭[ns]") } ,
-										 { _T(""), _T("값"), _T("순시진폭[dB]"), _T("도"), _T("세기"), _T("") } };
+										 { _T(""), _T("값"), _T("순시진폭[dB]"), _T("위상차[도]"), _T("세기"), _T("") } };
 
 
 // CDeltaGraphView
@@ -148,7 +148,7 @@ void CDeltaGraphView2::DrawGraph( ENUM_SUB_GRAPH enSubGraph )
 			ShowGraph( enSubGraph, iFileIndex );
 
 			++ iFileIndex;
-		} while( bRet == false );
+		} while( bRet == false && false );
 	}
 	else {
 		bRet = m_pDoc->ReadDataFile( iFileIndex );
@@ -987,6 +987,11 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					++pfY;
 				}
 
+				// 첫번재 시간 마크 없애기
+				if( enSubGraph == enSubMenu_3 ) {
+					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, & f1 );
+				}
+
 				//PEvset( m_hPE, PEP_faYDATA, pIQData->pfI, uiPDWDataItems );
 				//PEvset( m_hPE, PEP_faYDATAPTR, pIQData->pfQ, uiPDWDataItems );
 
@@ -1178,9 +1183,12 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 	 //PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
 
+	 // Undo Zoom
+	 ::SendMessage( m_hPE, WM_COMMAND, (WPARAM) MAKELONG(53053, 0), 0L);
+
 	 ::InvalidateRect(m_hPE, NULL, FALSE);
 	 ::UpdateWindow(m_hPE);
-
+ 
  }
  
  /**
@@ -1276,7 +1284,6 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 	
 	DrawGraph( enSubGraph );
 
-
  }
 
  /**
@@ -1313,6 +1320,7 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+/*
 	if (lParam == (LPARAM) m_hPE) {
 		if( (HIWORD(wParam) == PEWN_CUSTOMTRACKINGDATATEXT) ) {
 			double dX, dY;
@@ -1426,7 +1434,7 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			SetData( & hsd );
 
 		}
-	}		
+	}			*/
 
 	return __super::OnCommand(wParam, lParam);
 

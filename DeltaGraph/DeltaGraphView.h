@@ -77,7 +77,7 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	DECLARE_MESSAGE_MAP()
 public:
-	CCBSpeedListCtrl m_CListPDW;
+	CCBSpeedListCtrl m_CListRawData;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnBnClickedButtonPrevious();
 	afx_msg void OnBnClickedButtonNext();

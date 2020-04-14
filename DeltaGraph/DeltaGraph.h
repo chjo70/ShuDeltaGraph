@@ -36,6 +36,8 @@ private:
 	UINT m_uiWindowNumber;
 	CString m_strArgument;
 
+	CMapData m_theMapData;
+
 private:
 	bool OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYPE enOpenType=enOpenPDW );
 	void RawDataOpen( CString *pStrPathname );
@@ -45,7 +47,11 @@ private:
 public:
 	CDeltaGraphApp();
 
-	
+	inline void CloseMapData( CString *pStrPathname ) { m_theMapData.CloseMapData( pStrPathname ); }
+	inline CData *FindMapData( CString *pStrPathname ) { return m_theMapData.FindMapData( pStrPathname ); }
+	inline void AddMapData( CString *pStrPathname, CData *pData ) { m_theMapData.AddMapData( pStrPathname, pData ); }
+
+	inline void IncWindowNumber( CData *pData ) { return m_theMapData.IncWindowNumber( pData ); }
 
 
 // 재정의입니다.

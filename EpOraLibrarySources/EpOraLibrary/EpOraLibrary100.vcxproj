@@ -170,6 +170,7 @@
     </LinkDelaySign>
     <LinkDelaySign Condition="'$(Configuration)|$(Platform)'=='Release DLL Unicode|Win32'">
     </LinkDelaySign>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

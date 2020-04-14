@@ -5,11 +5,7 @@
 
 #pragma once
 
-#include <map>
-
 #include "../ShuDeltaGraph/PDW/DataFile.h"
-
-using namespace std;
 
 class CDeltaGraphDoc : public CDocument
 {
@@ -22,14 +18,11 @@ private:
 	ENUM_UnitType m_enUnitType;
 	ENUM_DataType m_enDataType;
 
-	//static map<CString, CData *> m_gMapData;
-
 private:
 	
 
 public:
-	void CloseMapData( CString *pStrWindowTitle=NULL );
-	bool ReadDataFile( DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	bool ReadDataFile( DWORD dwOffset=0, STR_FILTER_SETUP *pstFilterSetup=NULL, bool bCountOfWindow=false );
 
 	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	UINT GetPDWDataItems();

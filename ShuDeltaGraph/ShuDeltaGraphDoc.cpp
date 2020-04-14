@@ -9,6 +9,8 @@
 #include "ShuDeltaGraph.h"
 #endif
 
+#include <crtdbg.h>
+
 #include "MainFrm.h"
 #include "ChildFrm.h"
 
@@ -31,13 +33,15 @@ END_MESSAGE_MAP()
 
 // CShuDeltaGraphDoc 생성/소멸
 
-map<CString, CData *> CShuDeltaGraphDoc::m_gMapData;
-
 CShuDeltaGraphDoc::CShuDeltaGraphDoc()
 {
 	// TODO: 여기에 일회성 생성 코드를 추가합니다.
 
 	m_pFrame = ( CMainFrame * ) AfxGetMainWnd();
+
+	//_CrtDumpMemoryLeaks();
+
+	//AfxSetAllocStop(8936);
 
 }
 
@@ -53,50 +57,50 @@ CShuDeltaGraphDoc::~CShuDeltaGraphDoc()
 
 }
 
-void CShuDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
-{
-	auto it=m_gMapData.begin();
+// void CShuDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
+// {
+// 	auto it=m_gMapData.begin();
+// 
+// 	if( pStrWindowTitle == NULL ) {
+// 		while( it != m_gMapData.end() ) {
+// 			//it->second->Free();
+// 			delete it->second;
+// 
+// 			++ it;
+// 		}
+// 		m_gMapData.clear();
+// 	}
+// 	else {
+// 		while( it != m_gMapData.end() ) {
+// 			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
+// 				//it->second->Free();
+// 				delete it->second;
+// 
+// 				m_gMapData.erase( it++ );
+// 			}
+// 			else {
+// 				++ it;
+// 			}
+// 		}
+// 	}
+// 
+// }
 
-	if( pStrWindowTitle == NULL ) {
-		while( it != m_gMapData.end() ) {
-			//it->second->Free();
-			delete it->second;
-
-			++ it;
-		}
-		m_gMapData.clear();
-	}
-	else {
-		while( it != m_gMapData.end() ) {
-			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
-				//it->second->Free();
-				delete it->second;
-
-				m_gMapData.erase( it++ );
-			}
-			else {
-				++ it;
-			}
-		}
-	}
-
-}
-
-CData *CShuDeltaGraphDoc::FindMapData( CString *pStrPathName )
-{
-	CData *pData;
-	map<CString, CData *>::iterator it;
-
-	it = m_gMapData.find( *pStrPathName );
-	if( it == m_gMapData.end() ) {
-		pData = NULL;
-	}
-	else {
-		pData = it->second;
-	}
-
-	return pData;
-}
+// CData *CShuDeltaGraphDoc::FindMapData( CString *pStrPathName )
+// {
+// 	CData *pData;
+// 	map<CString, CData *>::iterator it;
+// 
+// 	it = m_gMapData.find( *pStrPathName );
+// 	if( it == m_gMapData.end() ) {
+// 		pData = NULL;
+// 	}
+// 	else {
+// 		pData = it->second;
+// 	}
+// 
+// 	return pData;
+// }
 
 
 BOOL CShuDeltaGraphDoc::OnNewDocument()
@@ -206,27 +210,40 @@ void CShuDeltaGraphDoc::Dump(CDumpContext& dc) const
   * @return     성공시 true, 실패시 false
   * @date		2019/05/31 9:30
 */
-bool CShuDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup )
+bool CShuDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup, bool bCountOfWindow )
 {
 	CString strMainTitle;
 	map<CString, CData *>::iterator it;
 	CChildFrame *pChild;
 	CShuDeltaGraphView *pView;
 
+	CData *pData, *pFindMapData;
+
 	pChild = ( CChildFrame * ) m_pFrame->GetActiveFrame();
 
 	m_strPathname = strPathname;
 
 	// 데이터 읽기
-	it = m_gMapData.find( m_strPathname );
-	if( it == m_gMapData.end() ) {
-		ReadDataFile( pstFilterSetup );
-
+	pFindMapData = theApp.FindMapData( & m_strPathname );
+	pData = m_theDataFile.ReadDataFile( m_strPathname, 0, pFindMapData, pstFilterSetup );
+	if( pFindMapData == NULL ) {
+		theApp.AddMapData( & m_strPathname, pData );
 	}
 	else {
-		m_theDataFile.SetData( it->second );
-
+		if( bCountOfWindow == true ) {
+			theApp.IncWindowNumber( pFindMapData );
+		}
 	}
+	
+// 	it = m_gMapData.find( m_strPathname );
+// 	if( it == m_gMapData.end() ) {
+// 		ReadDataFile( pstFilterSetup );
+// 
+// 	}
+// 	else {
+// 		m_theDataFile.SetData( it->second );
+// 
+// 	}
 
 	// 타이틀 바 변경
 	strMainTitle.Format( _T("%s:%d") , m_strPathname, m_theDataFile.GetWindowNumber() );
@@ -247,12 +264,12 @@ void CShuDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 {
 	CData *pData;
 
-	m_theDataFile.ReadDataFile( m_strPathname, 0, pstFilterSetup );
-
-	pData = m_theDataFile.GetRawData();
-	if( pData != NULL ) {
-		m_gMapData.insert( make_pair( m_strPathname, pData ) );
-	}
+// 	m_theDataFile.ReadDataFile( m_strPathname, 0, pstFilterSetup );
+// 
+// 	pData = m_theDataFile.GetRawData();
+// 	if( pData != NULL ) {
+// 		m_gMapData.insert( make_pair( m_strPathname, pData ) );
+// 	}
 
 }
 
@@ -269,10 +286,10 @@ bool CShuDeltaGraphDoc::IsAlreadyOpen()
 	bool bRet = true;
 	map<CString, CData *>::iterator it;
 
-	it = m_gMapData.find( m_strPathname );
-	if( it == m_gMapData.end() ) {
-		bRet = false;
-	}
+// 	it = m_gMapData.find( m_strPathname );
+// 	if( it == m_gMapData.end() ) {
+// 		bRet = false;
+// 	}
 
 	return bRet;
 

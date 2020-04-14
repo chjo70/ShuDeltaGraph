@@ -5,11 +5,7 @@
 
 #pragma once
 
-#include <map>
-
 #include "./PDW/DataFile.h"
-
-using namespace std;
 
 class CShuDeltaGraphDoc : public CDocument
 {
@@ -27,11 +23,11 @@ private:
 
 	CDataFile m_theDataFile;
 
-	static map<CString, CData *> m_gMapData;
+	//static map<CString, CData *> m_gMapData;
 	
 // 작업입니다.
 public:
-	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	bool OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilterSetup=NULL, bool bCountOfWindow=false );
 	void ReadDataFile( STR_FILTER_SETUP *pstFilterSetup=NULL );
 
 	inline UINT GetDataItems() { return m_theDataFile.GetDataItems();}
@@ -41,7 +37,7 @@ public:
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
 	inline void *GetData() { return m_theDataFile.GetData();}
 
-	static void CloseMapData( CString *pStrWindowTitle=NULL );
+	//static void CloseMapData( CString *pStrWindowTitle=NULL );
 	CData *FindMapData( CString *pStrPathName=NULL );
 
 private:

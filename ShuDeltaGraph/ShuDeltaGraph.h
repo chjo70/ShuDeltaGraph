@@ -28,6 +28,8 @@ private:
 	CString m_strArgument;
 	CString m_strIniFile;
 
+	CMapData m_theMapData;
+
 public:
 	CDlgColList *m_pDlgColList;
 	CDlg2DHisto *m_pDlg2DHisto;
@@ -35,7 +37,6 @@ public:
 	CDlg3DBar *m_pDlg3DBar;
 
 public:
-
 	CShuDeltaGraphApp();
 	bool IsExistFile( CString &strPathname );
 
@@ -50,6 +51,11 @@ public:
 
 	void RawDataOpen( CString *pStrPathname );
 	void ActivateGraph( BOOL bEnable );
+
+	inline void CloseMapData( CString *pStrPathname ) { m_theMapData.CloseMapData( pStrPathname ); }
+	inline CData *FindMapData( CString *pStrPathname ) { return m_theMapData.FindMapData( pStrPathname ); }
+	inline void AddMapData( CString *pStrPathname, CData *pData ) { m_theMapData.AddMapData( pStrPathname, pData ); }
+	inline void IncWindowNumber( CData *pData ) { return m_theMapData.IncWindowNumber( pData ); }
 
 private:
 	void OnWindowCloseAll();

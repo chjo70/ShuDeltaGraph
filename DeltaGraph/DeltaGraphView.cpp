@@ -59,7 +59,7 @@ CDeltaGraphView::~CDeltaGraphView()
 void CDeltaGraphView::DoDataExchange(CDataExchange* pDX)
 {
 	CFormView::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST_PDW, m_CListPDW);
+	DDX_Control(pDX, IDC_LIST_PDW, m_CListRawData);
 	DDX_Control(pDX, IDC_SPIN_FRQ_LOW, m_CSpinPage);
 }
 
@@ -86,13 +86,13 @@ BOOL CDeltaGraphView::PreCreateWindow(CREATESTRUCT& cs)
 	CFormView::OnInitialUpdate();
 	ResizeParentToFit();
 
+	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
+
 	InitListCtrl();
 	InitButton();
 	InitSpinCtrl();
 
-	m_pDoc = ( CDeltaGraphDoc * ) GetDocument();
-
-	bRet = m_pDoc->ReadDataFile( 0 );
+	bRet = m_pDoc->ReadDataFile( 0, NULL, true );
 	ShowGraph();
 
 	GetDlgItem( IDC_BUTTON_NEXT )->EnableWindow( ! bRet );
@@ -166,32 +166,61 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 {
 	int j=0;
 
-	if( bInit == true ) {
-		m_CListPDW.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | 0x00004000);
-		//m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
+	if( m_pDoc->GetDataType() == en_PDW_DATA ) {
+		if( bInit == true ) {
+			m_CListRawData.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | 0x00004000);
+			//m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-		m_CListPDW.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
-		m_CListPDW.InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호 형태")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("DTOA[us]")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("DV"), LVCFMT_CENTER, TEXT_WIDTH*wcslen(_T("DV")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("방위[도]")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("주파수[MHz]")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호세기[dBm]")), -1 ); 
-		m_CListPDW.InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("펄스폭[ns]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
+			m_CListRawData.InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호 형태")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("DTOA[us]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("DV"), LVCFMT_CENTER, TEXT_WIDTH*wcslen(_T("DV")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("방위[도]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("주파수[MHz]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호세기[dBm]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("펄스폭[ns]")), -1 ); 
 
-		//m_CListPDW.SetGridLines(TRUE);
-		//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
-		//m_ColList.SetCheckboxes(TRUE);
+			//m_CListPDW.SetGridLines(TRUE);
+			//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
+			//m_ColList.SetCheckboxes(TRUE);
 
-		//m_CListPDW.SetItemCount( PDW_ITEMS );
+			//m_CListPDW.SetItemCount( PDW_ITEMS );
 
+		}
+		else {
+			int i;
+
+			for( i=0 ; i < m_CListRawData.GetItemCount() ; ++i ) {
+				//m_CListPDW.SetItemBkColor( i, -1, RGB(255, 255, 255) );
+			}
+		}
 	}
-	else {
-		int i;
+	else if( m_pDoc->GetDataType() == en_IQ_DATA ) {
+		if( bInit == true ) {
+			m_CListRawData.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | 0x00004000);
+			//m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-		for( i=0 ; i < m_CListPDW.GetItemCount() ; ++i ) {
-			//m_CListPDW.SetItemBkColor( i, -1, RGB(255, 255, 255) );
+			m_CListRawData.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
+			m_CListRawData.InsertColumn( j++, _T("I 데이터"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("I 데이터")), -1 );
+			m_CListRawData.InsertColumn( j++, _T("Q 데이터"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("Q 데이터")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순시 진폭"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순시 진폭")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순시 위상차[도]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순시 위상차[도]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("FFT"), LVCFMT_CENTER, TEXT_WIDTH*wcslen(_T("FFT")), -1 ); 
+
+			//m_CListPDW.SetGridLines(TRUE);
+			//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
+			//m_ColList.SetCheckboxes(TRUE);
+
+			//m_CListPDW.SetItemCount( PDW_ITEMS );
+
+		}
+		else {
+			int i;
+
+			for( i=0 ; i < m_CListRawData.GetItemCount() ; ++i ) {
+				//m_CListPDW.SetItemBkColor( i, -1, RGB(255, 255, 255) );
+			}
 		}
 	}
 }
@@ -251,15 +280,16 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 
 	uiPDWDataItems = m_pDoc->GetPDWDataItems();
 
-	m_CListPDW.DeleteAllItems();
+	m_CListRawData.DeleteAllItems();
 
 	if( uiPDWDataItems != 0 ) {
 		bPhaseData = m_pDoc->IsPhaseData();
 		enDataType = m_pDoc->GetDataType();
 		pData = m_pDoc->GetData();
 
+		Log( enNormal, _T("목록창에 데이터 삽입 시작합니다.") );
+
 		if (enDataType == en_PDW_DATA) {
-			Log( enNormal, _T("목록창에 데이터 삽입 시작합니다.") );
 			pPDWData = (STR_PDW_DATA *) pData;
 			if( pPDWData != NULL ) {
 				pfTOA = pPDWData->pfTOA;
@@ -280,37 +310,36 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 
 					strVal.Format( _T("%7d") , (m_pDoc->GetFileIndex()*PDW_ITEMS)+i+1 );
 					//m_CListPDW.InsertItem( i, strVal );
-					m_CListPDW.AddItem(strVal);
-					//m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.AddItem(strVal);
 
 					strVal.Format( _T("%d") , *pcType );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f/%llu") , *pfTOA*1., *pllTOA );
 					//strVal.Format( _T("%12.3f") , *pfTOA*1. );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					if( *pcDV == PDW_DV ) {
-						m_CListPDW.SetItemText( i, j++, _T("O") ); 
+						m_CListRawData.SetItemText( i, j++, _T("O") ); 
 					}
 					else {
-						m_CListPDW.SetItemText( i, j++, _T("X") ); 
+						m_CListRawData.SetItemText( i, j++, _T("X") ); 
 					}
 
 					strVal.Format( _T("%4.1f") , *pfAOA );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%8.3f") , *pfFreq );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%5.2f") , *pfPA );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%5.1f") , *pfPW );
-					m_CListPDW.SetItemText( i, j++, strVal ); 
+					m_CListRawData.SetItemText( i, j++, strVal ); 
 
 					if( bPhaseData == true ) {
 						//strVal.Format( _T("%7.2f/%7.2f/%7.2f/%7.2f") , *pfPh1, *pfPh2, *pfPh3, *pfPh4 );
@@ -337,55 +366,50 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 				}
 			}
 
-			m_CListPDW.Complete();
+			m_CListRawData.Complete();
 			Log( enNormal, _T("목록창에 데이터 삽입 완료 합니다.") );
 		}
 		else {
-// 			j = 1;
-// 			m_pListCtrl->InsertColumn( j++, _T("I 데이터"), LVCFMT_RIGHT, 100, -1 ); 
-// 			m_pListCtrl->InsertColumn( j++, _T("Q 데이터"), LVCFMT_RIGHT, 100, -1 ); 
-// 			m_pListCtrl->InsertColumn( j++, _T("순시 진폭"), LVCFMT_RIGHT, 100, -1 ); 
-// 			m_pListCtrl->InsertColumn( j++, _T("순시 위상차[도]"), LVCFMT_RIGHT, 100, -1 ); 
-// 			m_pListCtrl->InsertColumn( j++, _T("FFT"), LVCFMT_RIGHT, 100, -1 ); 
-// 
-// 			pIQData = (STR_IQ_DATA *) pData;
-// 			if( pIQData != NULL ) {
-// 				pfI = pIQData->pfI;
-// 				pfQ = pIQData->pfQ;
-// 				pfPA = pIQData->pfPA;
-// 				pfIP = pIQData->pfIP;
-// 				pfFFT = pIQData->pfFFT;
-// 
-// 				for( i=0 ; i < (int) uiDataItems && i < 1000 ; ++i ) {
-// 					j = 1;
-// 
-// 					strVal.Format( _T("%7d") , i+1 );
-// 					m_pListCtrl->InsertItem( i, strVal );
-// 
-// 					strVal.Format( _T("%8.0f") , *pfI );
-// 					m_pListCtrl->SetItemText( i, j++, strVal ); 
-// 
-// 					strVal.Format( _T("%8.0f") , *pfQ );
-// 					m_pListCtrl->SetItemText( i, j++, strVal ); 
-// 
-// 					strVal.Format( _T("%8.1f") , *pfPA );
-// 					m_pListCtrl->SetItemText( i, j++, strVal ); 
-// 
-// 					strVal.Format( _T("%8.1f") , *pfIP );
-// 					m_pListCtrl->SetItemText( i, j++, strVal ); 
-// 
-// 					strVal.Format( _T("%10.1f") , *pfFFT );
-// 					m_pListCtrl->SetItemText( i, j++, strVal ); 
-// 
-// 					++ pfI;
-// 					++ pfQ;
-// 					++ pfPA;
-// 					++ pfPA;
-// 					++ pfIP;
-// 					++ pfFFT;
-// 
-// 				}
-// 			}
+			pIQData = (STR_IQ_DATA *) pData;
+			if( pIQData != NULL ) {
+				pfI = pIQData->pfI;
+				pfQ = pIQData->pfQ;
+				pfPA = pIQData->pfPA;
+				pfIP = pIQData->pfIP;
+				pfFFT = pIQData->pfFFT;
+ 
+ 				for( i=0 ; i < (int) uiPDWDataItems && i < 1000 /* MAX_LIST_IQ */ ; ++i ) {
+					j = 1;
+
+					strVal.Format( _T("%7d") , i+1 );
+					m_CListRawData.AddItem( strVal );
+
+					strVal.Format( _T("%8.0f") , *pfI );
+					m_CListRawData.SetItemText( i, j++, strVal ); 
+
+					strVal.Format( _T("%8.0f") , *pfQ );
+					m_CListRawData.SetItemText( i, j++, strVal ); 
+
+					strVal.Format( _T("%8.1f") , *pfPA );
+					m_CListRawData.SetItemText( i, j++, strVal ); 
+
+					strVal.Format( _T("%8.1f") , *pfIP );
+					m_CListRawData.SetItemText( i, j++, strVal ); 
+
+					strVal.Format( _T("%10.1f") , *pfFFT );
+					m_CListRawData.SetItemText( i, j++, strVal ); 
+
+					++ pfI;
+					++ pfQ;
+					++ pfPA;
+					++ pfIP;
+					++ pfFFT;
+
+ 				}
+ 			}
+			m_CListRawData.Complete();
+			Log( enNormal, _T("목록창에 데이터 삽입 완료 합니다.") );
+
 		}
 	}
 }

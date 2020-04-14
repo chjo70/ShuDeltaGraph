@@ -19,6 +19,8 @@
 #define new DEBUG_NEW
 #endif
 
+map<CString, CData *> CMapData::m_gMapData;
+
 
 // CDeltaGraphApp
 
@@ -181,6 +183,8 @@ int CDeltaGraphApp::ExitInstance()
 {
 	//TODO: 추가한 추가 리소스를 처리합니다.
 	AfxOleTerm(FALSE);
+
+	m_theMapData.CloseMapData( NULL );
 
 	TRACE( "\n ExitInstance..호출" );
 

@@ -22,6 +22,8 @@
 #define new DEBUG_NEW
 #endif
 
+map<CString, CData *> CMapData::m_gMapData;
+
 // CShuDeltaGraphApp
 
 BEGIN_MESSAGE_MAP(CShuDeltaGraphApp, CWinAppEx)
@@ -196,7 +198,7 @@ int CShuDeltaGraphApp::ExitInstance()
 	//TODO: 추가한 추가 리소스를 처리합니다.
 	TRACE( "\n ExitInstance..호출" );
 	
-	CShuDeltaGraphDoc::CloseMapData();
+	m_theMapData.CloseMapData( NULL );
 
 	AfxOleTerm(FALSE);
 
@@ -598,9 +600,9 @@ void CShuDeltaGraphApp::FilteredOpenFile( CString strPathname )
 
 	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
 
-	pData = pDoc->FindMapData( & strPathname );
+	pData = theApp.FindMapData( & strPathname );
 	memcpy( & stFilterSetup, & pData->m_stFilterSetup, sizeof(STR_FILTER_SETUP) );
-	pDoc->CloseMapData( & strPathname );
+	//pDoc->CloseMapData( & strPathname );
 
 	posTemplate = GetFirstDocTemplatePosition();
 

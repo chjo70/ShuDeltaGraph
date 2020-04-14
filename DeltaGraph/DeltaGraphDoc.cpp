@@ -21,8 +21,6 @@
 #define new DEBUG_NEW
 #endif
 
-//map<CString, CData *> CDeltaGraphDoc::m_gMapData;
-
 // CDeltaGraphDoc
 
 IMPLEMENT_DYNCREATE(CDeltaGraphDoc, CDocument)
@@ -42,7 +40,7 @@ CDeltaGraphDoc::CDeltaGraphDoc()
 
 CDeltaGraphDoc::~CDeltaGraphDoc()
 {
-	// CloseMapData( & m_strPathname );
+	theApp.CloseMapData( & m_strPathname );
 	
 }
 
@@ -228,16 +226,24 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
  * @date      2020/03/08 22:36:03
  * @warning   
  */
-bool CDeltaGraphDoc::ReadDataFile( DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup )
+bool CDeltaGraphDoc::ReadDataFile( DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup, bool bCountOfWindow )
 {
-	// CData *pData;
+	bool bRet;
+	CData *pData, *pFindMapData;
+	
+	pFindMapData = theApp.FindMapData( & m_strPathname );
+	pData = m_theDataFile.ReadDataFile( m_strPathname, dwOffset, pFindMapData, pstFilterSetup );
 
-	return m_theDataFile.ReadDataFile( m_strPathname, dwOffset, pstFilterSetup );
+	if( pFindMapData == NULL ) {
+		theApp.AddMapData( & m_strPathname, pData );
+	}
+	else {
+		if( bCountOfWindow == true ) {
+			theApp.IncWindowNumber( pFindMapData );
+		}
+	}
 
-// 	pData = m_theDataFile.GetRawData();
-// 	if( pData != NULL ) {
-// 		m_gMapData.insert( make_pair( m_strPathname, pData ) );
-// 	}
+	return m_theDataFile.GetFileIndex() == -1;
 
 }
 
@@ -257,40 +263,3 @@ UINT CDeltaGraphDoc::GetPDWDataItems()
 	return pPDWData->iDataItems; 
 }
 
-/**
- * @brief     
- * @param     CString * pStrWindowTitle
- * @return    void
- * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
- * @version   0.0.1
- * @date      2020/03/09 15:27:11
- * @warning   
- */
-void CDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )
-{
-// 	auto it=m_gMapData.begin();
-// 
-// 	if( pStrWindowTitle == NULL ) {
-// 		while( it != m_gMapData.end() ) {
-// 			it->second->Free();
-// 			delete it->second;
-// 
-// 			++ it;
-// 		}
-// 		m_gMapData.clear();
-// 	}
-// 	else {
-// 		while( it != m_gMapData.end() ) {
-// 			if( pStrWindowTitle->Compare( it->first ) == 0 ) {
-// 				it->second->Free();
-// 				delete it->second;
-// 
-// 				m_gMapData.erase( it++ );
-// 			}
-// 			else {
-// 				++ it;
-// 			}
-// 		}
-// 	}
-
-}

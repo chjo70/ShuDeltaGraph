@@ -10,7 +10,7 @@ using namespace std;
 
 #include "../FFTW/fftw3.h"
 
-#define			PDW_ITEMS						(1024*128)
+#define			PDW_ITEMS						(1024*128)			// 9437164
 #define			IQ_ITEMS						(1024*128)
 
 #define			MAX_RAWDATA_SIZE				_max( (sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS), sizeof(TNEW_IQ)*IQ_ITEMS )	// 2,432,052
@@ -32,7 +32,8 @@ typedef enum {
 	en_UnknownData = 0,
 
 	en_PDW_DATA,
-	en_IQ_DATA
+	en_IQ_DATA,
+	en_IF_DATA,
 
 } ENUM_DataType;
 
@@ -131,9 +132,9 @@ static char *gstpRawDataBuffer;
 class CData
 {
 public:
-	STR_RAWDATA *m_pRawData;
-
 	UINT m_uiWindowNumber;
+
+	STR_RAWDATA *m_pRawData;
 
 	bool m_bPhaseData;
 
@@ -339,6 +340,95 @@ public:
 
 };
 
+class CMapData {
+private:
+	bool m_bMapData;
+
+	static map<CString, CData *> m_gMapData;
+
+public:
+	CMapData(void)
+	{
+
+	}
+
+	virtual ~CMapData(void)
+	{
+
+	}
+
+	void IncWindowNumber( CData *pData )
+	{
+		++ pData->m_uiWindowNumber;
+	}
+
+	void AddMapData( CString *pStrPathName, CData *pData )
+	{
+		Log( enNormal, _T("\n MapData()에 경로명[%s]을 추가했습니다.") , *pStrPathName );
+		m_gMapData.insert( make_pair( *pStrPathName, pData ) );
+
+	}
+
+	CData *FindMapData( CString *pStrPathName )
+	{
+		CData *pData;
+		map<CString, CData *>::iterator it;
+
+		it = m_gMapData.find( *pStrPathName );
+		if( it == m_gMapData.end() ) {
+			pData = NULL;
+		}
+		else {
+			pData = it->second;
+
+			// 데이터 ID 증가
+			//++ pData->m_uiLoadFile;
+		}
+
+		return pData;
+	}
+
+	void CloseMapData( CString *pStrWindowTitle )
+	{
+		auto it=m_gMapData.begin();
+
+		if( pStrWindowTitle == NULL ) {
+			while( it != m_gMapData.end() ) {
+				//it->second->Free();
+				delete it->second;
+
+				++ it;
+			}
+			m_gMapData.clear();
+		}
+		else {
+			CData *pData;
+
+			while( it != m_gMapData.end() ) {
+				if( pStrWindowTitle->Compare( it->first ) == 0 ) {
+					pData = it->second;
+
+					if( pData->m_uiWindowNumber == 0 ) {
+						delete it->second;
+						m_gMapData.erase( it++ );
+					}
+					else {
+						++ it;
+
+						// 데이터 ID 감소
+						-- pData->m_uiWindowNumber;
+					}
+					
+				}
+				else {
+					++ it;
+				}
+			}
+		}
+	}
+
+};
+
 class CDataFile
 {
 private:
@@ -351,13 +441,13 @@ private:
 
 	CString m_strPathname;
 
-	static map<CString, CData *> m_gMapData;
-
 public:
 	CDataFile(void);
 	virtual ~CDataFile(void);
 
-	bool ReadDataFile( CString & strPathname, int iFileIndex=0, STR_FILTER_SETUP *pstFilterSetup=NULL );
+	UINT LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, UINT uiLengthOf1PDW );
+
+	CData *ReadDataFile( CString & strPathname, int iFileIndex=0, CData *pData=NULL, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	void SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc=NULL, int iSizeOfEtc=0 );
 	void Alloc();
 	void Free();
@@ -379,6 +469,8 @@ public:
 	inline UINT GetFilteredDataItems() { STR_PDW_DATA *pPDWData=(STR_PDW_DATA *) m_pData->GetData(); return pPDWData->iDataItems; }
 
 	inline bool IsPhaseData() { return m_pData->m_bPhaseData; }
+
+	//void CloseMapData( CString *pStrPathname );// { return m_theMapData.CloseMapData( pStrPathname ); }
 	
 private:
 	

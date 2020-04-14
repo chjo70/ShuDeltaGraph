@@ -271,7 +271,7 @@ void CShuDeltaGraphView::ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph )
 
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp* )AfxGetApp();
 
-	pData = m_pDoc->FindMapData( & m_strPathName );
+	pData = NULL; //m_pDoc->FindMapData( & m_strPathName );
 
 	// TOA
 	PEvget(m_hPE, PEP_fZOOMMINX, & pData->m_stFilterSetup.dToaMin ); 
@@ -2369,7 +2369,7 @@ void CShuDeltaGraphView::OnDestroy()
 	}
 
 	if( bRet == true ) {
-		CShuDeltaGraphDoc::CloseMapData( & strPathName );
+		//CShuDeltaGraphDoc::CloseMapData( & strPathName );
 	}
 
 }
