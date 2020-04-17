@@ -39,7 +39,7 @@ public:
 	inline void *GetHeader() { return m_theDataFile.GetHeader();}
 
 	//static void CloseMapData( CString *pStrWindowTitle=NULL );
-	CData *FindMapData( CString *pStrPathName=NULL );
+	//CData *FindMapData( CString *pStrPathName=NULL );
 
 private:
 	bool IsAlreadyOpen();

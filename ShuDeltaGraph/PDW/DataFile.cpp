@@ -52,7 +52,7 @@ CPDW::CPDW(STR_RAWDATA *pRawData) : CData(pRawData )
  void CPDW::Alloc( int iItems )
 {
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * iItems );
@@ -220,7 +220,7 @@ void CEPDW::Alloc( int iItems )
 {
 
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * iItems );
@@ -452,7 +452,7 @@ CSPDW::~CSPDW(void)
 void CSPDW::Alloc( int iItems )
 {
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * iItems );
@@ -612,7 +612,7 @@ void CKFXPDW::Alloc( int iItems )
 {
 
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_PDWData.pfFreq = (float *)malloc(sizeof(float) * iItems);
@@ -795,7 +795,7 @@ void C7PDW::Alloc( int iItems )
 {
 
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	Log( enNormal, _T("Alloc()을 [%d]개를 할당합니다.") , iItems );
@@ -988,7 +988,7 @@ void C7IQ::Alloc( int iItems )
 {
 
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_IQData.pfI = (float *)malloc( sizeof(float) * iItems );
@@ -1137,7 +1137,7 @@ void CIQ::Alloc( int iItems )
 {
 
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_IQData.pfI = (float *)malloc( sizeof(float) * iItems );
@@ -1207,7 +1207,7 @@ void CIQ::ConvertArray( int iDataItems, int iOffset )
 
 	TNEW_IQ *pIQ = (TNEW_IQ *) gstpRawDataBuffer;
 
-	for (i = 0; i < m_pRawData->uiDataItems; ++i) {
+	for (i = 0; i < iDataItems ; ++i) {
 		*psI = (float) pIQ->sI;
 		*psQ = (float) pIQ->sQ;
 
@@ -1284,7 +1284,7 @@ void CEIQ::Alloc( int iItems )
 {
 
 	if( iItems == 0 ) {
-		iItems = m_pRawData->uiDataItems;
+		iItems = m_stRawData.uiDataItems;
 	}
 
 	m_IQData.pfI = (float *)malloc( sizeof(float) * iItems );
@@ -1412,7 +1412,7 @@ void CEIQ::ConvertArray( int iDataItems, int iOffset )
  */
 CData::CData( STR_RAWDATA *pRawData )
 {
-	m_pRawData = pRawData;
+	//m_pRawData = pRawData;
 
 	m_uiWindowNumber = 0;
 
@@ -1811,6 +1811,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 */
 UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, UINT uiLengthOf1RawData )
 {
+	
 
 	if( m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
 		if( iFileIndex <= 0 ) {
@@ -1819,19 +1820,19 @@ UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, 
 			m_dwFileEnd = m_RawDataFile.SeekToEnd();
 			m_RawDataFile.Seek( 0, CFile::begin );
 
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiHeaderLength + uiLengthOf1RawData * PDW_ITEMS );
-			m_RawData.uiDataItems = ( m_RawData.uiByte - uiHeaderLength ) / uiLengthOf1RawData;
+			m_pData->m_stRawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiHeaderLength + uiLengthOf1RawData * PDW_ITEMS );
+			m_pData->m_stRawData.uiDataItems = ( m_pData->m_stRawData.uiByte - uiHeaderLength ) / uiLengthOf1RawData;
 
 			pData->ReadDataHeader();
-			pData->ConvertArray( m_RawData.uiDataItems, uiHeaderLength );
+			pData->ConvertArray( m_pData->m_stRawData.uiDataItems, uiHeaderLength );
 		}
 		else {
 			m_iFileIndex = iFileIndex;
 
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiLengthOf1RawData * PDW_ITEMS );
-			m_RawData.uiDataItems = m_RawData.uiByte / uiLengthOf1RawData;
+			m_pData->m_stRawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiLengthOf1RawData * PDW_ITEMS );
+			m_pData->m_stRawData.uiDataItems = m_pData->m_stRawData.uiByte / uiLengthOf1RawData;
 
-			pData->ConvertArray( m_RawData.uiDataItems );
+			pData->ConvertArray( m_pData->m_stRawData.uiDataItems );
 		}
 
 	}
@@ -1839,7 +1840,7 @@ UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, 
 		Log( enError, _T("파일[%s]이 존재하지 않습니다."), m_strPathname );
 	}
 
-	return pData->m_pRawData->uiDataItems;
+	return m_pData->m_stRawData.uiDataItems;
 }
 
 /**
@@ -1852,7 +1853,8 @@ UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, 
 CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pData, STR_FILTER_SETUP *pstFilterSetup )
 {
 	int iDataItems;
-	//ULONGLONG dwFileRead;
+	ENUM_DataType enDataType;
+	ENUM_UnitType enUnitType;
 
 	UINT uiLengthOfHeader, uiLengthOf1PDWIQ;
 
@@ -1863,22 +1865,22 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 		
 		m_strPathname.MakeLower();
 
-		m_RawData.enUnitType = WhatUnitType( & m_strPathname );
-		m_RawData.enDataType = WhatDataType( & m_strPathname );
+		enUnitType = WhatUnitType( & m_strPathname );
+		enDataType = WhatDataType( & m_strPathname );
 
 	}
 	else {
 		Log( enNormal, _T("파일[%s]을 재오픈합니다."), m_strPathname.GetBuffer() );
 	}
 
-	if( m_RawData.enDataType == en_PDW_DATA && m_RawData.enUnitType == en_SONATA ) {
+	if( enDataType == en_PDW_DATA && enUnitType == en_SONATA ) {
 		uiLengthOfHeader = 0;
 		uiLengthOf1PDWIQ = sizeof(TNEW_PDW);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new CPDW( & m_RawData );
+				m_pData = new CPDW( NULL );
 			}
 		}
 
@@ -1886,14 +1888,14 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 
 	}
 
-	else if( m_RawData.enDataType == en_PDW_DATA && m_RawData.enUnitType == en_ELINT ) {
+	else if( enDataType == en_PDW_DATA && enUnitType == en_ELINT ) {
 		uiLengthOfHeader = (sizeof(STR_PDWDATA)-sizeof(_PDW)*MAX_PDW);
 		uiLengthOf1PDWIQ = sizeof(_PDW);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new CEPDW( & m_RawData, pstFilterSetup );
+				m_pData = new CEPDW( NULL, pstFilterSetup );
 			}
 		}
 
@@ -1901,14 +1903,14 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 
 	}
 
-	else if( m_RawData.enDataType == en_PDW_DATA && m_RawData.enUnitType == en_701 ) {
+	else if( enDataType == en_PDW_DATA && enUnitType == en_701 ) {
 		uiLengthOfHeader = sizeof(SRxPDWHeader);
 		uiLengthOf1PDWIQ = sizeof(SRXPDWDataRGroup);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new C7PDW( & m_RawData, pstFilterSetup );
+				m_pData = new C7PDW( NULL, pstFilterSetup );
 			}
 		}
 
@@ -1916,14 +1918,14 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 
 	}
 
-	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_701 ) {
+	else if( enDataType == en_IQ_DATA && enUnitType == en_701 ) {
 		uiLengthOfHeader = sizeof(SRxIQHeader);
 		uiLengthOf1PDWIQ = sizeof(SRXIQDataRGroup);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new C7IQ( & m_RawData );
+				m_pData = new C7IQ( NULL );
 			}
 		}
 
@@ -1931,148 +1933,61 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 
 	}
 
-	else if( m_RawData.enDataType == en_PDW_DATA && m_RawData.enUnitType == en_KFX ) {
+	else if( enDataType == en_PDW_DATA && enUnitType == en_KFX ) {
 		uiLengthOfHeader = sizeof(STR_PDWFILE_HEADER);
 		uiLengthOf1PDWIQ = sizeof(UDRCPDW);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new CKFXPDW( & m_RawData, pstFilterSetup );
+				m_pData = new CKFXPDW( NULL, pstFilterSetup );
 				iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
 			}
 			else {
 
 			}
 		}
-		iDataItems = m_pData->m_pRawData->uiDataItems;
-
-
-// 		if( m_RawDataFile.m_hFile == (HANDLE) -1 && m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
-// 			if( m_pData == NULL ) {
-// 				m_pData = new CKFXPDW( & m_RawData, pstFilterSetup );
-// 			}
-// 
-// 		}
-// 		STR_PDWFILE_HEADER *pPDWFile;
-// 
-// 		if( iFileIndex <= 0 ) {
-// 			m_iFileIndex = 0;
-// 
-// 			m_dwFileEnd = m_RawDataFile.SeekToEnd();
-// 			m_RawDataFile.Seek( 0, CFile::begin );
-// 
-// 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(STR_PDWFILE_HEADER) + sizeof(UDRCPDW)*PDW_ITEMS );
-// 
-// 			pPDWFile = ( STR_PDWFILE_HEADER * ) gstpRawDataBuffer;
-// 
-// 			m_RawData.uiDataItems = pPDWFile->uiSignalCount;
-// 
-// 			iDataItems = ( m_RawData.uiByte - sizeof(STR_PDWFILE_HEADER) ) / sizeof(UDRCPDW);
-// 
-// 			m_pData->ConvertArray( iDataItems, sizeof(STR_PDWFILE_HEADER) );
-// 		}
-// 		else {
-// 			m_iFileIndex = iFileIndex;
-// 
-// 			m_RawDataFile.Seek( sizeof(STR_PDWFILE_HEADER) + sizeof(UDRCPDW)*(m_iFileIndex*PDW_ITEMS), CFile::begin );
-// 
-// 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(UDRCPDW)*PDW_ITEMS );
-// 
-// 			iDataItems = m_RawData.uiByte / sizeof(UDRCPDW);
-// 
-// 			m_pData->ConvertArray( iDataItems, 0 );
-// 
-// 		}
+		iDataItems = m_pData->m_stRawData.uiDataItems;
 
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_SONATA ) {
+	else if( enDataType == en_IQ_DATA && enUnitType == en_SONATA ) {
 		uiLengthOfHeader = sizeof(STR_IQ_HEADER);
 		uiLengthOf1PDWIQ = sizeof(TNEW_IQ);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new CIQ( & m_RawData );
+				m_pData = new CIQ( NULL );
 				iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
 			}
 			else {
-
+				iDataItems = m_pData->m_stRawData.uiDataItems;
 			}
 		}
-		iDataItems = m_pData->m_pRawData->uiDataItems;
+		else {
+			iDataItems = m_pData->m_stRawData.uiDataItems;
+		}
 
-// 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::modeRead | CFile::typeBinary) == TRUE) {
-// 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
-// 			m_RawData.uiDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
-// 
-// 			m_pData = new CIQ( & m_RawData );
-// 
-// 			m_pData->ConvertArray( 0 );
-// 
-// 			m_RawDataFile.Close();
-// 
-// 		}
-// 		else {
-// 			m_RawData.uiByte = -1;
-// 			m_RawData.uiDataItems = -1;
-// 		}
-		
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_ELINT ) {
+	else if( enDataType == en_IQ_DATA && enUnitType == en_ELINT ) {
 		uiLengthOfHeader = 0;
 		uiLengthOf1PDWIQ = sizeof(TNEW_IQ);
 
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new CEIQ( & m_RawData );
+				m_pData = new CEIQ( NULL );
 				iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
 			}
 			else {
 				
 			}
 		}
-		iDataItems = m_pData->m_pRawData->uiDataItems;
-
-		//iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
-
-// 		if( m_RawDataFile.m_hFile == (HANDLE) -1 && m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
-// 			if( m_pData == NULL ) {
-// 				m_pData = new CEIQ( & m_RawData );
-// 			}
-// 		}
-// 
-// 		if( iFileIndex <= 0 ) {
-// 			m_iFileIndex = 0;
-// 
-// 			m_dwFileEnd = m_RawDataFile.SeekToEnd();
-// 			m_RawDataFile.Seek( 0, CFile::begin );
-// 
-// 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(TNEW_IQ)*IQ_ITEMS );
-// 
-// 			m_RawData.uiDataItems = m_RawData.uiByte /*m_dwFileEnd*/ / sizeof(TNEW_IQ);
-// 
-// 			iDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
-// 
-// 			m_pData->ConvertArray( iDataItems, -1 );
-// 
-// 		}
-// 		else {
-// 			m_iFileIndex = iFileIndex;
-// 
-// 			//m_RawDataFile.Seek( sizeof(STR_PDWFILE_HEADER) + sizeof(UDRCPDW)*(m_iFileIndex*IQ_ITEMS), CFile::begin );
-// 
-// 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, sizeof(TNEW_IQ)*IQ_ITEMS );
-// 
-// 			iDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
-// 
-// 			m_pData->ConvertArray( iDataItems, 0 );
-// 		}
+		iDataItems = m_pData->m_stRawData.uiDataItems;
 
 	}
 
@@ -2080,6 +1995,10 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 		printf("\n Error !!");
 
 	}
+
+	m_pData->m_stRawData.enUnitType = enUnitType;
+	m_pData->m_stRawData.enDataType = enDataType;
+
 
 	// 파일 닫기 처리
 	if( m_RawDataFile.m_hFile != (HANDLE) -1 ) {

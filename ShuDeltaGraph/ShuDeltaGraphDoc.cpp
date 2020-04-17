@@ -55,6 +55,8 @@ CShuDeltaGraphDoc::~CShuDeltaGraphDoc()
 // 		// pChild을 알고있으니 나머지 Doc나 View의 포일터를 알아내서 코딩하세요
 // 	}
 
+	theApp.CloseMapData( & m_strPathname );
+
 }
 
 // void CShuDeltaGraphDoc::CloseMapData( CString *pStrWindowTitle )

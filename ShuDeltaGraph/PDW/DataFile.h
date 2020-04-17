@@ -65,7 +65,7 @@ typedef struct {
 
 typedef struct {
 	UINT uiByte;
-	void *pDataBuffer;
+	//void *pDataBuffer;
 
 	UINT uiDataItems;
 	ENUM_DataType enDataType;
@@ -134,7 +134,7 @@ class CData
 public:
 	UINT m_uiWindowNumber;
 
-	STR_RAWDATA *m_pRawData;
+	STR_RAWDATA m_stRawData;
 
 	bool m_bPhaseData;
 
@@ -426,6 +426,7 @@ public:
 					pData = it->second;
 
 					if( pData->m_uiWindowNumber == 0 ) {
+						Log( enNormal, _T("MapData()에 경로명[%s]을 삭제했습니다."), *pStrWindowTitle );
 						delete it->second;
 						m_gMapData.erase( it++ );
 					}
@@ -453,7 +454,7 @@ private:
 	ULONGLONG m_dwFileEnd;
 	CFile m_RawDataFile;
 
-	STR_RAWDATA m_RawData;
+	//STR_RAWDATA m_RawData;
 	CData *m_pData;
 
 	CString m_strPathname;
@@ -477,9 +478,9 @@ public:
 
 	inline int GetFileIndex() { return m_iFileIndex; }
 
-	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_pRawData->uiDataItems; else return 0; }
-	inline ENUM_UnitType GetUnitType() { return m_pData->m_pRawData->enUnitType; }
-	inline ENUM_DataType GetDataType() { return m_pData->m_pRawData->enDataType; }
+	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_stRawData.uiDataItems; else return 0; }
+	inline ENUM_UnitType GetUnitType() { return m_pData->m_stRawData.enUnitType; }
+	inline ENUM_DataType GetDataType() { return m_pData->m_stRawData.enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
 	inline STR_FILTER_SETUP *GetFilterSetup() { return & m_pData->m_stFilterSetup; }

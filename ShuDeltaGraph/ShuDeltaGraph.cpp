@@ -193,10 +193,18 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	return TRUE;
 }
 
+/**
+ * @brief     
+ * @return    int
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/04/18 0:49:14
+ * @warning   
+ */
 int CShuDeltaGraphApp::ExitInstance()
 {
 	//TODO: 추가한 추가 리소스를 처리합니다.
-	TRACE( "\n ExitInstance..호출" );
+	//TRACE( "\n ExitInstance..호출" );
 	
 	m_theMapData.CloseMapData( NULL );
 
@@ -410,7 +418,7 @@ void CShuDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 				pChild = ( CChildFrame * ) pMainFrame->GetActiveFrame();
 				pView = (CShuDeltaGraphView *) pChild->GetActiveView();
 
-				if( true == pDoc->OpenFile( *pStrPathname ) ) {
+				if( true == pDoc->OpenFile( *pStrPathname, NULL, true ) ) {
 					if( pView != NULL && pDoc->GetDataItems() != 0 ) {
 						pView->ShowGraph( viewIQGraph[i], viewIQSubGraph[i] );
 					}

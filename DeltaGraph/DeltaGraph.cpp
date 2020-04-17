@@ -186,7 +186,7 @@ int CDeltaGraphApp::ExitInstance()
 
 	m_theMapData.CloseMapData( NULL );
 
-	TRACE( "\n ExitInstance..호출" );
+	//TRACE( "\n ExitInstance..호출" );
 
 	//CDeltaGraphDoc::CloseMapData();
 
