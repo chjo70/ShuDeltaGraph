@@ -897,8 +897,10 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	UINT uiDataItems;
 
 	void *pData;
+	void *pHeader;
 	STR_PDW_DATA *pPDWData=NULL;
 	STR_IQ_DATA *pIQData=NULL;
+	STR_IQ_HEADER *pIQHeader=NULL;
 
 	DWORD dwColor[2];
 
@@ -922,6 +924,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	uiDataItems = m_pDoc->GetDataItems();
 	enDataType = m_pDoc->GetDataType();
 	pData = m_pDoc->GetData();
+	pHeader = m_pDoc->GetHeader();
 
 	if (enDataType == en_PDW_DATA) {
 		wsprintf(szBuffer, _T("시간대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
@@ -932,6 +935,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		wsprintf(szBuffer, _T("인덱스대 %s[%d]"), strMainTitleLabel[enDataType - 1][enSubGraph - 1], uiDataItems);
 
 		pIQData = (STR_IQ_DATA *)pData;
+		pIQHeader = (STR_IQ_HEADER *) pHeader;
 	}
 
 	PEszset(m_hPE, PEP_szMAINTITLE, szBuffer);
@@ -954,8 +958,6 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 		PEvset(m_hPE, PEP_fNULLDATAVALUE, &dNill, 1);
 
 		PEvset(m_hPE, PEP_fNULLDATAVALUEX, &dNill, 1);
-		
-
 
 		// 그래프 데이터 계산하기
 		switch( enSubGraph ) {
@@ -1138,11 +1140,13 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
 
-					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					dMin = 1.0;
-					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					dMax = (double)uiDataItems;
-					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
+					if( pIQHeader != NULL ) {
+						PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+						dMin = pIQHeader->fCenterFreq - 500.0;
+						PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
+						dMax = pIQHeader->fCenterFreq + 500.0;
+						PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
+					}
 				}
 
 				dwColor[1] = RGB( 198,198,0 );
@@ -1246,12 +1250,23 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					break;
 
 				case enSubMenu_4 :
-					for (i = 0; i < uiDataItems; ++i) {
+					if( pIQHeader != NULL ) {
 						float fVal;
 
-						fVal = (float) ( i + 1 );
+						for (i = 0; i < uiDataItems; ++i) {
+							fVal = (float) ( pIQHeader->fCenterFreq-500.0 + ( i*1000.0 / MAX_COL_IQ_DATA ) );
 
-						PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fVal);
+							PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fVal);
+						}
+					}
+					else {
+						float fVal;
+
+						for (i = 0; i < uiDataItems; ++i) {
+							fVal = (float) ( i );
+
+							PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fVal);
+						}
 					}
 					PEvset(m_hPE, PEP_faYDATA, pfY, uiDataItems );
 					break;

@@ -83,6 +83,11 @@ typedef enum {
 
 enPosition GetPosition();
 
+// 함수 정의 (유니코드)
+#define __W(X)		L##X
+#define _W(X)		__W(X)
+#define __WFUNCTION	_W(__FUNCTION__)
+
 
 
 #ifdef _UNICODE

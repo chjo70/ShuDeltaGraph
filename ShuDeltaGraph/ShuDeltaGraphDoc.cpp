@@ -262,7 +262,7 @@ bool CShuDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFil
 */
 void CShuDeltaGraphDoc::ReadDataFile( STR_FILTER_SETUP *pstFilterSetup )
 {
-	CData *pData;
+	//CData *pData;
 
 // 	m_theDataFile.ReadDataFile( m_strPathname, 0, pstFilterSetup );
 // 

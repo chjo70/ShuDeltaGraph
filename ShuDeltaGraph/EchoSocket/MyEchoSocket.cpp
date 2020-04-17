@@ -159,6 +159,8 @@ void MyEchoSocket::SetParentDlg(CDialog *pDlg)
 
 void MyEchoSocket::InitVar()
 {
+	Log( enNormal, _T("[%s] 초기화 수행합니다."), __WFUNCTION );
+
 	m_bConnected = false;
 	m_bHeader = false;
 	m_uiErrorCode = CAsyncSocket::GetLastError();

@@ -36,6 +36,7 @@ public:
 
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
 	inline void *GetData() { return m_theDataFile.GetData();}
+	inline void *GetHeader() { return m_theDataFile.GetHeader();}
 
 	//static void CloseMapData( CString *pStrWindowTitle=NULL );
 	CData *FindMapData( CString *pStrPathName=NULL );

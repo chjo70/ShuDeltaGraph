@@ -158,8 +158,10 @@ public:
 
 	virtual void Alloc( int nItems=0 )=0;
 	virtual void Free()=0;
+	virtual void ReadDataHeader() = 0;
 	virtual void ConvertArray( int iDataItems, int iOffset=0 ) = 0;
 	virtual void *GetData() = 0;
+	virtual void *GetHeader() = 0;
 };
 
 class CPDW : public CData
@@ -173,8 +175,10 @@ public:
 
 	void Alloc( int nItems=0 );
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
+	void *GetHeader() { return NULL; }
 
 };
 
@@ -190,9 +194,10 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
-
+	void *GetHeader() { return NULL; }
 };
 
 // 인천공항 PDW
@@ -209,8 +214,10 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
+	void *GetHeader() { return NULL; }
 
 };
 
@@ -226,9 +233,10 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
-
+	void *GetHeader() { return NULL; }
 };
 
 // 701 IQ
@@ -243,9 +251,10 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
-
+	void *GetHeader() { return NULL; }
 };
 
 // KFX PDW
@@ -260,8 +269,10 @@ public:
 
 	void Alloc(int iItems=0);
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset=0 );
 	void *GetData();
+	void *GetHeader() { return NULL; }
 
 public:
 	float DecodeDOA(int iDOA  ) 
@@ -309,6 +320,7 @@ public:
 class CIQ : public CData
 {
 private:
+	STR_IQ_HEADER m_IQHeader;
 	STR_IQ_DATA m_IQData;
 
 public:
@@ -317,9 +329,12 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
+	void ReadDataHeader();
 	void ConvertArray( int iDataItems, int iOffset );
 	void ConvertArrayForELINT() { }
 	void *GetData();
+	void *GetHeader();
+
 
 };
 
@@ -334,9 +349,11 @@ public:
 
 	void Alloc( int iItems=0 );
 	void Free();
+	void ReadDataHeader() {  }
 	void ConvertArray( int iDataItems, int iOffset );
 	void ConvertArrayForELINT() { }
 	void *GetData();
+	void *GetHeader() { return NULL; }
 
 };
 
@@ -445,13 +462,14 @@ public:
 	CDataFile(void);
 	virtual ~CDataFile(void);
 
-	UINT LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, UINT uiLengthOf1PDW );
+	UINT LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, UINT uiLengthOf1RawData );
 
 	CData *ReadDataFile( CString & strPathname, int iFileIndex=0, CData *pData=NULL, STR_FILTER_SETUP *pstFilterSetup=NULL );
 	void SaveDataFile( CString & strPathname, void *pData, int iNumData, ENUM_UnitType enUnitType, ENUM_DataType enDataType, void *pDataEtc=NULL, int iSizeOfEtc=0 );
 	void Alloc();
 	void Free();
 	void *GetData();
+	void *GetHeader();
 	void SetData( CData *pData );
 
 	ENUM_DataType WhatDataType( CString *pStrPathname );

@@ -34,7 +34,7 @@ enum SHUPERHAT_RES_COMMANDCODE {
 	RES_RAWDATA_PDW=9506,
 	RES_RAWDATA_INTRA=9507,
 
-	RES_IQ_DATA=9230,
+	RES_RAWDATA_IQ=9230,
 
 	RES_PBIT = 0x05,
 	RES_IBIT = 0x10,
@@ -96,12 +96,12 @@ typedef struct {
 } STR_RES_IQ_DATA;
 
 #define MAX_COL_PDW_DATA			(500)
-#define MAX_COL_INTRA_DATA		(500)
+#define MAX_COL_INTRA_DATA			(500)
 #define MAX_COL_IQ_DATA				(16*1024)
 
 typedef union {
-	unsigned char buffer[1000];
-	UINT uiBuffer[100];
+	unsigned char buffer[10000];
+	UINT uiBuffer[1000];
 	
 	// 
 	// 요구 데이터 구조체 정의

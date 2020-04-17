@@ -20,6 +20,15 @@
 #define _IQ_H_
 
 typedef struct {
+	//ENUM_COL_MODE enMode;
+	float fCenterFreq;
+	float fColTime;
+	UINT uiColNumber;
+	float fThreshold;
+
+} STR_IQ_HEADER;
+
+typedef struct {
 	short sI;
 	short sQ;
 } TNEW_IQ ;

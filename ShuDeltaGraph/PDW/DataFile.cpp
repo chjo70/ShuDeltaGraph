@@ -1107,7 +1107,7 @@ void C7IQ::ConvertArray( int iDataItems, int iOffset )
 
 CIQ::CIQ(STR_RAWDATA *pRawData) : CData(pRawData )
 {
-
+	Alloc( IQ_ITEMS );
 }
 
 /**
@@ -1176,6 +1176,16 @@ void CIQ::Free()
 void *CIQ::GetData()
 {
 	return & m_IQData;
+}
+
+void *CIQ::GetHeader()
+{
+	return & m_IQHeader;
+}
+
+void CIQ::ReadDataHeader()
+{
+	memcpy( & m_IQHeader, gstpRawDataBuffer, sizeof(STR_IQ_HEADER) );
 }
 
 /**
@@ -1677,7 +1687,7 @@ void CDataFile::SaveDataFile( CString & strPathname, void *pData, int iNumData, 
 					m_RawDataFile.Write( pDataEtc, iSizeOfEtc );
 				}
 
-				m_RawDataFile.Write( pData, iNumData );
+				m_RawDataFile.Write( pData, iNumData*sizeof(TNEW_IQ) );
 				m_RawDataFile.Close();
 			}
 		}
@@ -1799,7 +1809,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 * @date      2020/03/30 19:09:13
 * @warning   
 */
-UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, UINT uiLengthOf1PDW )
+UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, UINT uiLengthOf1RawData )
 {
 
 	if( m_RawDataFile.Open( m_strPathname.GetBuffer(), CFile::shareDenyNone | CFile::typeBinary) == TRUE ) {
@@ -1809,16 +1819,17 @@ UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, 
 			m_dwFileEnd = m_RawDataFile.SeekToEnd();
 			m_RawDataFile.Seek( 0, CFile::begin );
 
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiHeaderLength + uiLengthOf1PDW * PDW_ITEMS );
-			m_RawData.uiDataItems = ( m_RawData.uiByte - uiHeaderLength ) / uiLengthOf1PDW;
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiHeaderLength + uiLengthOf1RawData * PDW_ITEMS );
+			m_RawData.uiDataItems = ( m_RawData.uiByte - uiHeaderLength ) / uiLengthOf1RawData;
 
+			pData->ReadDataHeader();
 			pData->ConvertArray( m_RawData.uiDataItems, uiHeaderLength );
 		}
 		else {
 			m_iFileIndex = iFileIndex;
 
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiLengthOf1PDW * PDW_ITEMS );
-			m_RawData.uiDataItems = m_RawData.uiByte / uiLengthOf1PDW;
+			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, uiLengthOf1RawData * PDW_ITEMS );
+			m_RawData.uiDataItems = m_RawData.uiByte / uiLengthOf1RawData;
 
 			pData->ConvertArray( m_RawData.uiDataItems );
 		}
@@ -1841,7 +1852,7 @@ UINT CDataFile::LoadRawData( CData *pData, int iFileIndex, UINT uiHeaderLength, 
 CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pData, STR_FILTER_SETUP *pstFilterSetup )
 {
 	int iDataItems;
-	ULONGLONG dwFileRead;
+	//ULONGLONG dwFileRead;
 
 	UINT uiLengthOfHeader, uiLengthOf1PDWIQ;
 
@@ -1978,23 +1989,36 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 
 	//////////////////////////////////////////////////////////////////////////
 	else if( m_RawData.enDataType == en_IQ_DATA && m_RawData.enUnitType == en_SONATA ) {
-		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::modeRead | CFile::typeBinary) == TRUE) {
-			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
-			m_RawData.uiDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
+		uiLengthOfHeader = sizeof(STR_IQ_HEADER);
+		uiLengthOf1PDWIQ = sizeof(TNEW_IQ);
 
-			m_pData = new CIQ( & m_RawData );
+		if( m_pData == NULL ) {
+			m_pData = pData;
+			if( m_pData == NULL ) {
+				m_pData = new CIQ( & m_RawData );
+				iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
+			}
+			else {
 
-			m_pData->Alloc();
-
-			m_pData->ConvertArray( 0 );
-
-			m_RawDataFile.Close();
-
+			}
 		}
-		else {
-			m_RawData.uiByte = -1;
-			m_RawData.uiDataItems = -1;
-		}
+		iDataItems = m_pData->m_pRawData->uiDataItems;
+
+// 		if (m_RawDataFile.Open( strPathname.GetBuffer(), CFile::modeRead | CFile::typeBinary) == TRUE) {
+// 			m_RawData.uiByte = m_RawDataFile.Read( gstpRawDataBuffer, MAX_RAWDATA_SIZE );
+// 			m_RawData.uiDataItems = m_RawData.uiByte / sizeof(TNEW_IQ);
+// 
+// 			m_pData = new CIQ( & m_RawData );
+// 
+// 			m_pData->ConvertArray( 0 );
+// 
+// 			m_RawDataFile.Close();
+// 
+// 		}
+// 		else {
+// 			m_RawData.uiByte = -1;
+// 			m_RawData.uiDataItems = -1;
+// 		}
 		
 	}
 
@@ -2081,6 +2105,14 @@ void *CDataFile::GetData()
 { 
 	if( m_pData != NULL ) 
 		return m_pData->GetData(); 
+	else 
+		return NULL; 
+}
+
+void *CDataFile::GetHeader() 
+{ 
+	if( m_pData != NULL ) 
+		return m_pData->GetHeader(); 
 	else 
 		return NULL; 
 }

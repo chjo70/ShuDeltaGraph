@@ -96,8 +96,18 @@ typedef struct {
 
 	STR_RAW_ITEM stRawItem;
 } STR_RAW_LIST;
+	
+typedef struct {
+	float fFreqMean;
+	float fFreqMin;
+	float fFreqMax;
 
-#define MAX_RAW_DATA	(10000)
+	float fDtoaMean;
+	float fDtoaMin;
+	float fDtoaMax;
+} STR_STAT_PDW;
+
+#define MAX_RAW_DATA	(65536)
 
 typedef union {
 	STR_RES_PDW_DATA stPDWData[MAX_RAW_DATA];
@@ -157,6 +167,8 @@ private:
 	bool m_bClickedOfRawDataList;
 
 	int m_iClickedItem;
+
+	STR_STAT_PDW m_stStatPDW;
 
 public:
 	HANDLE m_hReceveLAN;
@@ -229,6 +241,8 @@ private:
 	void ActivateGraph( BOOL bEanble );
 
 	void OpenXLSViewList( CString strPathname );
+
+	inline void UpdateColList() { m_uiColList = (m_uiCoColList-1) <= m_uiColList ? 0 : ++m_uiColList; }
 
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );

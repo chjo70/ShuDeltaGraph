@@ -283,7 +283,7 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
 
 	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
-	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
+	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_LIGHT_SHADOW );
 
 	PEnset(m_hPE, PEP_nAUTOMINMAXPADDING, 1);
 
@@ -344,6 +344,7 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,| Hz") );
 	PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[0] );
+	PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
 // 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 // 	d = 500;
 // 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -356,6 +357,7 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,| dBm") );
 	PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
+	PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
 // 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 // 	d = -60;
 // 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -368,6 +370,7 @@ void CDlgMulti::InitGraph()
 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE );
 	PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,00| √ ") );
 	PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
+	PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
 // 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 // 	d = 0;
 // 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -390,7 +393,7 @@ void CDlgMulti::InitGraph()
 
 	// Other various properties //
 	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
-	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
+	//PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
 	PEnset(m_hPE, PEP_bMARKDATAPOINTS, FALSE);
 	PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
 

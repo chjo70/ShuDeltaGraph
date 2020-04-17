@@ -365,7 +365,6 @@ void CShuDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 	ENUM_GRAPH_VIEW viewIQGraph[IQ_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D, enGRAPH_2D } ;
 	ENUM_SUB_GRAPH viewIQSubGraph[IQ_MULTI_WINDOWS] = { enSubMenu_1, enSubMenu_2, enSubMenu_3, enSubMenu_4, enSubMenu_1 } ;
 
-
 	OnMenuCloseAll();
 
 	if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
@@ -758,6 +757,7 @@ void CShuDeltaGraphApp::OnDlgCollist()
 	}
 	else
 	{
+		m_pDlgColList->ShowWindow(SW_RESTORE);
 		m_pDlgColList->ShowWindow(SW_SHOW);
 	}	
 
@@ -794,7 +794,7 @@ void CShuDeltaGraphApp::OnGraphCollist()
 	BOOL chk;
 
 	chk = m_pDlg2DHisto->IsWindowVisible();
-	if(chk & false )
+	if(chk  )
 	{
 		//m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_HIDE);
@@ -806,7 +806,7 @@ void CShuDeltaGraphApp::OnGraphCollist()
 	}
 
 	chk = m_pDlgMulti->IsWindowVisible();
-	if(chk & false )
+	if(chk  )
 	{
 		m_pDlgMulti->ShowWindow(SW_HIDE);
 	}
@@ -817,7 +817,7 @@ void CShuDeltaGraphApp::OnGraphCollist()
 	}
 
 	chk = m_pDlg3DBar->IsWindowVisible();
-	if(chk & false )
+	if(chk  )
 	{
 		m_pDlg3DBar->ShowWindow(SW_HIDE);
 	}
