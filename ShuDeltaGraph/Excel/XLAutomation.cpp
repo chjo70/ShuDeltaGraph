@@ -53,6 +53,9 @@ static char THIS_FILE[]=__FILE__;
 
 CXLAutomation::CXLAutomation()
 {
+	m_iArgCount= -1;
+	m_iNamedArgCount = -1;
+
 	m_pdispExcelApp = NULL;
 	m_pdispWorkbook = NULL;
 	m_pdispWorksheet = NULL;
@@ -66,6 +69,9 @@ CXLAutomation::CXLAutomation()
 
 CXLAutomation::CXLAutomation(BOOL bVisible)
 {
+	m_iArgCount= -1;
+	m_iNamedArgCount = -1;
+
 	m_pdispExcelApp = NULL;
 	m_pdispWorkbook = NULL;
 	m_pdispWorksheet = NULL;
