@@ -73,7 +73,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	{
 		InitVar();
 
-		((CDlgColList*)m_pDlg)->OnClose();
+		((CDlgColList*)m_pDlg)->OnSocketClose();
 	}
 	CAsyncSocket::OnClose(nErrorCode);
 }
@@ -114,7 +114,7 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 		pstRxMessage = ( STR_MESSAGE * ) & m_stQueueMsg.stMsg;
 		pstRxData = ( STR_DATA_CONTENTS * ) & m_stQueueMsg.stData;
 
-		TRACE( "\n IOCTL dwSize[%d]" , dwSize );
+		//TRACE( "\n IOCTL dwSize[%d]" , dwSize );
 
 		if( m_bHeader == false ) {
 			uiReceivedMessage = Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
@@ -123,14 +123,14 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 			m_uiDataLength = pstRxMessage->uiDataLength;
 			m_uiReceivedData = 0;
 
-			TRACE( "\n 헤더[%d]" , uiReceivedMessage );
+			TRACE( "\n 헤더[%d] 길이[%d]" , uiReceivedMessage, m_uiDataLength );
 		}
 		else {
-			m_uiReceivedData = Receive((char *) pstRxData, m_uiDataLength );
+			m_uiReceivedData += Receive((char *) pstRxData, m_uiDataLength );
 			TRACE( "\n 데이터[%d]" , m_uiReceivedData );
 		}
 		
-		if( m_uiDataLength == 0 || m_uiReceivedData > 0 ) {
+		if( m_uiDataLength == 0 || m_uiReceivedData == m_uiDataLength ) {
 			m_bHeader = false;
 			uiDataLength = 0;
 

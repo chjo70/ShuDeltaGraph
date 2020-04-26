@@ -15,6 +15,8 @@ using namespace std;
 
 #define			MAX_RAWDATA_SIZE				_max( (sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS), sizeof(TNEW_IQ)*IQ_ITEMS )	// 2,432,052
 
+#define	RAD2DEG			(180./M_PI)		// 57.295779513082320876798154814114
+
 typedef enum {
 	enUnselectedSubGraph = -1,
 
@@ -41,13 +43,14 @@ typedef enum {
 	en_UnknownUnit = 0,
 
 	en_SONATA,
+	en_SONATA_SHU,
 	en_ELINT,
 	en_701,
 	en_KFX
 
 } ENUM_UnitType;
 
-#define MAX_SONATA_DATA		(10000)
+#define MAX_SONATA_DATA		(65536)
 typedef union {
 	TNEW_PDW stPDWData[MAX_SONATA_DATA];
 	TNEW_IQ stIQData[MAX_SONATA_DATA];
@@ -60,12 +63,14 @@ typedef struct {
 
 	UNI_SONATA_DATA unRawData;
 
+	UINT uiNo;
+
 } STR_SONATA_DATA;
 
 
 typedef struct {
 	UINT uiByte;
-	//void *pDataBuffer;
+	void *pDataBuffer;
 
 	UINT uiDataItems;
 	ENUM_DataType enDataType;
@@ -134,7 +139,7 @@ class CData
 public:
 	UINT m_uiWindowNumber;
 
-	STR_RAWDATA m_stRawData;
+	STR_RAWDATA m_RawData;
 
 	bool m_bPhaseData;
 
@@ -426,7 +431,6 @@ public:
 					pData = it->second;
 
 					if( pData->m_uiWindowNumber == 0 ) {
-						Log( enNormal, _T("MapData()에 경로명[%s]을 삭제했습니다."), *pStrWindowTitle );
 						delete it->second;
 						m_gMapData.erase( it++ );
 					}
@@ -478,9 +482,9 @@ public:
 
 	inline int GetFileIndex() { return m_iFileIndex; }
 
-	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_stRawData.uiDataItems; else return 0; }
-	inline ENUM_UnitType GetUnitType() { return m_pData->m_stRawData.enUnitType; }
-	inline ENUM_DataType GetDataType() { return m_pData->m_stRawData.enDataType; }
+	inline UINT GetDataItems() { if( m_pData != NULL ) return m_pData->m_RawData.uiDataItems; else return 0; }
+	inline ENUM_UnitType GetUnitType() { return m_pData->m_RawData.enUnitType; }
+	inline ENUM_DataType GetDataType() { return m_pData->m_RawData.enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
 	inline STR_FILTER_SETUP *GetFilterSetup() { return & m_pData->m_stFilterSetup; }
