@@ -11,9 +11,11 @@
 #define new DEBUG_NEW
 #endif
 
-#define PDW_BLOCK			(30)
+#define PDW_BLOCK		(30)
 #define CO_PDW_DATA		(60)
 #define CO_INTRA_DATA	(100)
+
+
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -69,6 +71,7 @@ BEGIN_MESSAGE_MAP(CShuSIMDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_CONNECT, &CShuSIMDlg::OnBnClickedButtonConnect)
 	ON_BN_CLICKED(IDC_BUTTON_REQ_INIT, &CShuSIMDlg::OnBnClickedButtonReqInit)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -180,7 +183,7 @@ void CShuSIMDlg::OnAccept()
 
 }
 
-void CShuSIMDlg::OnClose()
+void CShuSIMDlg::OnSocketClose()
 {
 
 	//TRACE( "%s(%d번) 소켓을 닫습니다." ,  g_szUnit[enUnit], enUnit );
@@ -202,6 +205,8 @@ void CShuSIMDlg::OnClose()
 	InitSocketSetting();
 
 	//CALL_DIALOG( enUnit, OnClose() );
+
+	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow( TRUE );
 
 }
 
@@ -236,7 +241,7 @@ void CShuSIMDlg::ParseData( void *pData )
 		break;
 
 	case REQ_SETMODE:
-		OnClose();
+		OnSocketClose();
 		break;
 
 	case REQ_SET_CONFIG:
@@ -257,6 +262,11 @@ void CShuSIMDlg::ParseData( void *pData )
 
 		//MakeResultOfIntraMessage();
 		//Send();
+		break;
+
+	case REQ_SET_IQCONFIG :
+		MakeResultOfIQMessage( MAX_COL_IQ_DATA );
+		Send();
 		break;
 
 	default:
@@ -288,6 +298,8 @@ void CShuSIMDlg::OnConnect(int nErrorCode )
 		//m_pConnected->m_bConnected = true;
 
 		//CALL_DIALOG( enUnit, OnConnect() );
+
+		GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow( FALSE );
 
 	}
 }
@@ -386,8 +398,12 @@ void CShuSIMDlg::InitBuffer()
 	m_pListener->SetParentDlg(this);
 	m_pConnected->SetParentDlg(this);
 
-	m_ptxData = (char *) malloc(sizeof(char) * 100000);
-	m_prxData = (char *) malloc(sizeof(char) * 100000);
+	int i = ( sizeof(STR_DATA_CONTENTS) + sizeof(STR_MESSAGE) );
+	m_ptxData = (char *) malloc(sizeof(char) * ( sizeof(STR_DATA_CONTENTS) + sizeof(STR_MESSAGE) ) );
+	m_prxData = (char *) malloc(sizeof(char) * ( sizeof(STR_DATA_CONTENTS) + sizeof(STR_MESSAGE) ) );
+
+	memset( m_ptxData, 0, sizeof(char)*i );
+	memset( m_prxData, 0, sizeof(char)*i );
 
 }
 
@@ -516,6 +532,10 @@ void CShuSIMDlg::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 		*pstrTemp1 = _T("<<수집 데이터 요구");
 		break;
 
+	case REQ_SET_IQCONFIG :
+		*pstrTemp1 = _T("<<IQ 데이터 요구");
+		break;
+
 	default:
 		*pstrTemp1 = _T("<<");
 		pstrTemp2->Format( _T("잘못된 송신 명령[0x%x]입니다."), pstMessage->uiOpcode);
@@ -553,6 +573,10 @@ void CShuSIMDlg::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void
 
 	case RES_RAWDATA_INTRA:
 		*pstrTemp1 = _T(">>INTRA 데이터");
+		break;
+
+	case RES_RAWDATA_IQ :
+		*pstrTemp1 = _T(">>IQ 데이터");
 		break;
 
 	default:
@@ -622,6 +646,27 @@ void CShuSIMDlg::MakeResultOfColStartMessage()
 
 }
 
+void CShuSIMDlg::MakeResultOfIQMessage( int iCoIQ )
+{
+	int i;
+
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = RES_RAWDATA_IQ;
+	pTxMessage->uiDataLength = sizeof(STR_RES_IQ_DATA) * iCoIQ;
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+
+	for( i=0 ; i < iCoIQ ; ++i ) {
+		pTxData->stIQData[i].sI = rand() % 10000;
+		pTxData->stIQData[i].sQ = rand() % 10000;
+	}
+
+
+}
+
 void CShuSIMDlg::MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex )
 {
 	int i;
@@ -636,10 +681,10 @@ void CShuSIMDlg::MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex )
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 
 	for( i=0 ; i < iCoPDW ; ++i ) {
-		pTxData->stPDWData[i].fFreq = m_fTuneFreq;
-		pTxData->stPDWData[i].fPA = -50.0;
-		pTxData->stPDWData[i].fPW = 1.00;
-		pTxData->stPDWData[i].uiTOA = ( (i+iStartTOAIndex) * 500 );
+		pTxData->stPDWData[i].fFreq = m_fTuneFreq + rand() % 200;
+		pTxData->stPDWData[i].fPA = (float) ( -50.0 + ( rand() % 200 ) );
+		pTxData->stPDWData[i].fPW = (float) ( 1.00 + ( rand() % 1000 ) );
+		pTxData->stPDWData[i].uiTOA = ( (i+iStartTOAIndex) * 5000 + rand() % 1000 );
 
 		pTxData->stPDWData[i].uiIndex = (i+iStartTOAIndex+1);
 	}
@@ -663,4 +708,12 @@ void CShuSIMDlg::MakeResultOfIntraMessage()
 	for( i=0 ; i < CO_INTRA_DATA ; ++i ) {
 		pTxData->stIntraData[i].fIntraFreq = 1000.0;
 	}
+}
+
+void CShuSIMDlg::OnClose()
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	FreeBuffer();
+
+	CDialogEx::OnClose();
 }

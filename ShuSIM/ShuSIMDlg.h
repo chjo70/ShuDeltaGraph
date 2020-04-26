@@ -51,7 +51,7 @@ private:
 	void InitSocketSetting();
 
 public:
-	void OnClose();
+	void OnSocketClose();
 	void OnAccept();
 	void Connect();
 	void OnConnect(int nErrorCode );
@@ -68,6 +68,7 @@ public:
 	void MakeResultOfColStartMessage();
 
 	void MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex );
+	void MakeResultOfIQMessage( int iCoIQ );
 	void MakeResultOfIntraMessage();
 
 // 생성입니다.
@@ -95,4 +96,5 @@ public:
 	CReportCtrl m_CListLog;
 	afx_msg void OnBnClickedButtonConnect();
 	afx_msg void OnBnClickedButtonReqInit();
+	afx_msg void OnClose();
 };

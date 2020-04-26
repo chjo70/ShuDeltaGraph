@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#define MAX_LAN_BUFFER			(sizeof(int)*600)			//(sizeof(int)*2000)
+#define MAX_LAN_BUFFER			(sizeof(int)*65536)			//(sizeof(int)*2000)
 
 
 

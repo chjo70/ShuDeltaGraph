@@ -68,7 +68,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 		m_uiErrorCode = CAsyncSocket::GetLastError();
 		InitVar();	
 		
-		((CShuSIMDlg*)m_pDlg)->OnClose();
+		((CShuSIMDlg*)m_pDlg)->OnSocketClose();
 		TRACE( "·£ÀÌ ²÷°å½À´Ï´Ù !!!" );
 	}
 	CAsyncSocket::OnClose(nErrorCode);
@@ -112,7 +112,7 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 		pstRxMessage = ( STR_MESSAGE * ) & m_stQueueMsg.stMsg;
 		pstRxData = ( STR_DATA_CONTENTS * ) & m_stQueueMsg.stData;
 
-		TRACE( "\n IOCTL dwSize[%d]" , dwSize );
+		//TRACE( "\n IOCTL dwSize[%d]" , dwSize );
 
 		if( m_bHeader == false ) {
 			uiReceivedMessage = Receive((char *) pstRxMessage, sizeof(STR_MESSAGE) );
