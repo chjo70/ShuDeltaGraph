@@ -47,6 +47,7 @@ public:
 	void InitVar();
 
 	void ViewGraph();
+	void View3DGraph();
 	void UpdateHisto( BOOL bData );
 
 	inline UINT *GetFreqX() { return m_nFreqX; }

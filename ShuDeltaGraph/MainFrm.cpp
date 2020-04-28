@@ -446,8 +446,9 @@ void CMainFrame::OnClose()
 
 	Log( enNormal, _T("프로그램을 닫습니다.") );
 
-	pApp->m_pDlgColList->OnClose();
+	//pApp->m_pDlgColList->OnSocketClose();
 	//OnClose();
 
+	//CMainFrame::OnClose();
 	CMDIFrameWndEx::OnClose();
 }

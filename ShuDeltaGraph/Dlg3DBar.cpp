@@ -506,7 +506,7 @@ void CDlg3DBar::OnTimer(UINT_PTR nIDEvent)
 	switch(nIDEvent)
 	{
 	case CLK_TIMER:
-		SetEvent( m_h3DBar );
+		//SetEvent( m_h3DBar );
 		//1초마다 처리할 내용
 		break;
 

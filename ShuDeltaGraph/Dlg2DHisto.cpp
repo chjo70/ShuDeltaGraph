@@ -186,14 +186,14 @@ void CDlg2DHisto::InitGraph()
 
  	GetClientRect( &rect );
  
- 	m_hPE = PEcreate(PECONTROL_SGRAPH, WS_VISIBLE, &rect, m_hWnd, 1001);
+ 	m_hPE = PEcreate(PECONTROL_SGRAPH, WS_VISIBLE, &rect, m_hWnd, 1002);
 
 	// v9 features new default CursorPromptLocation = ToolTip
 	PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);  
 	PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
 
 	// Enable Bar Glass Effect //
-	PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
+	//PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
 
 	// Enable Plotting style gradient and bevel features //
 	PEnset(m_hPE, PEP_nAREAGRADIENTSTYLE,  PEPGS_VERTICAL_ASCENT_INVERSE);
@@ -211,27 +211,11 @@ void CDlg2DHisto::InitGraph()
 	PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 	PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
 
-	// Set number of Subsets and Points //
-	PEnset(m_hPE, PEP_nSUBSETS, 1);	
-	PEnset(m_hPE, PEP_nPOINTS, FREQ_MAX+1 );	
-
-// 	for( int s=0; s<=3; s++ )
-// 	{
-// 		int nOffset = GetRandom(1, 250);
-// 		for( int p=0; p<=119; p++ )
-// 		{										  
-// 			fX = ((float) (p+1)) * 100.0F + ((float) GetRandom(2, 250)) / 50.0F;
-// 			PEvsetcellEx (m_hPE, PEP_faXDATA, s, p, &fX);
-// 			fY = ((float) (p+1) * 1.0F) + GetRandom(1, 250) + (sin ((nOffset + p)*.03F) * 700.0F)    - ((float) (s * 140.0F)) + ((float) GetRandom(2, 250)) / 250.0F;
-// 			PEvsetcellEx (m_hPE, PEP_faYDATA, s, p, &fY);
-// 		}
-// 	}
-
 	// Set DataShadows to show shadows
 	PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
 
 	PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
-	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSSPLINE);
+	//PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSSPLINE);
 	PEnset(m_hPE, PEP_nGRIDLINECONTROL, PEGLC_BOTH);
 	PEnset(m_hPE, PEP_nGRIDSTYLE, PEGS_DOT);
 	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
@@ -244,7 +228,7 @@ void CDlg2DHisto::InitGraph()
 	PEszset(m_hPE, PEP_szMAINTITLE, TEXT("주파수 히스토그램"));
 	PEszset(m_hPE, PEP_szSUBTITLE, TEXT("")); // no subtitle
 	PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("빈도율[%]"));
-	PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("주파수[MHz]"));
+	PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("주파수[GHz]"));
 
 	// subset labels
 	//PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 0, TEXT("Horsepower"));
@@ -253,18 +237,10 @@ void CDlg2DHisto::InitGraph()
 	//PEvsetcell( m_hPE, PEP_szaSUBSETLABELS, 3, TEXT("Pressure" ));
 
 	// subset colors
- 	DWORD dwArray[4] = { PERGB(128,198,0,0), PERGB(128, 0, 198, 198 ), PERGB(128, 198,198,0 ), PERGB(128, 0,198,0 ) };
- 	PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 4, dwArray, 0 );
- 
- 	// subset line types
-//  	int nLineTypes[] = { PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID, PELT_MEDIUMSOLID };
-//  	PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 4);
- 
-// 	// subset point types //
-// 	int nPointTypes[] = { PEPT_DOTSOLID, PEPT_UPTRIANGLESOLID, 
-// 		PEPT_SQUARESOLID, PEPT_DOWNTRIANGLESOLID, PEPT_DOTSOLID, 
-// 		PEPT_SQUARESOLID, PEPT_DIAMONDSOLID, PEPT_UPTRIANGLESOLID };
-// 	PEvset(m_hPE, PEP_naSUBSETPOINTTYPES, nPointTypes, 8);
+//  	DWORD dwArray[SUBSETS] = { PERGB(128,198,  0,0), PERGB(128,  0,198, 198 ), PERGB(128, 0,198,0 ), PERGB(0, 128,198,0 ),
+// 							   PERGB(  0,198,  0,0), PERGB(  0,  0,198, 198 ), PERGB(128, 198,198,0 ), PERGB(128, 0,198,0 ),
+// 							   PERGB(  0,198,  0,0), PERGB(128, 0, 198, 198 ) } ;
+//  	PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, SUBSETS, dwArray, 0 );
 
 	PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
 	PEnset(m_hPE, PEP_bSIMPLEPOINTLEGEND, TRUE);
@@ -283,7 +259,7 @@ void CDlg2DHisto::InitGraph()
 	PEnset(m_hPE, PEP_bSUBTITLEBOLD, TRUE);
 	PEnset(m_hPE, PEP_bLABELBOLD, TRUE);
 	PEnset(m_hPE, PEP_bLINESHADOWS, TRUE);
-	PEnset(m_hPE, PEP_nFONTSIZE, PEFS_LARGE);
+	PEnset(m_hPE, PEP_nFONTSIZE, PEFS_SMALL);
 	PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
 	PEnset(m_hPE, PEP_nDATAPRECISION, 1);
 
@@ -304,71 +280,50 @@ void CDlg2DHisto::InitGraph()
 
 	PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
 
-	//////////////////////////////////////////////////////////////////////////
-	//
-	//
-
 	// Set up cursor //
-	PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
-
-	// Help see data points //
-	PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
-
-	// This will allow you to move cursor by clicking data point //
-	//PEnset(m_hPE, PEP_bMOUSECURSORCONTROL, TRUE);
-	//PEnset(m_hPE, PEP_bALLOWDATAHOTSPOTS, TRUE);
-	//PEnset(m_hPE, PEP_nHOTSPOTSIZE, 4);  
-
-	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
-	//PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
-	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_LIGHT_SHADOW );
-	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_BAR );		
-
-	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
-	PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZPLUSVERT_ZOOM);
-	PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);  // note that pan gestures require MouseDragging to be enabled 
-	PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);  
-
-	// Enable MouseWheel Zoom Smoothness
-	PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
-	PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
-
-	// changing data testing mousecursorcontrolclosestpoint feature 
-// 	PEnset(m_hPE, PEP_nRYAXISCOMPARISONSUBSETS, 1);
-// 	PEnset(m_hPE, PEP_nTXAXISCOMPARISONSUBSETS, 1);
-// 	float fx = -8000.0F;
-// 	PEvsetcellEx(m_hPE, PEP_faXDATA, 3,0,&fx);
-// 	fx = -7000.0F;
-// 	PEvsetcellEx(m_hPE, PEP_faXDATA, 3,1,&fx);
-// 	fx = -6000.0F;
-// 	PEvsetcellEx(m_hPE, PEP_faXDATA, 3,2,&fx);
-// 	fx = -2000.0F;
-// 	PEvsetcellEx(m_hPE, PEP_faXDATA, 3,3,&fx);
-
-	PEnset(m_hPE, PEP_bZOOMWINDOW, TRUE);
-
-	// v9 features 
-	PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);
-	PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
-	PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TRACKING_TOOLTIP);
-
-	PEnset(m_hPE, PEP_bTRACKINGCUSTOMDATATEXT, TRUE);
-	PEnset(m_hPE, PEP_bTRACKINGCUSTOMOTHERTEXT, TRUE);
-
-	PEnset(m_hPE, PEP_bALLOWTITLEHOTSPOTS, TRUE);
-	PEnset(m_hPE, PEP_bALLOWSUBSETHOTSPOTS, TRUE);
-	PEnset(m_hPE, PEP_bALLOWAXISLABELHOTSPOTS, TRUE);
-	PEnset(m_hPE, PEP_bALLOWGRIDNUMBERHOTSPOTSY, TRUE);
-	PEnset(m_hPE, PEP_bALLOWGRIDNUMBERHOTSPOTSX, TRUE);
-
-	PEnset(m_hPE, PEP_bMOUSECURSORCONTROLCLOSESTPOINT, TRUE);
+// 	PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
+// 
+// 	// Help see data points //
+ 	PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
+// 
+// 	PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
+// 	//PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
+// 	PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_LIGHT_SHADOW );
+ 	PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_BAR );		
+// 
+// 	PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
+// 	PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZPLUSVERT_ZOOM);
+// 	PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);  // note that pan gestures require MouseDragging to be enabled 
+// 	PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);  
+// 
+// 	// Enable MouseWheel Zoom Smoothness
+// 	PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
+// 	PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
+// 
+// 	PEnset(m_hPE, PEP_bZOOMWINDOW, TRUE);
+// 
+// 	// v9 features 
+// 	PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);
+// 	PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
+// 	PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TRACKING_TOOLTIP);
+// 
+// 	PEnset(m_hPE, PEP_bTRACKINGCUSTOMDATATEXT, TRUE);
+// 	PEnset(m_hPE, PEP_bTRACKINGCUSTOMOTHERTEXT, TRUE);
+// 
+// 	PEnset(m_hPE, PEP_bALLOWTITLEHOTSPOTS, TRUE);
+// 	PEnset(m_hPE, PEP_bALLOWSUBSETHOTSPOTS, TRUE);
+// 	PEnset(m_hPE, PEP_bALLOWAXISLABELHOTSPOTS, TRUE);
+// 	PEnset(m_hPE, PEP_bALLOWGRIDNUMBERHOTSPOTSY, TRUE);
+// 	PEnset(m_hPE, PEP_bALLOWGRIDNUMBERHOTSPOTSX, TRUE);
+// 
+// 	PEnset(m_hPE, PEP_bMOUSECURSORCONTROLCLOSESTPOINT, TRUE);
 
 	//////////////////////////////////////////////////////////////////////////
 	double d;
 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-	d = 500.0F;
+	d = 500.0F / 1000.0;
 	PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
-	d = 18000.0F;
+	d = 18000.0F / 1000.0;
 	PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
 
 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
@@ -376,6 +331,26 @@ void CDlg2DHisto::InitGraph()
 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 	d = 100.0F;
 	PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+
+	PEszset( m_hPE, PEP_szAXISFORMATX, _T("|,.0|") );
+
+	d = 0.001F;
+	PEvset( m_hPE, PEP_fBARWIDTH, &d, 1 );
+
+	// Set number of Subsets and Points //
+	PEnset(m_hPE, PEP_nSUBSETS, 1);	
+	PEnset(m_hPE, PEP_nPOINTS, FREQ_MAX-FREQ_MIN+1 );
+
+	for( int p=FREQ_MIN; p<=FREQ_MAX; p++ ) {
+		float fX, fY;
+
+		fX = (float) p / (float) 1000.;
+		PEvsetcellEx (m_hPE, PEP_faXDATA, 0, p, &fX);
+		fY = 1;
+		PEvsetcellEx (m_hPE, PEP_faYDATA, 0, p, &fY);
+	}
+
+	::InvalidateRect(m_hPE, NULL, FALSE);
 
 }
 
@@ -534,6 +509,8 @@ DWORD WINAPI Func2DHisto( LPVOID lpData )
 			ResetEvent( pDlg->m_hHisto[en_ReceiveData] );
 			pDlg->UpdateHisto( TRUE );
 			pDlg->ViewGraph();
+
+			pDlg->View3DGraph();
 		}
 		else if( dRet == WAIT_OBJECT_0+1 ) {
 			ResetEvent( pDlg->m_hHisto[en_Timer] );
@@ -562,15 +539,19 @@ DWORD WINAPI Func2DHisto( LPVOID lpData )
 void CDlg2DHisto::UpdateHisto( BOOL bData )
 {
 	if( bData == TRUE ) {
-		UINT i, uiItem, uiTemp32;
+		UINT i, uiItem, uiTemp32, iMaxFreq=0;
 
-		float fFreq;
+		float fFreq, fNorm;
 
 		TNEW_PDW *pPDW;
+
+		UINT *pFreqX;
 
 		uiItem = m_pSonataData->uiItem;
 
 		pPDW = & m_pSonataData->unRawData.stPDWData[0];
+
+		InitVar();
 
 		for( i=0 ; i < uiItem ; ++i ) {
 			UINT uiIndex;
@@ -579,10 +560,21 @@ void CDlg2DHisto::UpdateHisto( BOOL bData )
 			fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
 
 			uiIndex = (UINT) ( fFreq + 0.5 );
-			m_nFreqX[uiIndex] = 100;
+			//uiIndex = IMUL( UDIV( uiIndex, 10 ), 10 );
+			++ m_nFreqX[uiIndex];
+
+			iMaxFreq = max( m_nFreqX[uiIndex], iMaxFreq );
 
 			++ pPDW;
 		}
+
+		fNorm = FDIV( 100, iMaxFreq );
+		pFreqX = & m_nFreqX[FREQ_MIN];
+		for( i=FREQ_MIN ; i <= FREQ_MAX ; ++i ) {
+			*pFreqX = IMUL( *pFreqX, fNorm );
+			++ pFreqX;
+		}
+
 	}
 	else {
 		int i;
@@ -658,17 +650,44 @@ void CDlg2DHisto::ViewGraph()
 {
 	int s=0;
 	float fX, fY;
+	DWORD dwColor;
 
-	for( int p=FREQ_MIN; p<=FREQ_MAX; p++ )
-	{										  
-		fX = (float) p;
-		PEvsetcellEx (m_hPE, PEP_faXDATA, 0, p, &fX);
-		fY = (float) m_nFreqX[p];
-		PEvsetcellEx (m_hPE, PEP_faYDATA, 0, p, &fY);
+	PEnset(m_hPE, PEP_nSUBSETS, 1);	
+	PEnset(m_hPE, PEP_nPOINTS, FREQ_MAX-FREQ_MIN+1 );
+
+	int nSFPC[] = {0, 1}; // First and Second subsets use SubsetPointColors feature //
+	PEvset(m_hPE, PEP_naSUBSETFORPOINTCOLORS, nSFPC, 2);
+
+	dwColor = PERGB( 255, 15 + ((m_pSonataData->uiNo - 1) * 20), 255, 0);  
+	for( int p=FREQ_MIN; p<=FREQ_MAX; p++ ) {
+		if( m_pSonataData->uiNo % 2 ) {
+			PEvsetcellEx(m_hPE, PEP_dwaPOINTCOLORS, 0, p, &dwColor);
+
+			fX = (float) p / (float) 1000.;
+			PEvsetcellEx (m_hPE, PEP_faXDATA, 0, p, &fX);
+			fY = (float) m_nFreqX[p];
+			PEvsetcellEx (m_hPE, PEP_faYDATA, 0, p, &fY);
+		}
+		else {
+			PEvsetcellEx(m_hPE, PEP_dwaPOINTCOLORS, 1, p, &dwColor);
+
+			fX = (float) p / (float) 1000.;
+			PEvsetcellEx (m_hPE, PEP_faXDATA, 1, p, &fX);
+			fY = (float) m_nFreqX[p];
+			PEvsetcellEx (m_hPE, PEP_faYDATA, 1, p, &fY);
+		}
+
 	}
 
 	::InvalidateRect(m_hPE, NULL, FALSE);
 
+}
+
+void CDlg2DHisto::View3DGraph()
+{
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	pApp->m_pDlg3DBar->ViewGraph();
 }
 
 /**
@@ -684,6 +703,7 @@ void CDlg2DHisto::ViewGraph()
 BOOL CDlg2DHisto::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	return CDialogEx::OnCommand(wParam, lParam);
 
 	if( (HIWORD(wParam) == PEWN_CUSTOMTRACKINGDATATEXT )) {
 		// v9 features 
@@ -694,22 +714,23 @@ BOOL CDlg2DHisto::OnCommand(WPARAM wParam, LPARAM lParam)
 		double dY;
 		PEvget(m_hPE, PEP_fCURSORVALUEY, &dY);
 
-		_stprintf_s(szBuffer, 200, _T("%.3fMHz\n%.1f%%"), dX, dY);
+		int iIndex = (int) ( dX * 1000. + 0.5 );
+		_stprintf_s(szBuffer, 200, _T("%.1fGHz\n%.1f%%"), dX, m_nFreqX[iIndex]);
 		//wsprintf( & szBuffer[0], _T("X Axis: %.3f  \nY Axis: %.3f"), (float) dX, (float)  dY);
 
-		if (dX < 2000.F) {
+		if (dX < 2.F) {
 			PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("대역 1"));
 			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,0,245,0));
 		}
-		else if( dX < 6000.F) {
+		else if( dX < 6.F) {
 			PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("대역 2"));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,50,50,0));
+			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(245,0,0,0));
 		}
-		else if( dX < 12000.F) {
+		else if( dX < 12.F) {
 			PEszset(m_hPE, PEP_szTRACKINGTOOLTIPTITLE, TEXT("대역 3"));
-			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(0,0,0,0));
+			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(50,50,0,0));
 			PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
 		}
 		else
@@ -741,7 +762,7 @@ void CDlg2DHisto::OnTimer(UINT_PTR nIDEvent)
 	switch(nIDEvent)
 	{
 	case CLK_TIMER:
-		SetEvent( m_hHisto[en_Timer] );
+		//SetEvent( m_hHisto[en_Timer] );
 		//1초마다 처리할 내용
 		break;
 

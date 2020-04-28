@@ -19,6 +19,13 @@ private:
 
 	CThread m_theThread;
 
+	float *m_pfPA;
+	float *m_pfIndex;
+	float *m_pfIP;
+
+	float* m_pGlobalYData;
+	float* m_pGlobalXData;
+
 public:
 	HANDLE m_hMulti;
 
@@ -34,6 +41,7 @@ private:
 	void InitThread();
 	void FreeBuffer();
 	void InitGraph();
+	void InitGraph2();
 
 	void GetNumberFormat( TCHAR *pSZ, double dValue );
 
@@ -45,6 +53,7 @@ public:
 
 	void InitVar();
 	void ViewGraph();
+	void ViewGraph2();
 
 // 대화 상자 데이터입니다.
 	enum { IDD = IDD_DIALOG_MULTI };

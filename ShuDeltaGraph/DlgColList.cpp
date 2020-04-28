@@ -114,11 +114,8 @@ void CDlgColList::InitBuffer()
 	m_pConnected->SetParentDlg(this);
 
 	m_ptxData = (char *) malloc(sizeof(char) * 100000);
-
 	m_pColList = ( STR_COL_LIST *) malloc( sizeof(STR_COL_ITEM) * MAX_COL_ITEMS );
-
 	m_pRawData = ( STR_RAW_DATA * ) malloc( sizeof(STR_RAW_DATA) );
-
 	m_pSonataData = ( STR_SONATA_DATA * ) malloc( sizeof(STR_SONATA_DATA) );
 
 	m_hReceveLAN = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -173,6 +170,7 @@ BEGIN_MESSAGE_MAP(CDlgColList, CDialogEx)
 	ON_NOTIFY(HDN_ITEMCLICK, 0, &CDlgColList::OnHdnItemclickListRawdata)
 	ON_NOTIFY(NM_CLICK, IDC_LIST_RAWDATA, &CDlgColList::OnNMClickListRawdata)
 	ON_NOTIFY(LVN_ENDSCROLL, IDC_LIST_RAWDATA, &CDlgColList::OnLvnEndScrollListRawdata)
+	ON_WM_VSCROLL()
 END_MESSAGE_MAP()
 
 
@@ -436,7 +434,7 @@ void CDlgColList::SetControl( bool bEnable )
  * @date      2020/02/01 13:37:52
  * @warning   
  */
-void CDlgColList::OnClose()
+void CDlgColList::OnSocketClose()
 {
 	m_theThread.Stop( true );
 
@@ -568,7 +566,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 	MakeLogResMessage( & strTemp1, & strTemp2, pQueueMsg );
 	InsertItem( & strTemp1, & strTemp2 );
 
-	Sleep( 100 );
+	//Sleep( 100 );
 
 	//
 	if( m_enMode == enColList_MODE ) {
@@ -600,11 +598,11 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					//
 					memcpy( & m_pRawData->stColList, pColList, sizeof(STR_COL_LIST) );
 
-					memcpy( & m_pRawData->unRawData.stIQData[0], & pQueueMsg->stData.stIQData[0], MAX_COL_IQ_DATA );
+					memcpy( & m_pRawData->unRawData.stIQData[0], & pQueueMsg->stData.stIQData[0], sizeof(STR_RES_IQ_DATA)*MAX_COL_IQ_DATA );
 					m_pRawData->uiItem = MAX_COL_IQ_DATA;
 
 					InsertIQRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem  );
-					//ViewGraph();
+					ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
  					ReadyColStart( m_uiColList );
  					MakeSetModeMessage( m_uiColList );
@@ -661,7 +659,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 					if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
 						InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem  );
-						ViewGraph();
+						ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
 						ReadyColStart( m_uiColList );
 						MakeSetModeMessage( m_uiColList );
@@ -1767,14 +1765,14 @@ void CDlgColList::SetIBkColorOfColList( UINT uiIndex, int nStep )
 
 	if( nStep == -1 )
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(255, 255, 255) );
-	else if( nStep == 0 )
-		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 50, 0) );
-	else if( nStep == 1 )
+	else if( nStep <= 2 )
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 100, 0) );
-	else if( nStep == 2 )
+	else if( nStep == 3 )
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 150, 0) );
+	else if( nStep == 4 )
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 250, 0) );
 	else 
-		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(250, 0, 0) );
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 0, 10) );
 
 }
 
@@ -1802,12 +1800,19 @@ void CDlgColList::InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem 
  * @date      2020/02/23 11:55:09
  * @warning   
  */
-void CDlgColList::ViewGraph()
+void CDlgColList::ViewGraph( UINT uiOpCode )
 {
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
-	SetEvent( pApp->m_pDlg2DHisto->m_hHisto[en_ReceiveData] );
-	SetEvent( pApp->m_pDlgMulti->m_hMulti );
+	if( uiOpCode == RES_RAWDATA_PDW ) {
+		SetEvent( pApp->m_pDlg2DHisto->m_hHisto[en_ReceiveData] );
+		//SetEvent( pApp->m_pDlg3DBar->m_h3DBar );
+
+		SetEvent( pApp->m_pDlgMulti->m_hMulti );
+	}
+	else {
+		SetEvent( pApp->m_pDlgMulti->m_hMulti );
+	}
 
 }
 
@@ -1903,13 +1908,13 @@ void CDlgColList::MakePDWFile( int iItem )
 	strFolderName.Format( _T("%s//%04d_%02d_%02d//PDW"), RAWDATA_DIRECTORY, cur_time.wYear, cur_time.wMonth, cur_time.wDay ); 
 	CreateDir( (TCHAR*) (LPCTSTR) strFolderName );
 
-	m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.pdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
+	m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.spdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
 
 	strPathname = strFolderName + _T("//") + m_strFilename;
 
 	ConvertRAWData( iItem, en_PDW_DATA );
 
-	m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+	//m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
 
 }
 
@@ -2000,17 +2005,20 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType )
 			m_pSonataData->uiItem = iItem;
 			m_pSonataData->enDataType = en_PDW_DATA;
 
+			m_pSonataData->uiNo = m_pColList[m_uiColList].stColItem.uiNo;
+
 			//
 			//////////////////////////////////////////////////////////////////////////
 			m_stStatPDW.fFreqMean /= iItem;
 
 			m_stStatPDW.fDtoaMean /= ( iItem - 1 );
-			m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean, _spOneMicrosec );
+			//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean, _spOneMicrosec );
+			m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
 
 			break;
 
 		case en_IQ_DATA :
-			//memcpy( m_pSonataData->unRawData.stIQData, & pstData->stIQData, iItem*sizeof(TNEW_IQ) );
+			memcpy( m_pSonataData->unRawData.stIQData, & m_pRawData->unRawData.stIQData, iItem*sizeof(TNEW_IQ) );
 			m_pSonataData->uiItem = iItem;
 			m_pSonataData->enDataType = en_IQ_DATA;
 			break;
@@ -2098,7 +2106,7 @@ void CDlgColList::MakeIQFile( int iItem )
 	stIQHeader.fColTime = m_pRawData->stColList.stColItem.fColTime;
 	stIQHeader.uiColNumber = m_pRawData->stColList.stColItem.uiColNumber;
 	stIQHeader.fThreshold = m_pRawData->stColList.stColItem.fThreshold;
-	m_theDataFile.SaveDataFile( strPathname, (void *) m_pRawData->unRawData.stIQData, iItem, en_SONATA, en_IQ_DATA, & stIQHeader, sizeof(STR_IQ_HEADER) );
+	//m_theDataFile.SaveDataFile( strPathname, (void *) m_pRawData->unRawData.stIQData, iItem, en_SONATA, en_IQ_DATA, & stIQHeader, sizeof(STR_IQ_HEADER) );
 
 }
 
@@ -2465,3 +2473,11 @@ void CDlgColList::OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 }
 
 
+
+
+void CDlgColList::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
+}

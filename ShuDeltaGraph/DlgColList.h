@@ -111,9 +111,7 @@ typedef struct {
 
 typedef union {
 	STR_RES_PDW_DATA stPDWData[MAX_RAW_DATA];
-
-	STR_RES_IQ_DATA stIQData[MAX_RAW_DATA];
-
+	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
 	STR_RES_INTRA_DATA stIntraData[MAX_RAW_DATA];
 
 } UNI_RAW_DATA;
@@ -224,7 +222,7 @@ private:
 
 	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
 
-	void ViewGraph();
+	void ViewGraph( UINT uiOpCode );
 	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
@@ -253,7 +251,7 @@ public:
 
 	void OnAccept();
 	void OnConnect( int nErrorCode );
-	void OnClose();
+	void OnSocketClose();
 	void OnReceive( char *pData );
 
 	void Send();
@@ -322,4 +320,5 @@ public:
 	afx_msg void OnHdnItemclickListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMClickListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 };
