@@ -32,8 +32,8 @@ private:
 	float *m_pfPA;
 	float *m_pfIndex;
 	float *m_pfIP;
+	float *m_pFFT;
 
-	float* m_pGlobalYData;
 	float* m_pGlobalXData;
 
 	ENUM_Graph m_enGraph;
@@ -56,6 +56,8 @@ private:
 	void InitGraph2();
 
 	void GetNumberFormat( TCHAR *pSZ, double dValue );
+
+	void ExecuteFFT( float *pfFFT, UINT UIuiItem, TNEW_IQ *pstIQData );
 
 	DECLARE_DYNAMIC(CDlgMulti)
 

@@ -8,6 +8,8 @@
 
 #include "Pegrpapi.h"
 
+#include "./FFTW/fftw3.h"
+
 #define GetRandom( min, max ) ((rand() % (int)(((max)+1) - (min))) + (min))
 
 
@@ -142,28 +144,15 @@ void CDlgMulti::InitBuffer()
 	m_pfIndex = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
 	m_pfIP = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
 
+	m_pFFT = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
+
 	// IQ 데이터의 X 인덱스 값
 	m_pGlobalXData = new float[MAX_IQ_DATA*3];
 	for (j = 0; j < MAX_IQ_DATA ; j++) {
-		m_pGlobalXData[j] = (j + 1);
-		m_pGlobalXData[j + MAX_IQ_DATA*1] = (j + 1);
-		m_pGlobalXData[j + MAX_IQ_DATA*2] = (j + 1);
+		m_pGlobalXData[j] = (float) (j + 1);
+		m_pGlobalXData[j + MAX_IQ_DATA*1] = (float) (j + 1);
+		m_pGlobalXData[j + MAX_IQ_DATA*2] = (float) (j + 1);
 	}
-
-	m_pGlobalYData = new float[500000];
-
-	float fShift = (float) GetRandom(1, 90);
-	for (j=0; j<=124999; j++)
-		m_pGlobalYData[j] = (sin(0.003F * (double) j + fShift) * 5.0F) + 10 + (float) GetRandom(1, 100)/10.0F ;
-	fShift = (float) GetRandom(1, 90);
-	for (j=0; j<=124999; j++)
-		m_pGlobalYData[j+125000] = (sin(0.002F * (double) j + fShift) * 5.0F) + 20 + (float) GetRandom(1, 100)/10.0F ;
-	fShift = (float) GetRandom(1, 90);
-	for (j=0; j<=124999; j++)
-		m_pGlobalYData[j+250000] = (sin(0.003F * (double) j + fShift) * 5.0F) + 30 + (float) GetRandom(1, 100)/10.0F ;
-	fShift = (float) GetRandom(1, 90);
-	for (j=0; j<=124999; j++)
-		m_pGlobalYData[j+375000] = (sin(0.003F * (double) j + fShift) * 5.0F) + 40 + (float) GetRandom(1, 100)/10.0F ;
 
 }
 
@@ -294,7 +283,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);
 			PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);
 
-			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("멀티 그래프"));
+			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("PDW 그래프"));
 			PEszset(m_hPE, PEP_szSUBTITLE, TEXT("")); // no subtitle
 
 			PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
@@ -404,11 +393,11 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
-			// 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-			// 	d = 0;
-			// 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-			// 	d = 18000.0F;
-			// 	PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+// 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+// 			d = 0;
+// 			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+// 			d = 18000000.0F;
+// 			PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 
 			// Reset WorkingAxis when done //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -471,6 +460,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = -180.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 180.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("순시진폭[dBm]"));
@@ -478,13 +468,14 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = -70.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 10.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("FFT"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-			d = 30.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-			d = 40.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			d = 9999940.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -501,7 +492,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			d = (double) MAX_IQ_DATA;  PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
 
 			// Set XData, it does not change
-			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, MAX_IQ_DATA*3 /* 400000 */ );
+			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, MAX_IQ_DATA*3 );
 
 			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
 			float val = 0;
@@ -509,7 +500,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 1, &val);
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 2, &val);
 
-			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("멀티 그래프"));
+			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("IQ 그래프"));
 			PEszset(m_hPE, PEP_szSUBTITLE, TEXT(""));
 			PEnset(m_hPE, PEP_bNORANDOMPOINTSTOEXPORT, TRUE);
 			PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
@@ -543,7 +534,6 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 
 			// Set Various Other Properties //
-
 			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);  
 			PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER);
 
@@ -612,6 +602,7 @@ void CDlgMulti::FreeBuffer()
 	free( m_pfPA );
 	free( m_pfIndex );
 	free( m_pfIP );
+	free( m_pFFT );
 
 	delete [] m_pGlobalXData;
 
@@ -792,8 +783,6 @@ void CDlgMulti::ViewGraph()
 
 	float fFreq, fPA, fTOA, fFirstToa, fDtoa, fPreviousToa, fXToa;
 
-	double d;
-
 	uiItem = m_pSonataData->uiItem;
 
 	if( m_pSonataData->enDataType == en_PDW_DATA ) {
@@ -816,7 +805,7 @@ void CDlgMulti::ViewGraph()
 
 			uiToa = temp.wpdw[0];
 			fXToa = FDIV(uiToa, _spOneMicrosec );
-			fTOA = fXToa / 1000000.;
+			fTOA = (float) ( fXToa / 1000000. );
 
 			if( i == 0 ) {
 				fFirstToa = fXToa;
@@ -860,14 +849,6 @@ void CDlgMulti::ViewGraph()
 	else {
 		InitGraphSetting( enIQGraph );
 
-		int i;
-		RECT rec;
-
-		int nHTypes;
-		float fShift;
-		double fYLoc;
-		DWORD dwArray;
-
 		TNEW_IQ *pIQ;
 
 		float fVal1, fVal2;
@@ -885,7 +866,7 @@ void CDlgMulti::ViewGraph()
 		pIQ = & m_pSonataData->unRawData.stIQData[0];
 
 		for( i=0 ; i < uiItem ; ++i ) {
-			float fI, fQ, fPA, fIndex;
+			float fI, fQ, fPA;
 
 			fI = (float) pIQ->sI;
 			fQ = (float) pIQ->sQ;
@@ -913,20 +894,17 @@ void CDlgMulti::ViewGraph()
 
 			}
 
-			//*pfIndex = (float) i;
-
-			//pfIndex++;
-
 			++ pfIP;
 			++ pIQ;
 
 		}
 
+		ExecuteFFT( m_pFFT, uiItem, & m_pSonataData->unRawData.stIQData[0] );
+
 		// Perform the actual transfer of data, all y data is repassed //
-		i = GetRandom(1, 4500); // randomize the start of waveform data to produce variation
 		PEvsetEx(m_hPE, PEP_faYDATA, 0, MAX_IQ_DATA, m_pfIP, NULL);
 		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024, MAX_IQ_DATA, m_pfPA, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024*2, MAX_IQ_DATA, & m_pGlobalYData[i + 250000], NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024*2, MAX_IQ_DATA, m_pFFT, NULL);
 
 
 		if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D)
@@ -1016,6 +994,69 @@ void CDlgMulti::ViewGraph()
 	}
 
 	::InvalidateRect(m_hPE, NULL, FALSE);
+
+}
+
+/**
+ * @brief     
+ * @param     float * pfFFT
+ * @param     UINT uiItem
+ * @param     TNEW_IQ * pstIQData
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/01 17:09:08
+ * @warning   
+ */
+void CDlgMulti::ExecuteFFT( float *pfFFT, UINT uiItem, TNEW_IQ *pstIQData )
+{
+	int i;
+
+	fftw_complex *pIn, *pOut;
+	fftw_complex *pP;
+	fftw_plan plan;
+
+	int N = uiItem, nShift;
+
+	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
+	pOut = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
+	plan = fftw_plan_dft_1d( N, pIn, pOut, FFTW_FORWARD, FFTW_ESTIMATE );
+
+	pP = pIn;
+	for( i=0 ; i < N ; ++i ) {
+		pP[i][0] = pstIQData->sI;
+		pP[i][1] = pstIQData->sQ;
+
+		++ pstIQData;
+	}
+
+	memset( pOut, 0, sizeof(fftw_complex) * N );
+	fftw_execute( plan );
+
+	nShift = ( N / 2 );
+	fftw_complex swap;
+	for( i=0 ; i < (N/2) ; ++i ) {
+		swap[0] = pOut[i][0];
+		swap[1] = pOut[i][1];
+
+		pOut[i][0] = pOut[nShift][0];
+		pOut[i][1] = pOut[nShift][1];
+
+		pOut[nShift][0] = swap[0];
+		pOut[nShift][1] = swap[1];
+
+		++ nShift;
+	}	
+
+	for( i=0 ; i < N ; ++i ) {
+		*pfFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
+		++ pfFFT;
+	}
+
+	fftw_destroy_plan( plan );
+	fftw_free( pIn );
+	fftw_free( pOut );
+
 
 }
 
