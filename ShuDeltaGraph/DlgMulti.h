@@ -3,6 +3,16 @@
 
 #include "./EasySize/EasySize.h"
 
+typedef enum {
+	enUnknownGraph=-1,
+
+	enPDWGraph=0,
+	enIQGraph
+
+} ENUM_Graph;
+
+#define MAX_IQ_DATA				(16*1024)
+
 
 // CDlgMulti 대화 상자입니다.
 
@@ -25,6 +35,8 @@ private:
 
 	float* m_pGlobalYData;
 	float* m_pGlobalXData;
+
+	ENUM_Graph m_enGraph;
 
 public:
 	HANDLE m_hMulti;
@@ -53,7 +65,8 @@ public:
 
 	void InitVar();
 	void ViewGraph();
-	void ViewGraph2();
+
+	void InitGraphSetting( ENUM_Graph enGraph, bool bForced=false );
 
 // 대화 상자 데이터입니다.
 	enum { IDD = IDD_DIALOG_MULTI };

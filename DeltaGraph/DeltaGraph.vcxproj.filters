@@ -227,9 +227,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MainFrm.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ChildFrm.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -292,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.cpp">
       <Filter>소스 파일\ListCtrl</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

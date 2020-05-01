@@ -37,7 +37,7 @@ IMPLEMENT_DYNAMIC(CDlgColList, CDialogEx)
 CDlgColList::CDlgColList(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CDlgColList::IDD, pParent)
 {
-
+	//m_pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 }
 
 CDlgColList::~CDlgColList()
@@ -1295,6 +1295,8 @@ void CDlgColList::OnBnClickedButtonColstart()
 	STR_COL_LIST *pColList;
 	STR_COL_LIST stColList;
 
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
 	m_enMode = enColList_MODE;
 
 	m_CButtonColStart.GetWindowText( strTitle );
@@ -1303,6 +1305,7 @@ void CDlgColList::OnBnClickedButtonColstart()
 		Log( enNormal, _T("수집 시작을 했습니다." ) );
 
 		m_pConnected->InitVar();
+		pApp->m_pDlgMulti->InitVar();
 
 		m_uiColList = 0;
 

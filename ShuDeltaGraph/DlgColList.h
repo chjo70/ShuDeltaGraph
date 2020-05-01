@@ -128,6 +128,8 @@ typedef struct {
 class CDlgColList : public CDialogEx
 {
 private:
+	//CShuDeltaGraphApp *m_pApp;
+
 	UINT m_uiColList;
 	ENUM_MODE m_enMode;
 
