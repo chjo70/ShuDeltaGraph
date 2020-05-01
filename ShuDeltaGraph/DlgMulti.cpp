@@ -393,11 +393,11 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
-// 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-// 			d = 0;
-// 			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-// 			d = 18000000.0F;
-// 			PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+ 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			d = 0;
+			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			d = 18000000.0F;
+			PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 
 			// Reset WorkingAxis when done //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -473,10 +473,10 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("FFT"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
-			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-			d = 9999940.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
+// 			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+// 			d = 9999940.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE );
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 
