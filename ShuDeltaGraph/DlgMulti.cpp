@@ -249,27 +249,6 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 			PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
 
-			// Set number of Subsets and Points //
-			//PEnset(m_hPE, PEP_nSUBSETS, 3);	
-			//PEnset(m_hPE, PEP_nPOINTS, 10 );	
-
-			double fX, fY;
-			for( int s=0; s< 3; s++ )
-			{
-				//int nOffset = GetRandom(1, 250);
-				for( int p=0; p<10 ; p++ )
-				{										  
-					fX = p;
-					PEvsetcellEx (m_hPE, PEP_faXDATA, s, p, &fX);
-					fY = 0.0;
-					PEvsetcellEx (m_hPE, PEP_faYDATA, s, p, &fY);
-				}
-			}
-
-			// Enable MouseWheel Zoom Smoothness
-			//PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
-			//PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
-
 			// Set DataShadows to show shadows
 			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
 
@@ -393,11 +372,11 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
- 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-			d = 0;
-			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-			d = 18000000.0F;
-			PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+ 			//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			//d = 0;
+			//PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			//d = 18000000.0F;
+			//PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 
 			// Reset WorkingAxis when done //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -444,14 +423,108 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 
 			PEreset( m_hPE );
 
+			// Enable Bar Glass Effect //
+			PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
+
 			PEnset(m_hPE, PEP_nSUBSETS, 3 );
 			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
 
-			int nval;
-			nval = 1;
-			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 0, &nval);
-			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 1, &nval);
-			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 2, &nval);
+			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
+			PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
+
+			// Set DataShadows to show shadows
+			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
+
+			PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
+			PEnset(m_hPE, PEP_nGRIDLINECONTROL, PEGLC_BOTH);
+			PEnset(m_hPE, PEP_nGRIDSTYLE, PEGS_DOT);
+			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORIZONTAL);
+			//PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_RO2_NOT);
+
+			// Enable middle mouse dragging //
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);
+
+			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("IQ 그래프"));
+			PEszset(m_hPE, PEP_szSUBTITLE, TEXT("")); // no subtitle
+
+			PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+			PEnset(m_hPE, PEP_bSHOWLEGEND, FALSE);
+			PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
+
+			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
+			PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER );
+
+			PEnset(m_hPE, PEP_nAUTOMINMAXPADDING, 1);
+
+			PEnset(m_hPE, PEP_nGRADIENTBARS, 8);
+			//PEnset(m_hPE, PEP_nTEXTSHADOWS, PETS_BOLD_TEXT);
+			PEnset(m_hPE, PEP_bMAINTITLEBOLD, TRUE);
+			PEnset(m_hPE, PEP_bSUBTITLEBOLD, TRUE);
+			PEnset(m_hPE, PEP_bLABELBOLD, TRUE);
+			//PEnset(m_hPE, PEP_bLINESHADOWS, TRUE);
+			PEnset(m_hPE, PEP_nFONTSIZE, PEFS_SMALL);
+			//PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
+			PEnset(m_hPE, PEP_nDATAPRECISION, 1);
+
+			PEnset(m_hPE, PEP_nIMAGEADJUSTTOP, 10);
+			PEnset(m_hPE, PEP_nIMAGEADJUSTLEFT, 20);
+			PEnset(m_hPE, PEP_nIMAGEADJUSTRIGHT, 20);
+
+			// Set export defaults //
+			PEnset(m_hPE, PEP_nDPIX, 600);
+			PEnset(m_hPE, PEP_nDPIY, 600);
+
+			PEnset(m_hPE, PEP_nEXPORTSIZEDEF, PEESD_NO_SIZE_OR_PIXEL );
+			PEnset(m_hPE, PEP_nEXPORTTYPEDEF, PEETD_PNG );
+			PEnset(m_hPE, PEP_nEXPORTDESTDEF, PEEDD_CLIPBOARD );
+			PEszset(m_hPE, PEP_szEXPORTUNITXDEF, TEXT("1280"));
+			PEszset(m_hPE, PEP_szEXPORTUNITYDEF, TEXT("768"));
+			PEnset(m_hPE, PEP_nEXPORTIMAGEDPI, 300 );
+
+			PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
+
+			// Set up cursor //
+			//PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
+
+			// Help see data points //
+			PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
+
+			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
+			//PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_BAR );		
+
+			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
+			PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZPLUSVERT_ZOOM);
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);  // note that pan gestures require MouseDragging to be enabled 
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);  
+
+			// Enable MouseWheel Zoom Smoothness
+			//PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
+			//PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
+
+			int nArray[3] = {1,1,1};
+			PEvset (m_hPE, PEP_naMULTIAXESSUBSETS, nArray, 3);
+
+			// Add Axis Separator //
+			PEnset(m_hPE, PEP_nMULTIAXESSEPARATORS, PEMAS_THIN);
+
+			// subset colors
+			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 3, dwArray, 0 );
+
+			PEnset(m_hPE, PEP_nSUBSETS, 3 );
+			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
+
+			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
+			float val = 0;
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 1, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 2, &val);
+
+// 			int nval;
+// 			nval = 1;
+// 			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 0, &nval);
+// 			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 1, &nval);
+// 			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 2, &nval);
 
 			// Match axis color and label to subset label //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -465,7 +538,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("순시진폭[dBm]"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
-			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
 			d = -70.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 10.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
@@ -474,11 +547,14 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("FFT"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
-// 			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-// 			d = 9999940.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+ 			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+ 			d = 1.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE );
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
+
+			// Axis Sizing //
+			PEnset(m_hPE, PEP_nMULTIAXESSIZING, TRUE);
 
 			// subset colors
 			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 3, dwArray, 0 );
@@ -495,7 +571,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, MAX_IQ_DATA*3 );
 
 			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
-			float val = 0;
+			val = 0;
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, &val);
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 1, &val);
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 2, &val);
@@ -1016,6 +1092,8 @@ void CDlgMulti::ExecuteFFT( float *pfFFT, UINT uiItem, TNEW_IQ *pstIQData )
 	fftw_complex *pP;
 	fftw_plan plan;
 
+	float *pf1FFT, maxFFT=0.0;
+
 	int N = uiItem, nShift;
 
 	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
@@ -1048,9 +1126,18 @@ void CDlgMulti::ExecuteFFT( float *pfFFT, UINT uiItem, TNEW_IQ *pstIQData )
 		++ nShift;
 	}	
 
+	pf1FFT = pfFFT;
 	for( i=0 ; i < N ; ++i ) {
-		*pfFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
-		++ pfFFT;
+		*pf1FFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
+		maxFFT = max( *pf1FFT, maxFFT );
+		++ pf1FFT;
+	}
+
+	// normalize
+	pf1FFT = pfFFT;
+	for( i=0 ; i < N ; ++i ) {
+		*pf1FFT /= maxFFT;
+		++ pf1FFT;
 	}
 
 	fftw_destroy_plan( plan );
