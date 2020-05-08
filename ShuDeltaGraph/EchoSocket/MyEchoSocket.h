@@ -24,6 +24,14 @@ enum EN_CONNECT_MODE {
 
 };
 
+typedef enum {
+	enUnknown = -1,
+
+	enSHU = 0,
+	enRSA,
+
+} enUnitID;
+
 
 
 typedef struct {
@@ -57,9 +65,11 @@ private:
 	
 	UINT m_uiErrorCode;
 
+	enUnitID m_id;
+
 // Operations
 public:
-	MyEchoSocket( bool bBigEndian );
+	MyEchoSocket( enUnitID id, bool bBigEndian );
 	virtual ~MyEchoSocket();
 
 	bool Send( void *pData, int iDataLength );

@@ -22,11 +22,12 @@
 
 // CDlgColList 대화 상자입니다.
 
-#define SHU_PORT_NUM				(13060)
+static int stPortNum[enRSA+1] = { 13060, 13030 } ;
 
 #define RAWDATA_DIRECTORY		_T("D://RAWDATA")
 
 #define MAX_COL_ITEMS				(1000)
+
 typedef enum {
 	enOpenPDW = 0,
 	enOpenXLS,
@@ -178,8 +179,8 @@ public:
 
 	CThread m_theThread;
 
-	MyEchoSocket *m_pListener;
-	MyEchoSocket *m_pConnected;
+	MyEchoSocket *m_pListener[enRSA+1];
+	MyEchoSocket *m_pConnected[enRSA+1];
 
 	UINT m_uiCoColList;
 
@@ -247,16 +248,16 @@ private:
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
 
-	void InitSocketSetting();
+	void InitSocketSetting( enUnitID id );
 	void CloseSocketSetting();
 	void Connect();
 
-	void OnAccept();
-	void OnConnect( int nErrorCode );
-	void OnSocketClose();
+	void OnAccept( enUnitID id );
+	void OnConnect( int nErrorCode, enUnitID id );
+	void OnSocketClose( enUnitID id );
 	void OnReceive( char *pData );
 
-	void Send();
+	void Send( enUnitID id );
 
 	//STR_DATA_CONTENTS *GetRxData();
 	//STR_MESSAGE *GetRxMessage();

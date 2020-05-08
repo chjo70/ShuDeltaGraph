@@ -15,8 +15,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // MyEchoSocket
 
-MyEchoSocket::MyEchoSocket( bool bBigEndian )
+MyEchoSocket::MyEchoSocket( enUnitID id, bool bBigEndian )
 {
+	m_id = id;
+
 	m_bConnected = false;
 	m_bBigEndian = bBigEndian;
 
@@ -58,7 +60,7 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CDlgColList*)m_pDlg)->OnAccept();
+		((CDlgColList*)m_pDlg)->OnAccept( m_id );
 		InitVar();
 
 		m_bConnected = true;
@@ -73,7 +75,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	{
 		InitVar();
 
-		((CDlgColList*)m_pDlg)->OnSocketClose();
+		((CDlgColList*)m_pDlg)->OnSocketClose( m_id );
 	}
 	CAsyncSocket::OnClose(nErrorCode);
 }
@@ -81,7 +83,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 void MyEchoSocket::OnConnect(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode );
+	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode, m_id );
 	m_uiErrorCode = CAsyncSocket::GetLastError();
 	m_bHeader = false;
 	

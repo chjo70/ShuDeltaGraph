@@ -104,14 +104,17 @@ void CDlgColList::InitVar()
  */
 void CDlgColList::InitBuffer()
 {
+	int i;
 
 	m_iSelItem = -1;
 
-	m_pListener = new MyEchoSocket( false );
-	m_pListener->SetParentDlg(this);
+	for( i=0 ; i <= enRSA ; ++i ) {
+		m_pListener[i] = new MyEchoSocket( (enUnitID) i, false );
+		m_pListener[i]->SetParentDlg(this);
 
-	m_pConnected = new MyEchoSocket( false );
-	m_pConnected->SetParentDlg(this);
+		m_pConnected[i] = new MyEchoSocket( (enUnitID) i, false );
+		m_pConnected[i]->SetParentDlg(this);
+	}
 
 	m_ptxData = (char *) malloc(sizeof(char) * 100000);
 	m_pColList = ( STR_COL_LIST *) malloc( sizeof(STR_COL_ITEM) * MAX_COL_ITEMS );
@@ -132,10 +135,14 @@ void CDlgColList::InitBuffer()
  */
 void CDlgColList::FreeBuffer()
 {
+	int i;
+
 	m_theThread.Stop();
 
-	delete m_pListener;
-	delete m_pConnected;
+	for( i=0 ; i <= enRSA ; ++i ) {
+		delete m_pListener[i];
+		delete m_pConnected[i];
+	}
 
 	free( m_ptxData );
 	free( m_pColList );
@@ -349,7 +356,8 @@ BOOL CDlgColList::OnInitDialog()
 	m_CComboMode.AddString( _T("협대역(IQ)" ) );
 	m_CComboMode.SetCurSel( m_stColItem.enMode );
 
-	InitSocketSetting();
+	InitSocketSetting( enSHU );
+	InitSocketSetting( enRSA );
 
 	CString strPathname;
 
@@ -375,19 +383,19 @@ void CDlgColList::LoadColList()
  * @date      2020/02/01 13:37:55
  * @warning   
  */
-void CDlgColList::OnAccept()
+void CDlgColList::OnAccept( enUnitID id )
 {
 	CString strIP;
 	UINT port;
 
 	Log( enNormal, _T("클라이언트와 연결됐습니다.") );
 
-	if ( m_pListener->Accept( *m_pConnected )) {
+	if ( m_pListener[id]->Accept( *m_pConnected[id] )) {
 		CString strMsg;
 
-		m_pListener->Close();
+		m_pListener[id]->Close();
 
-		m_pConnected->GetSockName(strIP, port);
+		m_pConnected[id]->GetSockName(strIP, port);
 		//m_status = "Client Connected,IP :" + strIP;
 		//m_sConnected.Send("Connected To Server", strlen("Connected To Server"));
 		//GetDlgItem(IDC_BUTTON_SERVERRUN)->EnableWindow(FALSE);
@@ -434,7 +442,7 @@ void CDlgColList::SetControl( bool bEnable )
  * @date      2020/02/01 13:37:52
  * @warning   
  */
-void CDlgColList::OnSocketClose()
+void CDlgColList::OnSocketClose( enUnitID id )
 {
 	m_theThread.Stop( true );
 
@@ -442,11 +450,11 @@ void CDlgColList::OnSocketClose()
 
 	InitVar();
 
-	m_pListener->Close();
-	m_pListener->ShutDown();
+	m_pListener[id]->Close();
+	m_pListener[id]->ShutDown();
 
-	m_pConnected->InitVar();
-	m_pConnected->Close();
+	m_pConnected[id]->InitVar();
+	m_pConnected[id]->Close();
 
 	m_StatusBar.SetText(_T("대기 상태"), 0, 0);
 	m_StatusBar.SetBkColor( GetSysColor(CTLCOLOR_DLG) );
@@ -456,7 +464,7 @@ void CDlgColList::OnSocketClose()
 	//OnBnClickedButtonServerrun();
 	SetControl( false );
 
-	InitSocketSetting();
+	InitSocketSetting( id );
 
 }
 
@@ -468,19 +476,19 @@ void CDlgColList::OnSocketClose()
  * @date      2020/02/01 10:10:36
  * @warning   
  */
-void CDlgColList::InitSocketSetting()
+void CDlgColList::InitSocketSetting( enUnitID id )
 {
 	UINT uiPortNum;
 	CString strPortNum;
 													  
 	CString strIPAddress=GetIpAddress();
 
-	uiPortNum = SHU_PORT_NUM;
+	uiPortNum = stPortNum[id];
 
 	Log( enNormal, _T("[%s/%d]는 서버로 실행합니다."), (char*)(LPCTSTR) strIPAddress, uiPortNum );
 
-	m_pListener->Create( uiPortNum, SOCK_STREAM);
-	m_pListener->Listen();
+	m_pListener[id]->Create( uiPortNum, SOCK_STREAM);
+	m_pListener[id]->Listen();
 
 	m_StatusBar.SetText(_T("대기 상태"), (int) 0, 0);
 
@@ -509,7 +517,7 @@ void CDlgColList::InitThread()
  * @date      2020/02/01 10:03:20
  * @warning   
  */
-void CDlgColList::OnConnect(int nErrorCode )
+void CDlgColList::OnConnect(int nErrorCode, enUnitID id )
 {
 	TCHAR szBuffer[100];
 
@@ -523,7 +531,7 @@ void CDlgColList::OnConnect(int nErrorCode )
 		UINT uiPortNum;
 		CString strIPAddress;
 
-		m_pConnected->GetPeerName( strIPAddress, uiPortNum );
+		m_pConnected[id]->GetPeerName( strIPAddress, uiPortNum );
 
 		//Log( enNormal, "%s/%d 에 연결되었습니다.", (char*)(LPCTSTR)strIPAddress, uiPortNum );
 
@@ -577,7 +585,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				case RES_SET_CONFIG :
 					SetIBkColorOfColList( m_uiColList, 2 );
 					MakeIQMessage( m_uiColList );
-					Send();
+					Send( enSHU );
 					break;
 
 				case RES_COL_START :
@@ -588,7 +596,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					else {
 						ReadyColStart( m_uiColList );
 						MakeSetModeMessage( m_uiColList );
-						Send();
+						Send( enSHU );
 					}
 					break;
 
@@ -606,7 +614,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
  					ReadyColStart( m_uiColList );
  					MakeSetModeMessage( m_uiColList );
- 					Send();
+ 					Send( enSHU );
 
 					SetIBkColorOfColList( m_uiColList, -1 );
 
@@ -627,7 +635,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					//TRACE( "\n RES_SET_CONFIG 처리 입니다." );
 					SetIBkColorOfColList( m_uiColList, 2 );
 					MakeColStartMessage();
-					Send();
+					Send( enSHU );
 					break;
 
 				case RES_COL_START :
@@ -636,7 +644,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 					if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
 						MakeReqRawDataMessage();
-						Send();
+						Send( enSHU );
 
 						memcpy( & m_stResCol, & pQueueMsg->stData.stColStart, sizeof(STR_RES_COL_START) );
 						m_pRawData->uiItem = 0;
@@ -644,7 +652,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					else {
 						ReadyColStart( m_uiColList );
 						MakeSetModeMessage( m_uiColList );
-						Send();
+						Send( enSHU );
 
 						UpdateColList();
 					}
@@ -663,7 +671,7 @@ void CDlgColList::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 						ReadyColStart( m_uiColList );
 						MakeSetModeMessage( m_uiColList );
-						Send();
+						Send( enSHU );
 
 						SetIBkColorOfColList( m_uiColList, -1 );
 
@@ -719,7 +727,7 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 
 	pDlg->ReadyColStart( uiIndex );
 	pDlg->MakeSetModeMessage( uiIndex );
-	pDlg->Send();
+	pDlg->Send( enSHU );
 
 	while( TRUE ) {
 		DWORD dRet;
@@ -1304,7 +1312,7 @@ void CDlgColList::OnBnClickedButtonColstart()
 	if( strTitle.Compare( _T("수집 시작") ) == 0 ) {
 		Log( enNormal, _T("수집 시작을 했습니다." ) );
 
-		m_pConnected->InitVar();
+		m_pConnected[enSHU]->InitVar();
 		pApp->m_pDlgMulti->InitVar();
 
 		m_uiColList = 0;
@@ -1335,7 +1343,7 @@ void CDlgColList::OnBnClickedButtonColstart()
 		}
 	}
 	else {
-		m_pConnected->InitVar();
+		m_pConnected[enSHU]->InitVar();
 		InitListCtrl( false );
 		
 		Log( enNormal, _T("수집 시작을 취소했습니다." ) );
@@ -1364,15 +1372,15 @@ void CDlgColList::ActivateGraph( BOOL bEnable )
  * @date      2020/02/03 22:03:14
  * @warning   
  */
-void CDlgColList::Send()
+void CDlgColList::Send( enUnitID id )
 {
 	STR_MESSAGE *pTxMessage;
 
-	m_pConnected->Send( m_ptxData, sizeof(STR_MESSAGE) );
+	m_pConnected[id]->Send( m_ptxData, sizeof(STR_MESSAGE) );
 
 	pTxMessage = (STR_MESSAGE * ) m_ptxData;
 	if( pTxMessage->uiDataLength != 0 ) {
-		m_pConnected->Send( & m_ptxData[sizeof(STR_MESSAGE)], pTxMessage->uiDataLength );
+		m_pConnected[id]->Send( & m_ptxData[sizeof(STR_MESSAGE)], pTxMessage->uiDataLength );
 	}
 
 	LogTxMessage( m_ptxData );
@@ -1644,7 +1652,7 @@ BOOL CDlgColList::PreTranslateMessage(MSG* pMsg)
 void CDlgColList::OnBnClickedButtonInit()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if( m_pListener != NULL && m_pListener->m_bConnected == true ) {
+	if( m_pListener[enSHU] != NULL && m_pListener[enSHU]->m_bConnected == true ) {
 		STR_MESSAGE *pTxMessage;
 		STR_DATA_CONTENTS *pTxData;
 
@@ -1657,7 +1665,7 @@ void CDlgColList::OnBnClickedButtonInit()
 		pTxData->stResInit.uiReqCode = 0;
 		pTxData->stResInit.uiErrorCode = 0;
 
-		Send();
+		Send( enSHU );
 	}
 }
 
@@ -1672,7 +1680,7 @@ void CDlgColList::OnBnClickedButtonInit()
 void CDlgColList::OnBnClickedButtonSetmode()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if( m_pListener != NULL && m_pListener->m_bConnected == true ) {
+	if( m_pListener[enSHU] != NULL && m_pListener[enSHU]->m_bConnected == true ) {
 		STR_MESSAGE *pTxMessage;
 		STR_DATA_CONTENTS *pTxData;
 
@@ -1682,13 +1690,13 @@ void CDlgColList::OnBnClickedButtonSetmode()
 
 		pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 
-		Send();
+		Send( enSHU );
 
 	}
 
 	OnClose();
 
-	InitSocketSetting();
+	InitSocketSetting(enSHU);
 
 	//m_theThread.Stop( true );
 
@@ -1736,7 +1744,7 @@ queue <STR_QUEUE_MSG> *CDlgColList::GetQueueMessage()
 {
 	queue <STR_QUEUE_MSG> *pQueueMsg;
 
-	pQueueMsg = m_pConnected->GetQueueMessage();
+	pQueueMsg = m_pConnected[enSHU]->GetQueueMessage();
 
 	return pQueueMsg;
 
@@ -2172,6 +2180,14 @@ void CDlgColList::InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
 	
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/08 23:33:46
+ * @warning   
+ */
 void CDlgColList::OnBnClickedButtonOpen()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -2221,6 +2237,15 @@ void CDlgColList::OnBnClickedButtonOpen()
 
 }
 
+/**
+ * @brief     
+ * @param     CString strPathname
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/08 23:33:39
+ * @warning   
+ */
 void CDlgColList::OpenXLSViewList( CString strPathname )
 {
 	long l, lMaxRow;
@@ -2312,6 +2337,14 @@ void CDlgColList::OpenXLSViewList( CString strPathname )
 
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/08 23:33:35
+ * @warning   
+ */
 void CDlgColList::OnBnClickedButtonSave()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -2370,6 +2403,16 @@ void CDlgColList::OnBnClickedButtonSave()
 }
 
 
+/**
+ * @brief     
+ * @param     NMHDR * pNMHDR
+ * @param     LRESULT * pResult
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/08 23:33:30
+ * @warning   
+ */
 void CDlgColList::OnLvnItemActivateListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMITEMACTIVATE pNMIA = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
@@ -2396,6 +2439,16 @@ void CDlgColList::OnLvnItemActivateListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 
 }
 
+/**
+ * @brief     
+ * @param     int iRow
+ * @param     STR_RAW_LIST * pRawList
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/08 23:33:27
+ * @warning   
+ */
 void CDlgColList::GetRawListFromList( int iRow, STR_RAW_LIST *pRawList )
 {
 	int i;
