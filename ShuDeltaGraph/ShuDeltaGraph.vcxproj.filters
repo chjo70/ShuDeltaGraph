@@ -275,6 +275,12 @@
     <ClInclude Include="EasySize\EasySize.h">
       <Filter>소스 파일\EasySize</Filter>
     </ClInclude>
+    <ClInclude Include="DialogRSA.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DialogSHU.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -375,6 +381,12 @@
     </ClCompile>
     <ClCompile Include="Excel\ExcelLib.cpp">
       <Filter>소스 파일\Excel</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogRSA.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogSHU.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

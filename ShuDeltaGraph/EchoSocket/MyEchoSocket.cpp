@@ -133,11 +133,16 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 		}
 		
 		if( m_uiDataLength == 0 || m_uiReceivedData == m_uiDataLength ) {
+			BOOL bRet;
+
 			m_bHeader = false;
 			uiDataLength = 0;
 
 			m_qMsg.push( m_stQueueMsg );
-			BOOL bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_hReceveLAN );
+			if( m_id == enSHU )
+				bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_pDlgSHU->m_hReceveLAN );
+			else
+				bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_pDlgRSA->m_hReceveLAN );
 
 			m_uiReceivedData = 0;
 		}

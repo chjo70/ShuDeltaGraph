@@ -20,27 +20,12 @@
 #include "./Excel/ExcelLib.h"
 #endif
 
-// CDlgColList 대화 상자입니다.
-
-static int stPortNum[enRSA+1] = { 13060, 13030 } ;
-
-#define RAWDATA_DIRECTORY		_T("D://RAWDATA")
-
-#define MAX_COL_ITEMS				(1000)
-
-typedef enum {
-	enOpenPDW = 0,
-	enOpenXLS,
-	enSavePDW,
-	enSaveXLS
-
-} ENUM_OPENTYPE;
-
 typedef enum {
 	enColList_MODE=0,
 	enNormal_Mode,
 
 } ENUM_MODE;
+
 
 typedef enum {
 	enIF2_WIDE=0,
@@ -50,12 +35,6 @@ typedef enum {
 	enIQ_WIDE,
 	enIQ_NARROW,
 } ENUM_COL_MODE;
-
-typedef enum {
-	enPDW_DataType=0,
-	enIQ_DataType,
-
-} ENUM_RAWDATA_TYPE;
 
 typedef struct {
 	BOOL bCkecked;
@@ -75,6 +54,55 @@ typedef struct {
 	STR_COL_ITEM stColItem;;
 
 } STR_COL_LIST;
+
+
+#define MAX_RAW_DATA	(65536)
+
+typedef union {
+	STR_RES_PDW_DATA stPDWData[MAX_RAW_DATA];
+	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
+	STR_RES_INTRA_DATA stIntraData[MAX_RAW_DATA];
+
+} UNI_RAW_DATA;
+
+typedef struct {
+	UINT uiItem;
+	STR_COL_LIST stColList;
+
+	UNI_RAW_DATA unRawData;
+
+} STR_RAW_DATA;
+
+#include "DialogSHU.h"
+#include "DialogRSA.h"
+
+
+// CDlgColList 대화 상자입니다.
+
+static int stPortNum[enRSA+1] = { 13060, 13030 } ;
+
+#define RAWDATA_DIRECTORY		_T("D://RAWDATA")
+
+#define MAX_COL_ITEMS				(1000)
+
+typedef enum {
+	enOpenPDW = 0,
+	enOpenXLS,
+	enSavePDW,
+	enSaveXLS
+
+} ENUM_OPENTYPE;
+
+
+
+
+
+typedef enum {
+	enPDW_DataType=0,
+	enIQ_DataType,
+
+} ENUM_RAWDATA_TYPE;
+
 
 typedef struct {
 	UINT uiNo;
@@ -108,28 +136,14 @@ typedef struct {
 	float fDtoaMax;
 } STR_STAT_PDW;
 
-#define MAX_RAW_DATA	(65536)
 
-typedef union {
-	STR_RES_PDW_DATA stPDWData[MAX_RAW_DATA];
-	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
-	STR_RES_INTRA_DATA stIntraData[MAX_RAW_DATA];
 
-} UNI_RAW_DATA;
-
-typedef struct {
-	UINT uiItem;
-	STR_COL_LIST stColList;
-
-	UNI_RAW_DATA unRawData;
-
-} STR_RAW_DATA;
 
 
 class CDlgColList : public CDialogEx
 {
 private:
-	//CShuDeltaGraphApp *m_pApp;
+
 
 	UINT m_uiColList;
 	ENUM_MODE m_enMode;
@@ -149,11 +163,7 @@ private:
 
 	STR_SONATA_DATA *m_pSonataData;
 
-	// 송신 데이터
-	char *m_ptxData;
 
-	STR_COL_ITEM m_stColItem;
-	
 	UINT m_iSelItem;
 
 	UINT m_uiLog;
@@ -172,6 +182,12 @@ private:
 	STR_STAT_PDW m_stStatPDW;
 
 public:
+	CDialogRSA *m_pDlgRSA;
+	CDialogSHU *m_pDlgSHU;
+
+	// 송신 데이터
+	char *m_ptxData;
+
 	HANDLE m_hReceveLAN;
 	bool m_bCompleteOnReceive;
 
@@ -182,25 +198,21 @@ public:
 	MyEchoSocket *m_pListener[enRSA+1];
 	MyEchoSocket *m_pConnected[enRSA+1];
 
-	UINT m_uiCoColList;
+	STR_COL_ITEM m_stColItem;
 
 private:
 	void InitStatusBar();
 	void InitBuffer();
 	void InitVar();
+	void InitTab();
 	void InitThread();
 	void FreeBuffer();
-	void InitButton();
 	void InitListCtrl( bool bInit=true );
 	void InitStatic();
 	void InitToolTip();
 
-	void SetTotalColList();
 	void SetTotalRawList();
 
-	void LoadColList();
-	void GetColList( STR_COL_LIST *pstColList );
-	void GetColItem( STR_COL_ITEM *pstColItem );
 	void PutColList( STR_COL_LIST *pstColList );
 	void GetColListFromList( int iRow, STR_COL_LIST *pColList );
 	void GetRawListFromList( int iRow, STR_RAW_LIST *pRawList );
@@ -219,17 +231,12 @@ private:
 	void SetControl( bool bEnable );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
-	void ConvertRAWData( int iItem, ENUM_DataType enDataType );
-	void MakeIQFile( int iItem );
-	void MakePDWFile( int iItem );
+	void ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData );
+	void MakeIQFile( int iItem, STR_RAW_DATA *pRawData );
+	void MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData );
 
-	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
-
-	void ViewGraph( UINT uiOpCode );
-	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
-	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
-
+	
 	// sonaat 체계 변환 함수
 	UINT GetFreqBand( UINT uiFreqMHz );
 	UINT ConvertFreq( float fFreq, int iBc );
@@ -241,9 +248,6 @@ private:
 
 	void ActivateGraph( BOOL bEanble );
 
-	void OpenXLSViewList( CString strPathname );
-
-	inline void UpdateColList() { m_uiColList = (m_uiCoColList-1) <= m_uiColList ? 0 : ++m_uiColList; }
 
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
@@ -257,23 +261,18 @@ public:
 	void OnSocketClose( enUnitID id );
 	void OnReceive( char *pData );
 
-	void Send( enUnitID id );
+	void Send( enUnitID id, char *ptxData );
 
-	//STR_DATA_CONTENTS *GetRxData();
-	//STR_MESSAGE *GetRxMessage();
-	queue <STR_QUEUE_MSG> *GetQueueMessage();
-
-	// 메시지 만들기
-	void MakeSetModeMessage( UINT uiIndex );
-	void MakeIQMessage( UINT uiIndex );
-	void MakeColStartMessage();
-	void MakeReqRawDataMessage();
-
-	void SetIBkColorOfColList( UINT uiIndex, int nStep );
+	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
 
 	void ReadyColStart( UINT uiIndex );
 
 	inline STR_SONATA_DATA *GetSONATAData() { return m_pSonataData; }
+
+	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData );
+	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData );
+
+	void ViewGraph( UINT uiOpCode );
 
 	DECLARE_DYNAMIC(CDlgColList)
 
@@ -290,38 +289,18 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
-	CReportCtrl m_ColList;
 	CReportCtrl m_RawList;
-	CNumSpinCtrl m_CSpinCenterFreq;
-	CNumSpinCtrl m_CSpinThreshold;
-	CNumSpinCtrl m_CSpinColTime;
-	CNumSpinCtrl m_CSpinColNum;
-	afx_msg void OnBnClickedButtonAddList();
 	afx_msg void OnHdnItemdblclickListColList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedButtonModifyList();
-	CNumSpinCtrl m_CSpinNum;
-	afx_msg void OnBnClickedButtonAllselect();
-	afx_msg void OnBnClickedButtonSelDelete();
-	afx_msg void OnBnClickedButtonAllselCheckbox();
-	afx_msg void OnBnClickedButtonAllselUncheckbox();
-	afx_msg void OnBnClickedButtonAllselInvcheckbox();
-	CXColorStatic m_CStaticTotalColList;
-	afx_msg void OnBnClickedButtonColstart();
-	afx_msg void OnBnClickedButtonInit();
-	CButtonST m_CButtonInit;
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	CButtonST m_CButtonSetMode;
-	afx_msg void OnBnClickedButtonSetmode();
-	CButtonST m_CButtonColStart;
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
-	CComboBox m_CComboMode;
-	afx_msg void OnBnClickedButtonOpen();
-	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnLvnItemActivateListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 	CXColorStatic m_CStaticTotalRawList;
 	afx_msg void OnHdnItemclickListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMClickListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	CTabCtrl m_Tab;
+	afx_msg void OnTcnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult);
 };
