@@ -153,6 +153,9 @@
     <None Include="res\Error.ico">
       <Filter>리소스 파일</Filter>
     </None>
+    <None Include="res\icon_connection.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShuDeltaGraph.h">

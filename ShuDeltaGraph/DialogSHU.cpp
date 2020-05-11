@@ -113,7 +113,7 @@ BOOL CDialogSHU::OnInitDialog()
 	m_CComboMode.SetCurSel( m_pParentDlg->m_stColItem.enMode );
 
 	CString strPathname = GetFilePath();
-	strPathname += _T("//수집 목록.xlsx");
+	strPathname += _T("//수집 목록(수퍼헷).xlsx");
 	OpenXLSViewList( strPathname );
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -175,8 +175,9 @@ void CDialogSHU::InitVar()
  */
 void CDialogSHU::InitButton()
 {
-	InitButtonST( & m_CButtonInit );
-	InitButtonST( & m_CButtonSetMode );
+	m_pParentDlg->InitButtonST( & m_CButtonInit, IDI_ICON_QUESTION );
+	m_pParentDlg->InitButtonST( & m_CButtonSetMode, IDI_ICON_QUESTION );
+	m_pParentDlg->InitButtonST( & m_CButtonColStart, IDI_ICON_CONNECTION );
 
 	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
 
@@ -202,6 +203,15 @@ void CDialogSHU::InitStatic()
 
 }
 
+/**
+ * @brief     
+ * @param     bool bInit
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/11 22:13:16
+ * @warning   
+ */
 void CDialogSHU::InitListCtrl( bool bInit )
 {
 	int i;
@@ -223,22 +233,6 @@ void CDialogSHU::InitListCtrl( bool bInit )
 		m_ColList.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
 		//m_ColList.SetCheckboxes(TRUE);
 
-// 		m_RawList.GetWindowRect(&rt);
-// 		m_RawList.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
-// 
-// 		i = 0;
-// 		m_RawList.InsertColumn(i++, _T("순번"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
-// 		m_RawList.InsertColumn(i++, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.04), -1 );
-// 		m_RawList.InsertColumn(i++, _T("종류"), LVCFMT_LEFT, (int) ( rt.Width() * 0.05) , -1);
-// 		m_RawList.InsertColumn(i++, _T("모드"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
-// 		m_RawList.InsertColumn(i++, _T("과제 중심 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
-// 		m_RawList.InsertColumn(i++, _T("과제 수집개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
-// 		m_RawList.InsertColumn(i++, _T("평균 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
-// 		m_RawList.InsertColumn(i++, _T("평균 DTOA[us]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
-// 		m_RawList.InsertColumn(i++, _T("저장 파일명"), LVCFMT_LEFT, (int) (rt.Width() * 0.19), -1);
-
-//		m_RawList.SetGridLines(TRUE);
-		//m_CListRawData.SetCheckboxes(TRUE);
 	}
 	else {
 		int i;
@@ -278,14 +272,12 @@ void CDialogSHU::InitButtonST( CButtonST *pCButtonRouteSetup )
  */
 void CDialogSHU::InitBuffer()
 {
-//	int i;
 
 	m_iSelItem = -1;
 
  	m_ptxData = (char *) malloc(sizeof(char) * 100000);
  	m_pColList = ( STR_COL_LIST *) malloc( sizeof(STR_COL_ITEM) * MAX_COL_ITEMS );
  	m_pRawData = ( STR_RAW_DATA * ) malloc( sizeof(STR_RAW_DATA) );
-// 	m_pSonataData = ( STR_SONATA_DATA * ) malloc( sizeof(STR_SONATA_DATA) );
  
  	m_hReceveLAN = CreateEvent( NULL, TRUE, FALSE, NULL );
 
@@ -301,7 +293,6 @@ void CDialogSHU::InitBuffer()
  */
 void CDialogSHU::FreeBuffer()
 {
-	int i;
 
 	free( m_ptxData );
 	free( m_pColList );
@@ -1121,6 +1112,14 @@ void CDialogSHU::OnBnClickedButtonSelDelete()
 	SetTotalColList();
 }
 
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/12 1:11:54
+ * @warning   
+ */
 void CDialogSHU::SetTotalColList()
 {
 	CString strTemp;
@@ -1295,6 +1294,16 @@ void CDialogSHU::OnHdnItemdblclickListColList(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 }
 
+/**
+ * @brief     
+ * @param     NMHDR * pNMHDR
+ * @param     LRESULT * pResult
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/11 23:56:51
+ * @warning   
+ */
 void CDialogSHU::OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);

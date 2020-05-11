@@ -41,11 +41,19 @@ typedef struct {
 
 	UINT uiNo;
 
+	// 수퍼헷 수신 정보
 	ENUM_COL_MODE enMode;
 	float fCenterFreq;
+	float fThreshold;
+
+	// 레이더 수신 정보
+	float fAOALow, fAOAHgh;
+	float fFreqLow, fFreqHgh;
+	float fPALow, fPAHgh;
+
+	// 공통 정보
 	float fColTime;
 	UINT uiColNumber;
-	float fThreshold;
 
 } STR_COL_ITEM;
 
@@ -214,7 +222,6 @@ private:
 	void SetTotalRawList();
 
 	void PutColList( STR_COL_LIST *pstColList );
-	void GetColListFromList( int iRow, STR_COL_LIST *pColList );
 	void GetRawListFromList( int iRow, STR_RAW_LIST *pRawList );
 	static BOOL CALLBACK ItemdataProc(DWORD dwData, LPARAM lParam);
 
@@ -225,8 +232,6 @@ private:
 	void LogTxMessage( void *pData, CString *pStrEtc=NULL );
 	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 	void InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pStrTemp3=NULL );
-
-	void InitButtonST( CButtonST *pCButtonRouteSetup );
 
 	void SetControl( bool bEnable );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
@@ -274,6 +279,8 @@ public:
 
 	void ViewGraph( UINT uiOpCode );
 
+	void InitButtonST( CButtonST *pCButtonRouteSetup, int iIcon );
+
 	DECLARE_DYNAMIC(CDlgColList)
 
 public:
@@ -291,8 +298,6 @@ public:
 	virtual BOOL OnInitDialog();
 	CReportCtrl m_RawList;
 	afx_msg void OnHdnItemdblclickListColList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnBnClickedButtonModifyList();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnLvnItemActivateListRawdata(NMHDR *pNMHDR, LRESULT *pResult);

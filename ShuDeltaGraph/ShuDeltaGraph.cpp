@@ -672,6 +672,7 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
+	// SHU
 	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->enMode );
 	::WritePrivateProfileString( L"COL_LIST", L"MODE", szBuffer, m_strIniFile );
 
@@ -686,6 +687,26 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 
 	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->uiColNumber );
 	::WritePrivateProfileString( L"COL_LIST", L"COL_NUM", szBuffer, m_strIniFile );
+
+	// RSA
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fAOALow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"AOA_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fAOAHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"AOA_HGH", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fFreqLow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"FREQ_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fFreqHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"FREQ_HGH", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPALow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"PA_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPAHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"PA_HGH", szBuffer, m_strIniFile );
+
 
 }
 
@@ -729,6 +750,7 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
+	//SHU
 	::GetPrivateProfileString( L"COL_LIST", L"MODE", L"0", szBuffer, 100, m_strIniFile );
 	pstColList->enMode = (ENUM_COL_MODE) _wtoi(szBuffer);
 
@@ -743,6 +765,25 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 
 	::GetPrivateProfileString( L"COL_LIST", L"COL_NUM", L"100.0", szBuffer, 100, m_strIniFile );
 	pstColList->uiColNumber = (int) _wtof(szBuffer);
+
+	//RSA
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"AOA_LOW", L"0", szBuffer, 100, m_strIniFile );
+	pstColList->fAOALow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"AOA_HGH", L"360", szBuffer, 100, m_strIniFile );
+	pstColList->fAOAHgh = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"FREQ_LOW", L"8000", szBuffer, 100, m_strIniFile );
+	pstColList->fFreqLow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"FREQ_HGH", L"10000", szBuffer, 100, m_strIniFile );
+	pstColList->fFreqHgh = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"PA_LOW", L"-70", szBuffer, 100, m_strIniFile );
+	pstColList->fPALow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"PA_HGH", L"0", szBuffer, 100, m_strIniFile );
+	pstColList->fPAHgh = (float) _wtof(szBuffer);
 
 }
 
