@@ -58,6 +58,8 @@ public:
 	char *m_prxBuffer;
 
 private:
+	CCriticalSection g_criticalLanQue;
+
 	int m_uiReceivedData;
 	UINT m_uiDataLength;
 	bool m_bHeader;
@@ -78,7 +80,9 @@ public:
 
 	int GetLastError();
 
-	queue <STR_QUEUE_MSG> *GetQueueMessage();
+	void LanMsg( bool bPush, STR_QUEUE_MSG *pQMsg );
+
+	//queue <STR_QUEUE_MSG> *GetQueueMessage();
 // 	STR_MESSAGE *GetRxMessage();
 // 	STR_DATA_CONTENTS *GetRxData();
 

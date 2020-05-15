@@ -9,6 +9,8 @@
 
 // CDialogSHU 대화 상자입니다.
 
+DWORD WINAPI FuncColListRSA( LPVOID lpData );
+
 class CDlgColList;
 
 class CDialogRSA : public CDialogEx
@@ -73,8 +75,33 @@ private:
 	void SetTotalColList();
 	void GetColItem( STR_COL_ITEM *pstColItem );
 
+	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
+	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
+
+	int GetNextNo();
+
+	void InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pStrTemp3=NULL );
+
+	void MakeColStartMessage();
+	void MakeReqRawDataMessage();
+	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
+
+	inline void UpdateColList() {
+		++ m_uiColList;	\
+		if( m_uiColList >= m_uiCoColList )	\
+			m_uiColList = 0;	\
+	}
+
 public:
 	void SetControl( bool bEnable );
+
+	void SetIBkColorOfColList( UINT uiIndex, int nStep );
+	void ReadyColStart( UINT uiIndex );
+	void MakeStopMessage( UINT uiIndex );
+	void MakeSetModeMessage( UINT uiIndex );
+	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
+	void LogTxMessage( void *pData, CString *pStrEtc=NULL );
+	
 
 public:
 	CDialogRSA(CWnd* pParent = NULL, void *pParentDlg=NULL );   // 표준 생성자입니다.
@@ -113,4 +140,6 @@ public:
 	afx_msg void OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedButtonAddList();
 	afx_msg void OnBnClickedButtonModifyList();
+	afx_msg void OnBnClickedButtonSave();
+	afx_msg void OnBnClickedButtonRemoveLiist();
 };

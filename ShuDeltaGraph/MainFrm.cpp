@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND(ID_FILE_NEW, &CMainFrame::OnFileNew)
 	ON_WM_CLOSE()
+	ON_WM_HOTKEY()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -451,4 +452,13 @@ void CMainFrame::OnClose()
 
 	//CMainFrame::OnClose();
 	CMDIFrameWndEx::OnClose();
+}
+
+
+void CMainFrame::OnHotKey(UINT nHotKeyId, UINT nKey1, UINT nKey2)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+
+	CMDIFrameWndEx::OnHotKey(nHotKeyId, nKey1, nKey2);
 }

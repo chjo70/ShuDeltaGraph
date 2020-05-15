@@ -175,6 +175,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	//AfxSetAllocStop( 8253 );
 
 	// 주 창이 초기화되었으므로 이를 표시하고 업데이트합니다.
+	m_bColList = false;
+	m_bGraph = false;
+
 	pMainFrame->ShowWindow( SW_SHOWMAXIMIZED /* m_nCmdShow */ );
 	pMainFrame->UpdateWindow();
 
@@ -798,17 +801,16 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 void CShuDeltaGraphApp::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	BOOL chk = m_pDlgColList->IsWindowVisible();
+	//BOOL chk = m_pDlgColList->IsWindowVisible();
 
-	if(chk)
-	{
+	if( m_bColList ) {
 		m_pDlgColList->ShowWindow(SW_HIDE);
 	}
-	else
-	{
+	else {
 		m_pDlgColList->ShowWindow(SW_RESTORE);
 		m_pDlgColList->ShowWindow(SW_SHOW);
-	}	
+	}
+	m_bColList = ! m_bColList;
 
 	//m_pDlgColList->SetParent();
 
@@ -840,41 +842,60 @@ void CShuDeltaGraphApp::OnAppExit()
 void CShuDeltaGraphApp::OnGraphCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	BOOL chk;
+	//BOOL chk;
 
-	chk = m_pDlg2DHisto->IsWindowVisible();
-	if(chk  )
-	{
-		//m_pDlg2DHisto->ShowWindow(SW_RESTORE);
+	//chk = m_pDlg2DHisto->IsWindowVisible();
+	if( m_bGraph ) {
 		m_pDlg2DHisto->ShowWindow(SW_HIDE);
+		m_pDlgMulti->ShowWindow(SW_HIDE);
+		m_pDlg3DBar->ShowWindow(SW_HIDE);
+
 	}
-	else
-	{
+	else {
 		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
-	}
 
-	chk = m_pDlgMulti->IsWindowVisible();
-	if(chk  )
-	{
-		m_pDlgMulti->ShowWindow(SW_HIDE);
-	}
-	else
-	{
 		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
-	}
 
-	chk = m_pDlg3DBar->IsWindowVisible();
-	if(chk  )
-	{
-		m_pDlg3DBar->ShowWindow(SW_HIDE);
-	}
-	else
-	{
 		m_pDlg3DBar->ShowWindow(SW_RESTORE);
 		m_pDlg3DBar->ShowWindow(SW_SHOW);
+
 	}
+
+	m_bGraph = ! m_bGraph;
+
+// 	if(chk  )
+// 	{
+// 		m_pDlg2DHisto->ShowWindow(SW_HIDE);
+// 	}
+// 	else
+// 	{
+// 		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
+// 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
+// 	}
+// 
+// 	chk = m_pDlgMulti->IsWindowVisible();
+// 	if(chk  )
+// 	{
+// 		m_pDlgMulti->ShowWindow(SW_HIDE);
+// 	}
+// 	else
+// 	{
+// 		m_pDlgMulti->ShowWindow(SW_RESTORE);
+// 		m_pDlgMulti->ShowWindow(SW_SHOW);
+// 	}
+// 
+// 	chk = m_pDlg3DBar->IsWindowVisible();
+// 	if(chk  )
+// 	{
+// 		m_pDlg3DBar->ShowWindow(SW_HIDE);
+// 	}
+// 	else
+// 	{
+// 		m_pDlg3DBar->ShowWindow(SW_RESTORE);
+// 		m_pDlg3DBar->ShowWindow(SW_SHOW);
+// 	}
 }
 
 

@@ -223,6 +223,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 	if( m_enGraph != enGraph || m_enGraph == enUnknownGraph ) {
 		if( enGraph == enPDWGraph ) {
 			int nLineTypes[3] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID};
+			//int nLineTypes[3] = { PELT_DOT, PELT_DOT, PELT_DOT};
 
 			PEreset( m_hPE );
 
@@ -330,6 +331,9 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			// subset colors
 			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 3, dwArray, 0 );
 
+			// subset line types //
+			PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 3);
+
 			PEnset(m_hPE, PEP_nSUBSETS, 3 );
 			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
 
@@ -345,7 +349,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,00|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[0] );
-			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MEDIUM);
 			d = 500;
 			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 18000.0;
@@ -358,7 +362,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|,|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
-			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MEDIUM);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = -60;
 			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -371,7 +375,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE );
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
-			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MEDIUM);
  			//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			//d = 0;
 			//PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
@@ -797,6 +801,8 @@ void CDlgMulti::OnSysCommand(UINT nID, LPARAM lParam)
 	else if(nID == SC_MINIMIZE)
 	{ 
 		//최소화 버튼 눌릴 시
+		CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+		pApp->MinimuzeGraph();
 	}
 	else if(nID == SC_RESTORE) 
 	{ 
@@ -857,7 +863,8 @@ void CDlgMulti::ViewGraph()
 
 	UINT uiToa;
 
-	float fFreq, fPA, fTOA, fFirstToa, fDtoa, fPreviousToa, fXToa;
+	UINT uiDtoa, uiPreviousToa;
+	float fFreq, fPA, /*fTOA*/ fFirstToa, fDtoa, fPreviousToa, fXToa;
 
 	uiItem = m_pSonataData->uiItem;
 
@@ -880,18 +887,21 @@ void CDlgMulti::ViewGraph()
 			temp.bpdw[0][3] = pPDW->item.toa_4;
 
 			uiToa = temp.wpdw[0];
-			fXToa = FDIV(uiToa, _spOneMicrosec );
-			fTOA = (float) ( fXToa / 1000000. );
+			//fXToa = FDIV(uiToa, _spOneMicrosec );
+			//fTOA = (float) ( fXToa / 1000000. );
 
 			if( i == 0 ) {
-				fFirstToa = fXToa;
-				fPreviousToa = fTOA;
-				fDtoa = 0;
+				fFirstToa = FDIV(uiToa, _spOneMicrosec );
+				uiPreviousToa = uiToa;
+				uiDtoa = 0;
 			}
 			else {
-				fDtoa = fTOA - fPreviousToa;
-				fPreviousToa = fTOA;
+				uiDtoa = uiToa - uiPreviousToa;
+				uiPreviousToa = uiToa;
 			}
+
+			fXToa = FDIV(uiToa, _spOneMicrosec );
+			fDtoa = FDIV(uiDtoa, _spOneMicrosec );
 
 			uiTemp32 = BIT_MERGE( pPDW->item.frequency_h, pPDW->item.frequency_l);
 			fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
@@ -912,17 +922,21 @@ void CDlgMulti::ViewGraph()
 			++ pPDW;
 		}
 
-		double dMin, dMax;
-		PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-		dMin = fFirstToa;
-		PEvset(m_hPE, PEP_fMANUALMINX, & dMin, 1);
-		dMax = fXToa;
-		PEvset(m_hPE, PEP_fMANUALMAXX, & dMax, 1);
+		if( uiItem != 0 ) {
+			double dMin, dMax;
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+			dMin = fFirstToa;
+			PEvset(m_hPE, PEP_fMANUALMINX, & dMin, 1);
+			dMax = fXToa;
+			PEvset(m_hPE, PEP_fMANUALMAXX, & dMax, 1);
+		}
 
 		// Reset WorkingAxis when done //
 		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 	}
 	else {
+		double d;
+
 		InitGraphSetting( enIQGraph );
 
 		TNEW_IQ *pIQ;
@@ -951,9 +965,10 @@ void CDlgMulti::ViewGraph()
 			fPA = sqrt( fI * fI + fQ * fQ );
 			*pfPA++ = (float) (20.*log10( fPA ) ) - (float) 80.;
 
+			// 위상차
 			if( i == 0 ) {
 				*pfIP = 0.0;
-				fVal2 = (float) ( atan2( fQ, fI ) * RAD2DEG );
+				fVal1 = fVal2 = (float) ( atan2( fQ, fI ) * RAD2DEG );
 			}
 			else {
 				fVal1 = (float) ( atan2( fQ, fI ) * RAD2DEG );
@@ -969,6 +984,8 @@ void CDlgMulti::ViewGraph()
 			else {
 
 			}
+			// 
+			*pfIP = fVal1;
 
 			++ pfIP;
 			++ pIQ;
@@ -981,6 +998,21 @@ void CDlgMulti::ViewGraph()
 		PEvsetEx(m_hPE, PEP_faYDATA, 0, MAX_IQ_DATA, m_pfIP, NULL);
 		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024, MAX_IQ_DATA, m_pfPA, NULL);
 		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024*2, MAX_IQ_DATA, m_pFFT, NULL);
+
+// 		d = 1024.0F * 2;
+// 		PEvset(m_hPE, PEP_fMANUALXAXISLINE, &d, 1);
+// 		//d = d / 512.0F;
+// 		//PEvset(m_hPE, PEP_fMANUALXAXISTICK, &d, 1);
+// 		PEnset(m_hPE, PEP_bMANUALXAXISTICKNLINE, TRUE);
+// 
+// 		PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+// 		d = 0.;
+// 		PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
+// 		d = 16384.;
+// 		PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
+// 
+// 		PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
+// 		PEnset(m_hPE, PEP_bXAXISLONGTICKS, TRUE);
 
 
 		if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D)

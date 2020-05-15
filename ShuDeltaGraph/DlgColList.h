@@ -34,6 +34,8 @@ typedef enum {
 
 	enIQ_WIDE,
 	enIQ_NARROW,
+
+	enModeUnknown
 } ENUM_COL_MODE;
 
 typedef struct {
@@ -68,6 +70,7 @@ typedef struct {
 
 typedef union {
 	STR_RES_PDW_DATA stPDWData[MAX_RAW_DATA];
+	STR_RES_PDW_DATA_RSA stRSAPDWData[MAX_RAW_DATA];
 	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
 	STR_RES_INTRA_DATA stIntraData[MAX_RAW_DATA];
 
@@ -89,7 +92,7 @@ typedef struct {
 
 static int stPortNum[enRSA+1] = { 13060, 13030 } ;
 
-#define RAWDATA_DIRECTORY		_T("D://RAWDATA")
+#define RAWDATA_DIRECTORY		_T("C://RAWDATA")
 
 #define MAX_COL_ITEMS				(1000)
 
@@ -151,8 +154,6 @@ typedef struct {
 class CDlgColList : public CDialogEx
 {
 private:
-
-
 	UINT m_uiColList;
 	ENUM_MODE m_enMode;
 
@@ -167,10 +168,7 @@ private:
 	STR_COL_LIST m_stColList;
 	STR_RES_COL_START m_stResCol;
 
-	STR_RAW_DATA *m_pRawData;
-
 	STR_SONATA_DATA *m_pSonataData;
-
 
 	UINT m_iSelItem;
 
@@ -193,13 +191,8 @@ public:
 	CDialogRSA *m_pDlgRSA;
 	CDialogSHU *m_pDlgSHU;
 
-	// 송신 데이터
-	char *m_ptxData;
-
 	HANDLE m_hReceveLAN;
 	bool m_bCompleteOnReceive;
-
-	STR_COL_LIST *m_pColList;
 
 	CThread m_theThread;
 
@@ -236,9 +229,9 @@ private:
 	void SetControl( bool bEnable );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
-	void ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData );
+	void ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID );
 	void MakeIQFile( int iItem, STR_RAW_DATA *pRawData );
-	void MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData );
+	void MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID );
 
 	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	
@@ -247,12 +240,9 @@ private:
 	UINT ConvertFreq( float fFreq, int iBc );
 	UINT ConvertPA( float fPA );
 	UINT ConvertPW( float fPW );
-
-	//void GetCellValue( CXlSimpleAutomation *pXL, UINT uiCol, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
-	//void SetCellValue( CXlSimpleAutomation *pXL, long lRow, CString *pStrNum, CString *pStrMode, CString *pStrCenterFreq, CString *pStrColTime, CString *pStrThreshold );
+	UINT ConvertAOA( float fAOA );
 
 	void ActivateGraph( BOOL bEanble );
-
 
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
@@ -268,18 +258,17 @@ public:
 
 	void Send( enUnitID id, char *ptxData );
 
-	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
-
-	void ReadyColStart( UINT uiIndex );
-
 	inline STR_SONATA_DATA *GetSONATAData() { return m_pSonataData; }
 
 	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData );
-	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData );
+	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData, enUnitID enID );
 
 	void ViewGraph( UINT uiOpCode );
 
 	void InitButtonST( CButtonST *pCButtonRouteSetup, int iIcon );
+
+	void InitUnitRes( enUnitID enID );
+	void ClearRawDataList();
 
 	DECLARE_DYNAMIC(CDlgColList)
 

@@ -629,6 +629,8 @@ void CDlg2DHisto::OnSysCommand(UINT nID, LPARAM lParam)
 	else if(nID == SC_MINIMIZE)
 	{ 
 		//최소화 버튼 눌릴 시
+		CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+		pApp->MinimuzeGraph();
 	}
 	else if(nID == SC_RESTORE) 
 	{ 
@@ -658,7 +660,7 @@ void CDlg2DHisto::ViewGraph()
 	int nSFPC[] = {0, 1}; // First and Second subsets use SubsetPointColors feature //
 	PEvset(m_hPE, PEP_naSUBSETFORPOINTCOLORS, nSFPC, 2);
 
-	dwColor = PERGB( 255, 15 + ((m_pSonataData->uiNo - 1) * 20), 255, 0);  
+	dwColor = PERGB( 255, 100, /* 15 + ((m_pSonataData->uiNo - 1) * 20) */ 255, 0);  
 	for( int p=FREQ_MIN; p<=FREQ_MAX; p++ ) {
 		if( m_pSonataData->uiNo % 2 ) {
 			PEvsetcellEx(m_hPE, PEP_dwaPOINTCOLORS, 0, p, &dwColor);

@@ -405,7 +405,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					strVal.Format( _T("%d") , *pcType );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
-					strVal.Format( _T("%12.3f/%12llu") , *pfTOA*1., *pllTOA );
+					strVal.Format( _T("%12.3f/%12llu/%llx") , *pfTOA*1., *pllTOA, *pllTOA );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
@@ -2391,7 +2391,7 @@ void CShuDeltaGraphView::OnDestroy()
 
 void CShuDeltaGraphView::SetFreqRange()
 {
-	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_KFX ) {
+	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_SONATA_SHU || m_pDoc->GetUnitType() == en_KFX ) {
 		_spFreqMin = 500;
 		_spFreqMax = 18000;
 	}
@@ -2406,14 +2406,18 @@ void CShuDeltaGraphView::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp* )AfxGetApp();
-	BOOL chk = pApp->m_pDlgColList->IsWindowVisible();
 
-	if(chk) {
-		pApp->m_pDlgColList->ShowWindow(SW_HIDE);
-	}
-	else {
-		pApp->m_pDlgColList->ShowWindow(SW_SHOW);
-	}
+	pApp->DlgCollist();
+
+// 	BOOL chk = pApp->m_pDlgColList->IsWindowVisible();
+// 
+// 	if(chk) {
+// 		pApp->m_pDlgColList->ShowWindow(SW_HIDE);
+// 	}
+// 	else {
+// 
+// 		pApp->m_pDlgColList->ShowWindow(SW_SHOW);
+// 	}
 
 }
 

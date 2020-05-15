@@ -53,6 +53,8 @@ BEGIN_MESSAGE_MAP(CDialogRSA, CDialogEx)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_COL_LIST, &CDialogRSA::OnDblclkListColList)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_LIST, &CDialogRSA::OnBnClickedButtonAddList)
 	ON_BN_CLICKED(IDC_BUTTON_MODIFY_LIST, &CDialogRSA::OnBnClickedButtonModifyList)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CDialogRSA::OnBnClickedButtonSave)
+	ON_BN_CLICKED(IDC_BUTTON_REMOVE_LIIST, &CDialogRSA::OnBnClickedButtonRemoveLiist)
 END_MESSAGE_MAP()
 
 
@@ -83,8 +85,11 @@ void CDialogRSA::OnBnClickedButtonColstart()
 	if( strTitle.Compare( _T("수집 시작") ) == 0 ) {
 		Log( enNormal, _T("수집 시작을 했습니다." ) );
 
+		m_pParentDlg->ClearRawDataList();
+
 		m_pParentDlg->m_pConnected[enRSA]->InitVar();
 		pApp->m_pDlgMulti->InitVar();
+		ResetEvent( m_hReceveLAN );
 
 		m_uiColList = 0;
 
@@ -104,7 +109,7 @@ void CDialogRSA::OnBnClickedButtonColstart()
 			ActivateGraph( TRUE );
 
 			//
-			m_theThread.Attach( FuncColList );
+			m_theThread.Attach( FuncColListRSA );
 			m_theThread.Start( this );
 
 			m_CButtonColStart.SetWindowText( _T("대기 취소") );
@@ -117,6 +122,9 @@ void CDialogRSA::OnBnClickedButtonColstart()
 		m_pParentDlg->m_pConnected[enRSA]->InitVar();
 		InitListCtrl( false );
 
+		MakeStopMessage( 0 );
+		m_pParentDlg->Send( enRSA, m_ptxData );
+
 		Log( enNormal, _T("수집 시작을 취소했습니다." ) );
 		m_theThread.Stop( true );
 
@@ -124,6 +132,367 @@ void CDialogRSA::OnBnClickedButtonColstart()
 
 		m_CButtonColStart.SetWindowText( _T("수집 시작") );
 	}
+}
+
+/**
+ * @brief     
+ * @param     LPVOID lpData
+ * @return    DWORD WINAPI
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/01 13:37:46
+ * @warning   
+ */
+DWORD WINAPI FuncColListRSA( LPVOID lpData )
+{
+	CDialogRSA *pDlg;
+
+	STR_QUEUE_MSG stQueueMsg;
+
+	CThread *pParent = reinterpret_cast<CThread*>(lpData);
+	pDlg = ( CDialogRSA * ) pParent->GetParam();
+
+	pDlg->SetIBkColorOfColList( 0, 1 );
+
+	pDlg->ReadyColStart( 0 );
+	pDlg->MakeSetModeMessage( 0 );
+	pDlg->m_pParentDlg->Send( enRSA, pDlg->m_ptxData );
+
+	while( TRUE ) {
+		DWORD dRet;
+
+		dRet = WaitForSingleObject( pDlg->m_hReceveLAN, INFINITE);
+		
+		if( dRet == WAIT_FAILED ) {
+			break;
+		}
+		else if( dRet == WAIT_ABANDONED ) {
+			ResetEvent( pDlg->m_hReceveLAN );
+			continue;
+		}
+		else if( dRet == WAIT_TIMEOUT )
+			continue;
+		else {
+			ResetEvent( pDlg->m_hReceveLAN );
+			
+			//정상 처리를 수행한다.
+			do {
+				pDlg->m_pParentDlg->m_pConnected[enRSA]->LanMsg( false, & stQueueMsg );
+
+				if( stQueueMsg.stMsg.uiOpcode != 0 ) {
+					//TRACE( "\n 메시지 OpCode : %d", stQueueMsg.stMsg.uiOpcode );
+					pDlg->ProcessColList( & stQueueMsg );
+				}
+				else {
+					break;
+				}
+			} while( true );
+
+		}
+	}
+
+	return 0;
+}
+
+void CDialogRSA::ReadyColStart( UINT uiIndex )
+{
+	m_pRawData->uiItem = 0;
+
+	memset( & m_stResCol, 0, sizeof(m_stResCol) );
+
+	memcpy( & m_stColList, m_pColList+uiIndex, sizeof(STR_COL_LIST) );
+
+}
+
+void CDialogRSA::SetIBkColorOfColList( UINT uiIndex, int nStep )
+{
+	STR_COL_LIST *pColList;
+
+	pColList = m_pColList + uiIndex;
+
+	//TRACE( "\n 번호 : %d, 단계 : %d", uiIndex, nStep );
+
+	if( nStep == -1 )
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(255, 255, 255) );
+	else if( nStep <= 2 )
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 100, 0) );
+	else if( nStep == 3 )
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 150, 0) );
+	else if( nStep == 4 )
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 250, 0) );
+	else 
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 0, 10) );
+
+}
+
+/**
+ * @brief     
+ * @param     STR_QUEUE_MSG * pQueueMsg
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/10 22:38:51
+ * @warning   
+ */
+void CDialogRSA::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
+{
+	STR_COL_LIST *pColList;
+	CString strTemp1, strTemp2;
+
+	// 수신한 메시지 출력
+	MakeLogResMessage( & strTemp1, & strTemp2, pQueueMsg );
+	InsertItem( & strTemp1, & strTemp2 );
+
+	//Sleep( 100 );
+
+	//
+	if( m_enMode == enColList_MODE ) {
+ 		pColList = m_pColList + m_uiColList;
+
+		//TRACE( "\n PDW 자동 과제[%d] 입니다.", m_uiColList );
+		switch( pQueueMsg->stMsg.uiOpcode ) {
+		case RES_SET_CONFIG :
+			//TRACE( "\n RES_SET_CONFIG 처리 입니다." );
+			SetIBkColorOfColList( m_uiColList, 2 );
+			MakeColStartMessage();
+			m_pParentDlg->Send( enRSA, m_ptxData );
+			break;
+
+		case RES_COL_START :
+			//TRACE( "\n RES_COL_START 처리 입니다." );
+			if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
+				SetIBkColorOfColList( m_uiColList, 3 );
+
+				MakeReqRawDataMessage();
+				m_pParentDlg->Send( enRSA, m_ptxData );
+
+				memcpy( & m_stResCol, & pQueueMsg->stData.stColStart, sizeof(STR_RES_COL_START) );
+				m_pRawData->uiItem = 0;
+			}
+			else {
+				SetIBkColorOfColList( m_uiColList, -1 );
+
+				UpdateColList();
+
+				ReadyColStart( m_uiColList );
+				MakeSetModeMessage( m_uiColList );
+				m_pParentDlg->Send( enRSA, m_ptxData );
+
+				SetIBkColorOfColList( m_uiColList, 1 );
+			}
+			break;
+
+		case RES_RAWDATA_PDW :
+			m_pParentDlg->InitUnitRes( enRSA );
+
+			//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
+			memcpy( & m_pRawData->unRawData.stRSAPDWData[m_pRawData->uiItem], & pQueueMsg->stData.stRSAPDWData[0], sizeof(STR_RES_PDW_DATA_RSA)*30 );
+			m_pRawData->uiItem = ( m_pRawData->uiItem+30 > m_stResCol.uiCoPulseNum ? m_stResCol.uiCoPulseNum : m_pRawData->uiItem+30 );
+
+			if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
+				// PDW 수신판에서 강제 첫번재 PDW 제거함. PDW수신판의 첫번째 PDW TOA 오류로 제거함.
+				-- m_pRawData->uiItem;
+				memcpy( & m_pRawData->unRawData.stRSAPDWData[0], & m_pRawData->unRawData.stRSAPDWData[1], sizeof(STR_RES_PDW_DATA_RSA)*m_pRawData->uiItem );
+
+				SetIBkColorOfColList( m_uiColList, 4 );
+
+				m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enRSA );
+				m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
+
+				SetIBkColorOfColList( m_uiColList, -1 );
+
+				UpdateColList();
+
+				ReadyColStart( m_uiColList );
+				MakeSetModeMessage( m_uiColList );
+				m_pParentDlg->Send( enRSA, m_ptxData );
+
+				SetIBkColorOfColList( m_uiColList, 1 );
+
+				TRACE( "\n 과제 번호 : %d", m_uiColList );
+			}
+			break;
+
+		default :
+			TRACE( "\n 에러 처리 입니다." );
+			break;
+		}
+
+	}
+	else {
+
+	}
+
+}
+
+void CDialogRSA::MakeReqRawDataMessage()
+{
+	STR_MESSAGE *pTxMessage;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = REQ_RAWDATA;
+	pTxMessage->uiDataLength = 0;
+
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/10 22:51:42
+ * @warning   
+ */
+void CDialogRSA::MakeColStartMessage()
+{
+	STR_MESSAGE *pTxMessage;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = REQ_COL_START;
+	pTxMessage->uiDataLength = 0;
+
+}
+
+/**
+ * @brief     
+ * @param     CString * pStrTemp1
+ * @param     CString * pStrTemp2
+ * @param     CString * pStrTemp3
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/10 22:41:48
+ * @warning   
+ */
+void CDialogRSA::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *pStrTemp3 )
+{
+	CString strNum;
+
+	strNum.Format(_T("%d"), m_uiLog );
+
+	// 	int nIndex = m_CListLog.InsertItem( INT_MAX, strNum, NULL );
+	// 	m_CListLog.SetItem(nIndex, 1, LVIF_TEXT, *pStrTemp1, NULL, NULL, NULL, NULL);
+	// 	m_CListLog.SetItem(nIndex, 2, LVIF_TEXT, *pStrTemp2, NULL, NULL, NULL, NULL);
+	// 
+	// 	if( pStrTemp3 != NULL ) {
+	// 		m_CListLog.SetItem(nIndex, 3, LVIF_TEXT, *pStrTemp3, NULL, NULL, NULL, NULL);
+	// 	}
+
+	Log( enNormal, _T("%d\t%s\t%s") , m_uiLog, (char*)(LPCTSTR)*pStrTemp1, (char*)(LPCTSTR)*pStrTemp2 );
+
+	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_INFOBK));
+	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_3DLIGHT));
+	//m_CListCtrlLOG.SetItemBkColor(num, -1, ::GetSysColor(COLOR_MENUHILIGHT));
+	//m_CListCtrlLOG.SetItemBkColor(num, -1, RGB(160, 255, 192));
+
+	++ m_uiLog;
+
+	//m_CListCtrlLOG.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
+	//m_CListCtrlLOG.SetItemState( num, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+	//m_CListCtrlLOG.EnsureVisible( num, FALSE); 
+}
+
+
+
+/**
+ * @brief     
+ * @param     CString * pstrTemp1
+ * @param     CString * pstrTemp2
+ * @param     void * pData
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/02/03 22:03:22
+ * @warning   
+ */
+void CDialogRSA::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData )
+{
+	STR_MESSAGE *pstMessage;
+	STR_DATA_CONTENTS *pstData;
+
+	pstMessage = (STR_MESSAGE *) pData;
+	pstData = (STR_DATA_CONTENTS * ) ( ( char *) pData + sizeof(STR_MESSAGE) );
+
+	switch (pstMessage->uiOpcode) {
+	case RES_INIT:
+		*pstrTemp1 = _T(">>초기화요구 응답");
+		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
+		break;
+
+	case RES_SET_CONFIG:
+		*pstrTemp1 = _T(">>수집 파라메타 설정 결과 응답");
+		pstrTemp2->Format( _T("[%d]"), pstData->uiResult );
+		break;
+
+	case RES_COL_START :
+		*pstrTemp1 = _T(">>수집시작 응답");
+		pstrTemp2->Format( _T("ST[%d],Co[%d],Phase[%d]"), pstData->stColStart.uiStatus, pstData->stColStart.uiCoPulseNum, pstData->stColStart.uiPhase3Num );
+		break;
+
+	case RES_RAWDATA_PDW:
+		*pstrTemp1 = _T(">>PDW 데이터");
+		*pstrTemp2 = _T(" ");
+		break;
+
+	case RES_RAWDATA_INTRA:
+		*pstrTemp1 = _T(">>FMOP 데이터");
+		*pstrTemp2 = _T(" ");
+		break;
+
+	case RES_RAWDATA_IQ :
+		pstrTemp1->Format( _T(">>IQ 데이터[%d]"), pstMessage->uiDataLength );
+		*pstrTemp2 = _T(" ");
+		break;
+
+	default:
+		*pstrTemp1 = _T("<<");
+		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
+		break;
+	}
+}
+
+/**
+ * @brief     
+ * @param     UINT uiIndex
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/10 22:38:27
+ * @warning   
+ */
+void CDialogRSA::MakeStopMessage( UINT uiIndex )
+{
+	STR_MESSAGE *pTxMessage;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = REQ_STOP;
+	pTxMessage->uiDataLength = 0;
+
+}
+
+void CDialogRSA::MakeSetModeMessage( UINT uiIndex )
+{
+	STR_COL_LIST *pColList;
+
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = REQ_SET_CONFIG;
+	pTxMessage->uiDataLength = sizeof(STR_REQ_SETMODE_RSA);
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+	pColList = m_pColList + uiIndex;
+
+	pTxData->stSetModeRSA.fAOALow = pColList->stColItem.fAOALow;
+	pTxData->stSetModeRSA.fAOAHgh = pColList->stColItem.fAOAHgh;
+	pTxData->stSetModeRSA.fFreqLow = pColList->stColItem.fFreqLow;
+	pTxData->stSetModeRSA.fFreqHgh = pColList->stColItem.fFreqHgh;
+	pTxData->stSetModeRSA.fPALow = pColList->stColItem.fPALow;
+	pTxData->stSetModeRSA.fPAHgh = pColList->stColItem.fPAHgh;
+	pTxData->stSetModeRSA.coPulseNum = pColList->stColItem.uiColNumber;
+	pTxData->stSetModeRSA.fColTime = pColList->stColItem.fColTime;
+
 }
 
 /**
@@ -147,7 +516,7 @@ void CDialogRSA::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 	strTemp = m_ColList.GetItemText( iRow, 1 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f/%f"), & pColList->stColItem.fAOALow, & pColList->stColItem.fAOAHgh );
 
-	//pColList->stColItem.enMode = enIF2_WIDE;
+	pColList->stColItem.enMode = enModeUnknown;
 
 	strTemp = m_ColList.GetItemText( iRow, 2 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f/%f"), & pColList->stColItem.fFreqLow, & pColList->stColItem.fFreqHgh );
@@ -200,6 +569,18 @@ void CDialogRSA::SetControl( bool bEnable )
 void CDialogRSA::OnBnClickedButtonOpen()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strPathName;
+
+	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( FALSE );
+
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenXLS ) ) {
+		m_ColList.DeleteAllItems();
+		OpenXLSViewList( strPathName );
+	}
+
+	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
 }
 
 
@@ -235,12 +616,12 @@ BOOL CDialogRSA::OnInitDialog()
 
 	m_CSpinAOALow.SetDecimalPlaces(1);
 	m_CSpinAOALow.SetTrimTrailingZeros(FALSE);
-	m_CSpinAOALow.SetRangeAndDelta( 500, 180000, 10.0 );
+	m_CSpinAOALow.SetRangeAndDelta( 0, 359, 10.0 );
 	m_CSpinAOALow.SetPos( (double) m_pParentDlg->m_stColItem.fAOALow );
 
 	m_CSpinAOAHgh.SetDecimalPlaces(1);
 	m_CSpinAOAHgh.SetTrimTrailingZeros(FALSE);
-	m_CSpinAOAHgh.SetRangeAndDelta( 500, 180000, 10.0 );
+	m_CSpinAOALow.SetRangeAndDelta( 0, 359, 10.0 );
 	m_CSpinAOAHgh.SetPos( (double) m_pParentDlg->m_stColItem.fAOAHgh );
 
 	m_CSpinFreqLow.SetDecimalPlaces(1);
@@ -265,7 +646,7 @@ BOOL CDialogRSA::OnInitDialog()
 
 	m_CSpinColTime.SetDecimalPlaces(1);
 	m_CSpinColTime.SetTrimTrailingZeros(FALSE);
-	m_CSpinColTime.SetRangeAndDelta( 100, 100000, 1.0 );
+	m_CSpinColTime.SetRangeAndDelta( 1000, 90000, 1000.0 );
 	m_CSpinColTime.SetPos( (double) m_pParentDlg->m_stColItem.fColTime );
 
 	m_CSpinColNum.SetDecimalPlaces(0);
@@ -429,7 +810,7 @@ void CDialogRSA::InitListCtrl( bool bInit )
 		m_ColList.InsertColumn(i++, _T("방위 범위[도]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2) , -1);
 		m_ColList.InsertColumn(i++, _T("주파수 범위[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2) , -1);
 		m_ColList.InsertColumn(i++, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.25), -1);
-		m_ColList.InsertColumn(i++, _T("임계값[dBm]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.15 ), -1);
+		m_ColList.InsertColumn(i++, _T("세기 범위[dBm]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.15 ), -1);
 		m_ColList.InsertColumn(i++, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.07), -1);
 
 		m_ColList.SetGridLines(TRUE);
@@ -537,7 +918,7 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 	long l, lMaxRow;
 	float fValue1, fValue2;
 
-	//m_ColList.DeleteAllItems();
+	m_ColList.DeleteAllItems();
 
 #ifdef EXAUTOMATION
 	CString strNumber, strDOARange, strFreqRange, strColTime, strPARange;
@@ -685,7 +1066,6 @@ void CDialogRSA::OnBnClickedButtonAddList()
 	CString strTemp;
 
 	STR_COL_LIST stColList;
-	STR_COL_LIST *pColList;
 
 	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
 
@@ -693,23 +1073,23 @@ void CDialogRSA::OnBnClickedButtonAddList()
 
 	m_uiCoColList = m_ColList.GetItemCount();
 	//
-	pColList = m_pColList + m_uiCoColList;
-	stColList.stColItem.uiNo = m_uiCoColList + 1;
-	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
+	//pColList = m_pColList + m_uiCoColList;
+	stColList.stColItem.uiNo = GetNextNo();
+	//memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
 
 	//
-	strTemp.Format(_T("%d"), pColList->stColItem.uiNo );
+	strTemp.Format(_T("%d"), stColList.stColItem.uiNo );
 	nIndex = m_ColList.InsertItem( INT_MAX, strTemp, NULL );
 
 	//strTemp.Format(_T("%s"), g_stColListMode[pColList->stColItem.enMode] );
-	strTemp.Format(_T("%.1f/%.1f"), pColList->stColItem.fAOALow, pColList->stColItem.fAOAHgh );
+	strTemp.Format(_T("%.1f/%.1f"), stColList.stColItem.fAOALow, stColList.stColItem.fAOAHgh );
 	m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp.Format(_T("%.2f/%.2f"), pColList->stColItem.fFreqLow, pColList->stColItem.fFreqHgh );
+	strTemp.Format(_T("%.2f/%.2f"), stColList.stColItem.fFreqLow, stColList.stColItem.fFreqHgh );
 	m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%d/%.1f"), pColList->stColItem.uiColNumber, pColList->stColItem.fColTime );
+	strTemp.Format(_T("%d/%.1f"), stColList.stColItem.uiColNumber, stColList.stColItem.fColTime );
 	m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%.1f/%.1f"), pColList->stColItem.fPALow, pColList->stColItem.fPAHgh );
+	strTemp.Format(_T("%.1f/%.1f"), stColList.stColItem.fPALow, stColList.stColItem.fPAHgh );
 	m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	//m_ColList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
@@ -795,4 +1175,192 @@ void CDialogRSA::GetColItem( STR_COL_ITEM *pstColItem )
 void CDialogRSA::OnBnClickedButtonModifyList()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+
+	STR_COL_LIST stColList;
+	STR_COL_LIST *pColList;
+
+	GetDlgItem(IDC_EDIT_NUM)->EnableWindow( FALSE );
+	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
+
+	GetColList( & stColList );
+
+	// 수집 목록 버퍼에 복사
+	pColList = m_pColList + ( stColList.stColItem.uiNo - 1 );
+	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
+
+	// 목록창에 전시
+	MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+
+	m_ColList.SetItem( m_iSelItem, 0, LVIF_TEXT, strNumber, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
 }
+
+
+void CDialogRSA::OnBnClickedButtonSave()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strPathName;
+
+	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( FALSE );
+	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( FALSE );
+
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
+#ifdef EXAUTOMATION
+		int i;
+
+		CString strNumber, strAOARange, strFreqRange, strColTime, strPARange;
+
+		STR_COL_LIST stColList;
+
+		// 엑셀 수집 파일 로딩하기...
+		CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
+
+		XL.SetCellValue( 1, 1, _T("과제 번호") );
+		XL.SetCellValue( 2, 1, _T("방위 범위[도]") ); 
+		XL.SetCellValue( 3, 1, _T("주파수 범위[MHz]") ); 
+		XL.SetCellValue( 4, 1, _T("수집 개수/시간[ms]") ); 
+		XL.SetCellValue( 5, 1, _T("세기 범위[dBm]") ); 
+		XL.SetCellValue( 6, 1, _T("기타") ); 
+
+		for ( i = 0; i < m_ColList.GetItemCount(); i++) {
+			if( TRUE == m_ColList.GetCheck(i) || true ) {
+				GetColListFromList( i, & stColList );
+
+				MakeColListString( & strNumber, & strAOARange, & strFreqRange, & strColTime, & strPARange, & stColList );
+
+				//SetCellValue( & XL, i+1, & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold );
+				XL.SetCellValue( 1, i+2, strNumber ); 
+				XL.SetCellValue( 2, i+2, strAOARange ); 
+				XL.SetCellValue( 3, i+2, strFreqRange ); 
+				XL.SetCellValue( 4, i+2, strColTime ); 
+				XL.SetCellValue( 5, i+2, strPARange ); 
+
+			}
+		}
+
+		XL.SaveFileAs(strPathName);
+
+		XL.ReleaseExcel();
+#else
+
+
+#endif
+
+	}
+
+	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( TRUE );
+	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
+}
+
+void CDialogRSA::MakeColListString( CString *pstrNum, CString *pstrAOARange, CString *pstrFreqRange, CString *pstrColTime, CString *pstrPARange, STR_COL_LIST *pstColList )
+{
+	pstrNum->Format(_T("%d"), pstColList->stColItem.uiNo );
+
+	pstrAOARange->Format(_T("%.1f/%1.f"), pstColList->stColItem.fAOALow, pstColList->stColItem.fAOAHgh );
+
+	pstrFreqRange->Format(_T("%.2f/%.2f"), pstColList->stColItem.fFreqLow, pstColList->stColItem.fFreqHgh );
+
+	pstrColTime->Format(_T("%d/%.1f"), pstColList->stColItem.uiColNumber, pstColList->stColItem.fColTime );
+
+	pstrPARange->Format(_T("%.1f/%.1f"), pstColList->stColItem.fPALow, pstColList->stColItem.fPAHgh );
+
+
+}
+
+void CDialogRSA::OnBnClickedButtonRemoveLiist()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int iNo, iValue;
+	CString strTemp;
+
+	iNo = (int) m_CSpinNum.GetPos();
+	for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+		strTemp = m_ColList.GetItemText( i, 0 );
+		swscanf_s( strTemp.GetBuffer(), _T("%d"), & iValue );
+		if( iNo == iValue ) {
+			m_ColList.DeleteItem( i );
+			break;
+		}
+	}
+}
+
+int CDialogRSA::GetNextNo()
+{
+	int iMaxNo=0, iValue;
+	CString strTemp;
+
+	for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+		strTemp = m_ColList.GetItemText( i, 0 );
+		swscanf_s( strTemp.GetBuffer(), _T("%d"), & iValue );
+
+		iMaxNo = max( iValue, iMaxNo );
+
+	}
+
+	return iMaxNo + 1;
+}
+
+void CDialogRSA::LogTxMessage( void *pData, CString *pStrEtc )
+{
+	CString strTemp1, strTemp2;
+
+	MakeLogReqMessage( & strTemp1, & strTemp2, pData );
+
+	//m_pTabThreatDialog->MakeLogTxMessage( & strTemp1, & strTemp2, pData, true );
+
+	InsertItem( & strTemp1, & strTemp2, pStrEtc );
+
+}
+
+void CDialogRSA::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData )
+{
+	STR_MESSAGE *pstMessage;
+	STR_DATA_CONTENTS *pstData;
+
+	pstMessage = (STR_MESSAGE *) pData;
+	pstData = (STR_DATA_CONTENTS * ) ( ( char *) pData + sizeof(STR_MESSAGE) );
+
+	switch (pstMessage->uiOpcode) {
+	case REQ_INIT:
+		*pstrTemp1 = _T("<<초기화 요구");
+		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
+		break;
+
+	case REQ_SETMODE:
+		*pstrTemp1 = _T("<<시스템모드 전환 통보");
+		*pstrTemp2 = _T("");
+		break;
+
+	case REQ_SET_CONFIG:
+		*pstrTemp1 = _T("<<수집 파라메터 설정");
+		pstrTemp2->Format( _T("%.1f-%.1f[도], %.1f-%.1f[MHz], , %.1f-%.1f[dBm], %d[개수], %.1f[ms]"), pstData->stSetModeRSA.fAOALow, pstData->stSetModeRSA.fAOAHgh, pstData->stSetModeRSA.fFreqLow, pstData->stSetModeRSA.fFreqHgh,
+			pstData->stSetModeRSA.fPALow, pstData->stSetModeRSA.fPAHgh,
+			pstData->stSetModeRSA.coPulseNum , pstData->stSetModeRSA.fColTime );
+		break;
+
+	case REQ_COL_START :
+		*pstrTemp1 = _T("<<신호 수집 시작 요구");
+		break;
+
+	case REQ_RAWDATA :
+		*pstrTemp1 = _T("<<수집 데이터 요구");
+		break;
+
+	case REQ_SET_IQCONFIG :
+		*pstrTemp1 = _T("<<IQ 수집 시작 요청");
+		pstrTemp2->Format( _T("모드%d"), pstData->uiMode );
+		break;
+
+	default:
+		*pstrTemp1 = _T("<<");
+		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
+		break;
+	}
+}
+

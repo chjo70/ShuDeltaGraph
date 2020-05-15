@@ -55,8 +55,6 @@ public:
 
 	UINT m_uiCoColList;
 
-	queue <STR_QUEUE_MSG> *GetQueueMessage();
-
 	void SetIBkColorOfColList( UINT uiIndex, int nStep );
 
 	void ReadyColStart( UINT uiIndex );
@@ -93,11 +91,20 @@ private:
 	void GetColList( STR_COL_LIST *pstColList );
 	void GetColItem( STR_COL_ITEM *pstColItem );
 
-	inline void UpdateColList() { m_uiColList = (m_uiCoColList-1) <= m_uiColList ? 0 : ++m_uiColList; }
+	int GetNextNo();
+
+	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
+	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
+
+	inline void UpdateColList() {
+		++ m_uiColList;	\
+		if( m_uiColList >= m_uiCoColList )	\
+			m_uiColList = 0;	\
+	}
 
 public:
 	void SetControl( bool bEnable );
-
+	void LogTxMessage( void *pData, CString *pStrEtc=NULL );
 
 	DECLARE_DYNAMIC(CDialogSHU)
 
@@ -140,4 +147,5 @@ public:
 	CComboBox m_CComboMode;
 	afx_msg void OnBnClickedButtonAddList();
 	afx_msg void OnBnClickedButtonModifyList();
+	afx_msg void OnBnClickedButtonRemoveLiist();
 };

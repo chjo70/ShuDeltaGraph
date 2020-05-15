@@ -29,6 +29,8 @@ extern float _spOneSec;
 extern float _spOneMilli;
 extern float _spOneMicrosec;
 extern float _spOneNanosec;
+extern float _spAOAres;
+extern float _spPWres;
 
 // CDlgColList 대화 상자입니다.
 
@@ -107,8 +109,8 @@ void CDlgColList::InitBuffer()
 	}
 
 	//m_ptxData = (char *) malloc(sizeof(char) * 100000);
-	m_pColList = ( STR_COL_LIST *) malloc( sizeof(STR_COL_ITEM) * MAX_COL_ITEMS );
-	m_pRawData = ( STR_RAW_DATA * ) malloc( sizeof(STR_RAW_DATA) );
+	//m_pColList = ( STR_COL_LIST *) malloc( sizeof(STR_COL_ITEM) * MAX_COL_ITEMS );
+	//m_pRawData = ( STR_RAW_DATA * ) malloc( sizeof(STR_RAW_DATA) );
 	m_pSonataData = ( STR_SONATA_DATA * ) malloc( sizeof(STR_SONATA_DATA) );
 
 	m_hReceveLAN = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -314,6 +316,8 @@ void CDlgColList::OnAccept( enUnitID id )
 		
 		m_enConnectMode = CONNECTED;
 		UpdateData(FALSE);
+
+		InitUnitRes( id );
 
 		if( id == enSHU ) {
 			m_pDlgSHU->SetControl( true );
@@ -530,13 +534,13 @@ void CDlgColList::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, voi
  */
 void CDlgColList::OnReceive( char *pData )
 {
-	CString strTemp1, strTemp2;
-
-	MakeLogResMessage( & strTemp1, & strTemp2, (void *) pData );
-
-	UpdateResultData( pData );
-
-	InsertItem( & strTemp1, & strTemp2 );
+// 	CString strTemp1, strTemp2;
+// 
+// 	MakeLogResMessage( & strTemp1, & strTemp2, (void *) pData );
+// 
+// 	UpdateResultData( pData );
+// 
+// 	InsertItem( & strTemp1, & strTemp2 );
 
 }
 
@@ -589,11 +593,11 @@ void CDlgColList::InitListCtrl( bool bInit )
 		m_RawList.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
 		i = 0;
-		m_RawList.InsertColumn(i++, _T("순번"), LVCFMT_LEFT, (int) ( rt.Width()*0.10), -1 );
+		m_RawList.InsertColumn(i++, _T("순번"), LVCFMT_LEFT, (int) ( rt.Width()*0.05), -1 );
 		m_RawList.InsertColumn(i++, _T("과제 번호"), LVCFMT_LEFT, (int) ( rt.Width()*0.04), -1 );
 		m_RawList.InsertColumn(i++, _T("종류"), LVCFMT_LEFT, (int) ( rt.Width() * 0.05) , -1);
 		m_RawList.InsertColumn(i++, _T("모드"), LVCFMT_LEFT, (int) ( rt.Width() * 0.10) , -1);
-		m_RawList.InsertColumn(i++, _T("과제 중심 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
+		m_RawList.InsertColumn(i++, _T("과제 중심 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.15 ), -1);
 		m_RawList.InsertColumn(i++, _T("과제 수집개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
 		m_RawList.InsertColumn(i++, _T("평균 주파수[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
 		m_RawList.InsertColumn(i++, _T("평균 DTOA[us]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.1 ), -1);
@@ -674,20 +678,7 @@ void CDlgColList::OnHdnItemdblclickListColList(NMHDR *pNMHDR, LRESULT *pResult)
  * @date      2020/03/19 16:58:48
  * @warning   
  */
- void CDlgColList::MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList )
-{
-	pstrNum->Format(_T("%d"), pstColList->stColItem.uiNo );
 
-	pstrMode->Format(_T("%s"), g_stColListMode[pstColList->stColItem.enMode] );
-
-	pstrCenterFreq->Format(_T("%.2f"), pstColList->stColItem.fCenterFreq );
-
-	pstrColTime->Format(_T("%d/%.1f"), pstColList->stColItem.uiColNumber, pstColList->stColItem.fColTime );
-
-	pstrThreshold->Format(_T("%.1f"), pstColList->stColItem.fThreshold );
-
-
-}
 
 void CDlgColList::ActivateGraph( BOOL bEnable )
 {
@@ -715,7 +706,10 @@ void CDlgColList::Send( enUnitID id, char *ptxData )
 		m_pConnected[id]->Send( & ptxData[sizeof(STR_MESSAGE)], pTxMessage->uiDataLength );
 	}
 
-	LogTxMessage( ptxData );
+	if( id == enSHU )
+		m_pDlgSHU->LogTxMessage( ptxData );
+	else
+		m_pDlgRSA->LogTxMessage( ptxData );
 
 	m_bCompleteOnReceive = false;
 
@@ -848,47 +842,47 @@ void CDlgColList::InsertItem( CString *pStrTemp1, CString *pStrTemp2, CString *p
  */
 void CDlgColList::UpdateResultData( char *pData )
 {
-	STR_MESSAGE *pstMessage;
-	STR_DATA_CONTENTS *pstData;
-
-	int iCnt=0;
-
-	pstMessage = (STR_MESSAGE *) pData;
-	pstData = (STR_DATA_CONTENTS * ) ( ( char *) pData + sizeof(STR_MESSAGE) );
-
-	switch (pstMessage->uiOpcode) {
-	case RES_INIT:
-// 		if( pstData->stResInit.uiReqCode == 0 && pstData->stResInit.uiErrorCode == 0 )
-// 			m_CButtonInit.SetIcon( IDI_ICON_OK, 24, 24, IDI_ICON_OK, 24, 24);
-// 		else
-// 			m_CButtonInit.SetIcon( IDI_ICON_ERROR, 24, 24, IDI_ICON_ERROR, 24, 24);
+// 	STR_MESSAGE *pstMessage;
+// 	STR_DATA_CONTENTS *pstData;
 // 
-// 		iCnt += wsprintf( & szBuffer[0], _T("Opcode[0x%x], ErrorCode[0x%x]\n") , pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
-// 		UpdateToolTip( szBuffer, & m_CButtonInit );
-		break;
-
-	case RES_SET_CONFIG :
-		break;
-
-	case RES_COL_START :
-		memcpy( & m_stResCol, pstData, sizeof(STR_RES_COL_START) );
-		break;
-
-	case RES_RAWDATA_PDW :
-		InsertPDWRawDataItem( pstData, pstMessage->uiDataLength / sizeof(STR_RES_PDW_DATA), m_uiColList, & m_stColList, m_pRawData );
-		break;
-
-	case RES_RAWDATA_INTRA :
-		InsertIntraRawDataItem( pstData, pstMessage->uiDataLength / sizeof(STR_RES_INTRA_DATA) );
-		break;
-
-	case RES_RAWDATA_IQ:
-		InsertIQRawDataItem( pstData, pstMessage->uiDataLength / sizeof(STR_RES_IQ_DATA), & m_stColList, m_pRawData );
-		break;
-
-	default :
-		break;
-	}
+// 	int iCnt=0;
+// 
+// 	pstMessage = (STR_MESSAGE *) pData;
+// 	pstData = (STR_DATA_CONTENTS * ) ( ( char *) pData + sizeof(STR_MESSAGE) );
+// 
+// 	switch (pstMessage->uiOpcode) {
+// 	case RES_INIT:
+// // 		if( pstData->stResInit.uiReqCode == 0 && pstData->stResInit.uiErrorCode == 0 )
+// // 			m_CButtonInit.SetIcon( IDI_ICON_OK, 24, 24, IDI_ICON_OK, 24, 24);
+// // 		else
+// // 			m_CButtonInit.SetIcon( IDI_ICON_ERROR, 24, 24, IDI_ICON_ERROR, 24, 24);
+// // 
+// // 		iCnt += wsprintf( & szBuffer[0], _T("Opcode[0x%x], ErrorCode[0x%x]\n") , pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
+// // 		UpdateToolTip( szBuffer, & m_CButtonInit );
+// 		break;
+// 
+// 	case RES_SET_CONFIG :
+// 		break;
+// 
+// 	case RES_COL_START :
+// 		memcpy( & m_stResCol, pstData, sizeof(STR_RES_COL_START) );
+// 		break;
+// 
+// 	case RES_RAWDATA_PDW :
+// 		InsertPDWRawDataItem( pstData, pstMessage->uiDataLength / sizeof(STR_RES_PDW_DATA), m_uiColList, & m_stColList, m_pRawData );
+// 		break;
+// 
+// 	case RES_RAWDATA_INTRA :
+// 		InsertIntraRawDataItem( pstData, pstMessage->uiDataLength / sizeof(STR_RES_INTRA_DATA) );
+// 		break;
+// 
+// 	case RES_RAWDATA_IQ:
+// 		InsertIQRawDataItem( pstData, pstMessage->uiDataLength / sizeof(STR_RES_IQ_DATA), & m_stColList, m_pRawData );
+// 		break;
+// 
+// 	default :
+// 		break;
+// 	}
 }
 
 /**
@@ -953,6 +947,8 @@ void CDlgColList::OnSysCommand(UINT nID, LPARAM lParam)
 // 	}
 	else if(nID == SC_MINIMIZE)
 	{ 
+		CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+		pApp->MinimuzeColList();
 		//최소화 버튼 눌릴 시
 	}
  	else if(nID == SC_RESTORE) 
@@ -960,62 +956,6 @@ void CDlgColList::OnSysCommand(UINT nID, LPARAM lParam)
  		//복원 상황에서
  	} 
  	CDialogEx::OnSysCommand(nID, lParam);
-}
-
-// STR_DATA_CONTENTS *CDlgColList::GetRxData()
-// {
-// 	STR_DATA_CONTENTS *pRxData;
-// 
-// 	pRxData = m_pConnected->GetRxData();
-// 
-// 	return pRxData;
-// }
-// 
-// STR_MESSAGE *CDlgColList::GetRxMessage()
-// {
-// 	STR_MESSAGE *pRxData;
-// 
-// 	pRxData = m_pConnected->GetRxMessage();
-// 
-// 	return pRxData;
-// }
-
-// void CDlgColList::SetIBkColorOfColList( UINT uiIndex, int nStep )
-// {
-// 	STR_COL_LIST *pColList;
-// 
-// 	pColList = m_pColList + uiIndex;
-// 
-// 	if( nStep == -1 )
-// 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(255, 255, 255) );
-// 	else if( nStep <= 2 )
-// 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 100, 0) );
-// 	else if( nStep == 3 )
-// 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 150, 0) );
-// 	else if( nStep == 4 )
-// 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 250, 0) );
-// 	else 
-// 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 0, 10) );
-// 
-// }
-
-/**
- * @brief     
- * @param     UINT uiIndex
- * @return    void
- * @author    조철희 (churlhee.jo@lignex1.com)
- * @version   0.0.1
- * @date      2020/05/10 22:35:36
- * @warning   
- */
-void CDlgColList::ReadyColStart( UINT uiIndex )
-{
-	m_pRawData->uiItem = 0;
-
-	memset( & m_stResCol, 0, sizeof(m_stResCol) );
-
-	memcpy( & m_stColList, m_pColList+uiIndex, sizeof(STR_COL_LIST) );
-
 }
 
 void CDlgColList::InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem )
@@ -1058,7 +998,7 @@ void CDlgColList::ViewGraph( UINT uiOpCode )
  * @date      2020/02/23 11:55:12
  * @warning   
  */
-void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData )
+void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData, enUnitID enID )
 {
 	int i, nIndex;
 	CString strTemp;
@@ -1066,7 +1006,7 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, i
 	Log( enNormal, _T("PDW 데이터를 완료 처리합니다." ) );
 
 	// 데이터를 체계용 PDW 파일로 변환하여 저장합니다.
-	MakePDWFile( iItem, uiColList, pRawData );
+	MakePDWFile( iItem, uiColList, pRawData, enID );
 
 	// 목록창 추가
  	strTemp.Format(_T("%d"), m_uiCoRawData );
@@ -1082,20 +1022,39 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, i
 	strTemp.Format(_T("%s"), g_stColListMode[pColList->stColItem.enMode] );
 	m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp.Format(_T("%.1f"), pColList->stColItem.fCenterFreq );
-	m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+	if( enID == enSHU ) {
+		strTemp.Format(_T("%.1f"), pColList->stColItem.fCenterFreq );
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp.Format(_T("%d/%.1f"), pColList->stColItem.uiColNumber, pColList->stColItem.fColTime ); 
-	m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+		strTemp.Format(_T("%d/%.1f"), pColList->stColItem.uiColNumber, pColList->stColItem.fColTime ); 
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	// PDW 제원 통계 값 전시
-	strTemp.Format(_T("%.1f"), m_stStatPDW.fFreqMean ); 
-	m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+		// PDW 제원 통계 값 전시
+		strTemp.Format(_T("%.1f"), m_stStatPDW.fFreqMean ); 
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp.Format(_T("%.1f"), m_stStatPDW.fDtoaMean ); 
-	m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+		strTemp.Format(_T("%.1f"), m_stStatPDW.fDtoaMean ); 
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	m_RawList.SetItem( nIndex, i++, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
+
+	}
+	else {
+		strTemp.Format(_T("%.2f/%.2f"), pColList->stColItem.fFreqLow, pColList->stColItem.fFreqHgh );
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+		strTemp.Format(_T("%d/%.1f"), pColList->stColItem.uiColNumber, pColList->stColItem.fColTime ); 
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+		// PDW 제원 통계 값 전시
+		strTemp.Format(_T("%.1f"), m_stStatPDW.fFreqMean ); 
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+		strTemp.Format(_T("%.1f"), m_stStatPDW.fDtoaMean ); 
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, m_strFilename, NULL, NULL, NULL, NULL);
+	}
 
 	if( m_bClickedOfRawDataList == false ) {
 		m_RawList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
@@ -1118,7 +1077,7 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, i
  * @date      2020/02/23 11:55:17
  * @warning   
  */
-void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData )
+void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID )
 {
 	CString strPathname, strFolderName;
 	SYSTEMTIME cur_time;
@@ -1129,13 +1088,16 @@ void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData 
 	strFolderName.Format( _T("%s//%04d_%02d_%02d//PDW"), RAWDATA_DIRECTORY, cur_time.wYear, cur_time.wMonth, cur_time.wDay ); 
 	CreateDir( (TCHAR*) (LPCTSTR) strFolderName );
 
-	m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.spdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
+	if( enID == enSHU )
+		m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.spdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
+	else
+		m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.pdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
 
 	strPathname = strFolderName + _T("//") + m_strFilename;
 
-	ConvertRAWData( iItem, en_PDW_DATA, uiColList, pRawData );
+	ConvertRAWData( iItem, en_PDW_DATA, uiColList, pRawData, enID );
 
-	//m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+	m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, m_pSonataData->uiItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
 
 }
 
@@ -1151,42 +1113,188 @@ void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData 
  * @date      2020/02/23 11:55:24
  * @warning   
  */
-void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData )
+void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID )
 {
 	int i;
+	bool bValid;
 
 	TNEW_PDW *pNEW_PDW;
-	STR_RES_PDW_DATA *pPDWData;
 
-	int iBc=0;
-	UINT uiTOA, uiFreq, uiPW, uiDTOA, uiPreTOA;
+	int iBc=0, iCoPdw=0;
+	UINT uiTOA, uiFreq, uiPW, uiDTOA, uiPreTOA, uiAOA;
 
-	switch( enDataType ) {
-		case en_PDW_DATA :
-			// PDW 통계치 초기화
-			m_stStatPDW.fFreqMean = 0;
-			m_stStatPDW.fFreqMin = FREQ_MAX;
-			m_stStatPDW.fFreqMax = FREQ_MIN;
+	if( enID == enSHU ) {
+		STR_RES_PDW_DATA *pPDWData;
 
-			m_stStatPDW.fDtoaMean = 0;
-			m_stStatPDW.fDtoaMin = (float) 99999999.999;
-			m_stStatPDW.fDtoaMax = 0;
+		switch( enDataType ) {
+			case en_PDW_DATA :
+				// PDW 통계치 초기화
+				m_stStatPDW.fFreqMean = 0;
+				m_stStatPDW.fFreqMin = FREQ_MAX;
+				m_stStatPDW.fFreqMax = FREQ_MIN;
 
-			pPDWData = & pRawData->unRawData.stPDWData[0];
-			pNEW_PDW = & m_pSonataData->unRawData.stPDWData[0];
-			memset( pNEW_PDW, 0, sizeof(TNEW_PDW) * iItem );
-			for( i=0 ; i < iItem ; ++i ) {
+				m_stStatPDW.fDtoaMean = 0;
+				m_stStatPDW.fDtoaMin = (float) 99999999.999;
+				m_stStatPDW.fDtoaMax = 0;
+
+				pPDWData = & pRawData->unRawData.stPDWData[0];
+				pNEW_PDW = & m_pSonataData->unRawData.stPDWData[0];
+				memset( pNEW_PDW, 0, sizeof(TNEW_PDW) * iItem );
+				for( i=0 ; i < iItem ; ++i ) {
+					uiTOA = pPDWData->uiTOA;			// IDIV( pPDWData->uiTOA * 5, 2 );
+
+					if( i == 0 ) {
+						uiPreTOA = 0;
+						uiDTOA = 0;
+					}
+					else {
+						uiDTOA = uiTOA - uiPreTOA;
+						if( (int) uiDTOA > 0 ) {
+							//m_stStatPDW.fDtoaMean += uiDTOA;
+						}
+					}
+
+					if( (int) uiDTOA < 0 ) {
+						bValid = false;
+					}
+					else {
+						uiPreTOA = uiTOA;
+						bValid = true;
+					}
+
+					if( bValid == true ) {
+						m_stStatPDW.fDtoaMean += uiDTOA;
+
+						pNEW_PDW->item.dv = PDW_DV;
+						pNEW_PDW->item.stat = PDW_NORMAL;
+
+						pNEW_PDW->item.pmop = 0;
+						pNEW_PDW->item.freq_diff = 0;
+
+// 						uiAOA = (int) pPDWData->fAOA;		// ConvertAOA( pPDWData->fAOA );
+// 						pNEW_PDW->item.direction_h = uiAOA >> 8;
+// 						pNEW_PDW->item.direction_l = uiAOA & 0x00FF;
+
+						// TOA 설정
+						//uiTOA = pPDWData->uiTOA;			// IDIV( pPDWData->uiTOA * 5, 2 );
+						pNEW_PDW->item.toa_4   = ( uiTOA >> 24 ) & 0xFF;	// TOA 값 입력 
+						pNEW_PDW->item.toa_3   = ( uiTOA >> 16 ) & 0xFF;
+						pNEW_PDW->item.toa_2   = ( uiTOA >> 8  ) & 0xFF;
+						pNEW_PDW->item.toa_1   = uiTOA & 0xFF;
+
+						// 주파수
+						iBc = GetFreqBand( (UINT) ( pPDWData->fFreq + 0.5 ) );
+						uiFreq = ConvertFreq( pPDWData->fFreq, iBc );
+						pNEW_PDW->item.band = iBc - 1;
+						pNEW_PDW->item.frequency_l  = uiFreq & 0xFF;
+						pNEW_PDW->item.frequency_h  = ( uiFreq >> 8 ) & 0x1F;
+
+						// 신호세기
+						pNEW_PDW->item.amplitude = ConvertPA( pPDWData->fPA );
+
+						// 펄스폭
+						uiPW = ConvertPW( pPDWData->fPW );
+						pNEW_PDW->item.pulse_width_l	= uiPW & 0xFF ;		// 펄스폭 값 입력 
+						pNEW_PDW->item.pulse_width_h	= ( uiPW >> 8 ) & 0x07;
+
+						if( iCoPdw < 10 ) {
+							if( iCoPdw == 0 ) {
+								Log( enNormal, _T("") );
+								Log( enNormal, _T("PDW 데이터입니다.") );
+							}
+							Log( enNormal, _T("Idx[%d] F[%.1f], PA[%.1f], PW[%.1f]") , iCoPdw, pPDWData->fFreq, pPDWData->fPA, pPDWData->fPW );
+
+						}
+
+						//
+						//////////////////////////////////////////////////////////////////////////
+						m_stStatPDW.fFreqMean += pPDWData->fFreq;
+
+						++ pNEW_PDW;
+						++ iCoPdw;
+					
+					}
+
+					++ pPDWData;
+				}
+				m_pSonataData->uiItem = iCoPdw;
+				m_pSonataData->enDataType = en_PDW_DATA;
+
+				m_pSonataData->uiNo = 1;	// m_pColList[uiColList].stColItem.uiNo;
+
+				//
+				//////////////////////////////////////////////////////////////////////////
+				m_stStatPDW.fFreqMean /= iCoPdw;
+
+				m_stStatPDW.fDtoaMean /= ( iCoPdw - 1 );
+				m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean, _spOneMicrosec );
+				//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
+
+				break;
+
+			case en_IQ_DATA :
+				memcpy( m_pSonataData->unRawData.stIQData, & pRawData->unRawData.stIQData, iItem*sizeof(TNEW_IQ) );
+				m_pSonataData->uiItem = iItem;
+				m_pSonataData->enDataType = en_IQ_DATA;
+				break;
+
+			default :
+				break;
+		}
+	}
+	else {
+		STR_RES_PDW_DATA_RSA *pPDWData;
+
+
+		// PDW 통계치 초기화
+		m_stStatPDW.fFreqMean = 0;
+		m_stStatPDW.fFreqMin = FREQ_MAX;
+		m_stStatPDW.fFreqMax = FREQ_MIN;
+
+		m_stStatPDW.fDtoaMean = 0;
+		m_stStatPDW.fDtoaMin = (float) 99999999.999;
+		m_stStatPDW.fDtoaMax = 0;
+
+		pPDWData = & pRawData->unRawData.stRSAPDWData[0];
+		pNEW_PDW = & m_pSonataData->unRawData.stPDWData[0];
+		memset( pNEW_PDW, 0, sizeof(TNEW_PDW) * iItem );
+		for( i=0 ; i < iItem ; ++i ) {
+			uiTOA = pPDWData->uiTOA;			// IDIV( pPDWData->uiTOA * 5, 2 );
+
+			if( i == 0 ) {
+				uiPreTOA = 0;
+				uiDTOA = 0;
+			}
+			else {
+				uiDTOA = uiTOA - uiPreTOA;
+				if( (int) uiDTOA > 0 ) {
+					//m_stStatPDW.fDtoaMean += uiDTOA;
+				}
+			}
+
+			if( (int) uiDTOA < 0 ) {
+				bValid = false;
+			}
+			else {
+				uiPreTOA = uiTOA;
+				bValid = true;
+			}
+
+			if( bValid == true ) {
+				m_stStatPDW.fDtoaMean += uiDTOA;
+
 				pNEW_PDW->item.dv = PDW_DV;
 				pNEW_PDW->item.stat = PDW_NORMAL;
 
 				pNEW_PDW->item.pmop = 0;
 				pNEW_PDW->item.freq_diff = 0;
 
-				pNEW_PDW->item.direction_h = 0;
-				pNEW_PDW->item.direction_l = 0;
+				uiAOA = (int) pPDWData->fAOA;		// ConvertAOA( pPDWData->fAOA );
+				pNEW_PDW->item.direction_h = uiAOA >> 8;
+				pNEW_PDW->item.direction_l = uiAOA & 0x00FF;
 
 				// TOA 설정
-				uiTOA = pPDWData->uiTOA;			// IDIV( pPDWData->uiTOA * 5, 2 );
+				//uiTOA = pPDWData->uiTOA;			// IDIV( pPDWData->uiTOA * 5, 2 );
 				pNEW_PDW->item.toa_4   = ( uiTOA >> 24 ) & 0xFF;	// TOA 값 입력 
 				pNEW_PDW->item.toa_3   = ( uiTOA >> 16 ) & 0xFF;
 				pNEW_PDW->item.toa_2   = ( uiTOA >> 8  ) & 0xFF;
@@ -1211,43 +1319,26 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 				//////////////////////////////////////////////////////////////////////////
 				m_stStatPDW.fFreqMean += pPDWData->fFreq;
 
-				if( i == 0 ) {
-					uiPreTOA = 0;
-				}
-				else {
-					uiDTOA = uiTOA - uiPreTOA;
-					m_stStatPDW.fDtoaMean += uiDTOA;
-				}
-				uiPreTOA = uiTOA;
-
 				++ pNEW_PDW;
-				++ pPDWData;
+				++ iCoPdw;
+
 			}
-			m_pSonataData->uiItem = iItem;
-			m_pSonataData->enDataType = en_PDW_DATA;
 
-			m_pSonataData->uiNo = m_pColList[uiColList].stColItem.uiNo;
+			++ pPDWData;
+		}
+		m_pSonataData->uiItem = iCoPdw;
+		m_pSonataData->enDataType = en_PDW_DATA;
 
-			//
-			//////////////////////////////////////////////////////////////////////////
-			m_stStatPDW.fFreqMean /= iItem;
+		m_pSonataData->uiNo = 1;	// m_pColList[uiColList].stColItem.uiNo;
 
-			m_stStatPDW.fDtoaMean /= ( iItem - 1 );
-			//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean, _spOneMicrosec );
-			m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
+		//
+		//////////////////////////////////////////////////////////////////////////
+		m_stStatPDW.fFreqMean /= iCoPdw;
 
-			break;
-
-		case en_IQ_DATA :
-			memcpy( m_pSonataData->unRawData.stIQData, & pRawData->unRawData.stIQData, iItem*sizeof(TNEW_IQ) );
-			m_pSonataData->uiItem = iItem;
-			m_pSonataData->enDataType = en_IQ_DATA;
-			break;
-
-		default :
-			break;
+		m_stStatPDW.fDtoaMean /= ( iCoPdw - 1 );
+		m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean, _spOneMicrosec );
+		//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
 	}
-	
 }
 
 UINT CDlgColList::ConvertPA( float fPA )
@@ -1260,11 +1351,22 @@ UINT CDlgColList::ConvertPA( float fPA )
 	return uiPA;
 }
 
+UINT CDlgColList::ConvertAOA( float fAOA )
+{
+	UINT uiAOA;
+
+	uiAOA = IMUL( fAOA, _spAOAres );
+
+	return uiAOA;
+}
+
 UINT CDlgColList::ConvertPW( float fPW )
 {
 	UINT uiPW;
 
-	uiPW = (UINT) ( ( fPW * 20. ) + 0.5 );
+	//uiPW = (UINT) ( ( fPW * _spOneMicrosec ) + 0.5 );
+	//uiPW = (UINT) ( ( fPW * 20 ) + 0.5 );
+	uiPW = UDIV( fPW, _spPWres );
 	return uiPW;
 }
 
@@ -1317,17 +1419,17 @@ void CDlgColList::MakeIQFile( int iItem, STR_RAW_DATA *pRawData )
 	m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.iq" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
 	strPathname = strFolderName + _T("//") + m_strFilename;
 
-	ConvertRAWData( iItem, en_IQ_DATA, m_uiColList, pRawData );
+	ConvertRAWData( iItem, en_IQ_DATA, m_uiColList, pRawData, enSHU );
 
 	// 저장할 때 수집 정보를 포함해서 저장해야 함.
 	STR_IQ_HEADER stIQHeader;
 
-	//stIQHeader.enMode = m_pRawData->stColList.stColItem.enMode;
-	stIQHeader.fCenterFreq = m_pRawData->stColList.stColItem.fCenterFreq;
-	stIQHeader.fColTime = m_pRawData->stColList.stColItem.fColTime;
-	stIQHeader.uiColNumber = m_pRawData->stColList.stColItem.uiColNumber;
-	stIQHeader.fThreshold = m_pRawData->stColList.stColItem.fThreshold;
-	//m_theDataFile.SaveDataFile( strPathname, (void *) m_pRawData->unRawData.stIQData, iItem, en_SONATA, en_IQ_DATA, & stIQHeader, sizeof(STR_IQ_HEADER) );
+	//stIQHeader.enMode = pRawData->stColList.stColItem.enMode;
+	stIQHeader.fCenterFreq = pRawData->stColList.stColItem.fCenterFreq;
+	stIQHeader.fColTime = pRawData->stColList.stColItem.fColTime;
+	stIQHeader.uiColNumber = pRawData->stColList.stColItem.uiColNumber;
+	stIQHeader.fThreshold = pRawData->stColList.stColItem.fThreshold;
+	m_theDataFile.SaveDataFile( strPathname, (void *) pRawData->unRawData.stIQData, iItem, en_SONATA, en_IQ_DATA, & stIQHeader, sizeof(STR_IQ_HEADER) );
 
 }
 
@@ -1501,7 +1603,17 @@ void CDlgColList::OnNMClickListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 }
 
 
-void CDlgColList::OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
+/**
+ * @brief     
+ * @param     NMHDR * pNMHDR
+ * @param     LRESULT * pResult
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/15 14:24:40
+ * @warning   
+ */
+ void CDlgColList::OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	// 이 기능을 사용하려면 Internet Explorer 5.5 이상이 필요합니다.
 	// _WIN32_IE 기호는 0x0560보다 크거나 같아야 합니다.
@@ -1511,9 +1623,18 @@ void CDlgColList::OnLvnEndScrollListRawdata(NMHDR *pNMHDR, LRESULT *pResult)
 }
 
 
-
-
-void CDlgColList::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+/**
+ * @brief     
+ * @param     UINT nSBCode
+ * @param     UINT nPos
+ * @param     CScrollBar * pScrollBar
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/15 14:24:53
+ * @warning   
+ */
+ void CDlgColList::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 
@@ -1551,3 +1672,44 @@ void CDlgColList::OnTcnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
+/**
+ * @brief     
+ * @param     enUnitID enID
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/15 14:24:28
+ * @warning   
+ */
+ void CDlgColList::InitUnitRes( enUnitID enID )
+{
+	if( enID == enSHU ) {
+		_spOneSec = 50000000.;
+		_spOneMilli = FDIV( _spOneSec, 1000. );
+		_spOneMicrosec = FDIV( _spOneMilli, 1000. );
+		_spOneNanosec = FDIV( _spOneMicrosec, 1000. );
+
+		_spPWres = (float) ( 20 );
+	}
+	else {
+		_spOneSec = 20000000.;
+		_spOneMilli = FDIV( _spOneSec, 1000. );
+		_spOneMicrosec = FDIV( _spOneMilli, 1000. );
+		_spOneNanosec = FDIV( _spOneMicrosec, 1000. );
+
+		_spPWres = FDIV( 50, 1000 );		// us 단위
+	}
+}
+
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/15 14:24:30
+ * @warning   
+ */
+ void CDlgColList::ClearRawDataList()
+{
+	m_RawList.DeleteAllItems();
+}

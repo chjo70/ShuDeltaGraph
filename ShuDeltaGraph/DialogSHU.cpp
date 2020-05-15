@@ -6,7 +6,7 @@
 #include "DialogSHU.h"
 #include "afxdialogex.h"
 
-TCHAR g_stColListMode[6][20] = { _T("IF2(광대역)"), _T("IF1 Course"), _T("IF1 Fine"), _T("광대역IQ"), _T("협대역IQ"), _T("널입니다.") } ;
+TCHAR g_stColListMode[6][20] = { _T("IF2(광대역)"), _T("IF1 Course"), _T("IF1 Fine"), _T("광대역IQ"), _T("협대역IQ"), _T("") } ;
 
 
 // CDialogSHU 대화 상자입니다.
@@ -57,6 +57,7 @@ BEGIN_MESSAGE_MAP(CDialogSHU, CDialogEx)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_COL_LIST, &CDialogSHU::OnDblclkListColList)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_LIST, &CDialogSHU::OnBnClickedButtonAddList)
 	ON_BN_CLICKED(IDC_BUTTON_MODIFY_LIST, &CDialogSHU::OnBnClickedButtonModifyList)
+	ON_BN_CLICKED(IDC_BUTTON_REMOVE_LIIST, &CDialogSHU::OnBnClickedButtonRemoveLiist)
 END_MESSAGE_MAP()
 
 
@@ -351,8 +352,11 @@ void CDialogSHU::OnBnClickedButtonColstart()
 	if( strTitle.Compare( _T("수집 시작") ) == 0 ) {
 		Log( enNormal, _T("수집 시작을 했습니다." ) );
 
+		m_pParentDlg->ClearRawDataList();
+
 		m_pParentDlg->m_pConnected[enSHU]->InitVar();
 		pApp->m_pDlgMulti->InitVar();
+		ResetEvent( m_hReceveLAN );
 
 		m_uiColList = 0;
 
@@ -395,9 +399,6 @@ void CDialogSHU::OnBnClickedButtonColstart()
 	}
 }
 
-#define INIT_CODE_BYTE				(0xCC)
-#define INIT_CODE_WORD				(0xCCCCCCCC)
-#define MAX_WAIT_RESPONSE			(1000)
 /**
  * @brief     
  * @param     LPVOID lpData
@@ -409,22 +410,19 @@ void CDialogSHU::OnBnClickedButtonColstart()
  */
 DWORD WINAPI FuncColList( LPVOID lpData )
 {
-	UINT uiIndex=MAX_COL_ITEMS;
 	CDialogSHU *pDlg;
 
 	STR_QUEUE_MSG stQueueMsg;
-	queue<STR_QUEUE_MSG> *pQueueMsg;
 
 	CThread *pParent = reinterpret_cast<CThread*>(lpData);
 	pDlg = ( CDialogSHU * ) pParent->GetParam();
 
-	pQueueMsg = pDlg->GetQueueMessage();
+	//pQueueMsg = pDlg->GetQueueMessage();
 
-	pDlg->SetIBkColorOfColList( 0, -1 );
-	uiIndex = (pDlg->m_uiCoColList-1) <= uiIndex ? 0 : ++uiIndex;
+	pDlg->SetIBkColorOfColList( 0, 1 );
 
-	pDlg->ReadyColStart( uiIndex );
-	pDlg->MakeSetModeMessage( uiIndex );
+	pDlg->ReadyColStart( 0 );
+	pDlg->MakeSetModeMessage( 0 );
 	pDlg->m_pParentDlg->Send( enSHU, pDlg->m_ptxData );
 
 	while( TRUE ) {
@@ -445,12 +443,16 @@ DWORD WINAPI FuncColList( LPVOID lpData )
 			ResetEvent( pDlg->m_hReceveLAN );
 			
 			//정상 처리를 수행한다.
-			while( ! pQueueMsg->empty() ) {
-				stQueueMsg = pQueueMsg->front();
-				pQueueMsg->pop();
+			do {
+				pDlg->m_pParentDlg->m_pConnected[enSHU]->LanMsg( false, & stQueueMsg );
 
-				pDlg->ProcessColList( & stQueueMsg );
-			}
+				if( stQueueMsg.stMsg.uiOpcode != 0 ) {
+					pDlg->ProcessColList( & stQueueMsg );
+				}
+				else {
+					break;
+				}
+			} while ( true );
 
 		}
 	}
@@ -491,7 +493,7 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				break;
 
 			case RES_COL_START :
-				SetIBkColorOfColList( m_uiColList, 3 );
+				SetIBkColorOfColList( m_uiColList, 4 );
 
 				if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
 				}
@@ -514,13 +516,13 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				m_pParentDlg->InsertIQRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, & m_stColList, m_pRawData );
 				m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
-				ReadyColStart( m_uiColList );
-				MakeSetModeMessage( m_uiColList );
-				m_pParentDlg->Send( enSHU, m_ptxData );
-
 				SetIBkColorOfColList( m_uiColList, -1 );
 
 				UpdateColList();
+
+				ReadyColStart( m_uiColList );
+				MakeSetModeMessage( m_uiColList );
+				m_pParentDlg->Send( enSHU, m_ptxData );
 
 				TRACE( "\n 과제 번호 : %d", m_uiColList );
 
@@ -542,9 +544,9 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 			case RES_COL_START :
 				//TRACE( "\n RES_COL_START 처리 입니다." );
-				SetIBkColorOfColList( m_uiColList, 3 );
-
 				if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
+					SetIBkColorOfColList( m_uiColList, 4 );
+
 					MakeReqRawDataMessage();
 					m_pParentDlg->Send( enSHU, m_ptxData );
 
@@ -552,32 +554,39 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					m_pRawData->uiItem = 0;
 				}
 				else {
+					SetIBkColorOfColList( m_uiColList, -1 );
+
+					UpdateColList();
+
 					ReadyColStart( m_uiColList );
 					MakeSetModeMessage( m_uiColList );
 					m_pParentDlg->Send( enSHU, m_ptxData );
 
-					UpdateColList();
+					SetIBkColorOfColList( m_uiColList, 1 );
 				}
 				break;
 
 			case RES_RAWDATA_PDW :
+				m_pParentDlg->InitUnitRes( enRSA );
 				//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
-				SetIBkColorOfColList( m_uiColList, 4 );
+				//SetIBkColorOfColList( m_uiColList, 4 );
 
 				memcpy( & m_pRawData->unRawData.stPDWData[m_pRawData->uiItem], & pQueueMsg->stData.stPDWData[0], sizeof(STR_RES_PDW_DATA)*30 );
 				m_pRawData->uiItem = ( m_pRawData->uiItem+30 > m_stResCol.uiCoPulseNum ? m_stResCol.uiCoPulseNum : m_pRawData->uiItem+30 );
 
 				if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
-					m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData );
-					m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
+					SetIBkColorOfColList( m_uiColList, 4 );
 
-					ReadyColStart( m_uiColList );
-					MakeSetModeMessage( m_uiColList );
-					m_pParentDlg->Send( enSHU, m_ptxData );
+					m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enSHU );
+					m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
 					SetIBkColorOfColList( m_uiColList, -1 );
 
 					UpdateColList();
+
+					ReadyColStart( m_uiColList );
+					MakeSetModeMessage( m_uiColList );
+					m_pParentDlg->Send( enSHU, m_ptxData );
 
 					TRACE( "\n 과제 번호 : %d", m_uiColList );
 				}
@@ -605,6 +614,8 @@ void CDialogSHU::SetIBkColorOfColList( UINT uiIndex, int nStep )
 
 	pColList = m_pColList + uiIndex;
 
+	TRACE( "\n 과제 번호: %d, 스텝: %d", uiIndex, nStep );
+
 	if( nStep == -1 )
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(255, 255, 255) );
 	else if( nStep <= 2 )
@@ -612,6 +623,8 @@ void CDialogSHU::SetIBkColorOfColList( UINT uiIndex, int nStep )
 	else if( nStep == 3 )
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 150, 0) );
 	else if( nStep == 4 )
+		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 220, 0) );
+	else if( nStep == 5 )
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 250, 0) );
 	else 
 		m_ColList.SetItemBkColor( pColList->iRowOfList, -1, RGB(0, 0, 10) );
@@ -834,24 +847,6 @@ void CDialogSHU::ReadyColStart( UINT uiIndex )
 
 /**
  * @brief     
- * @return    queue <STR_QUEUE_MSG> *
- * @author    조철희 (churlhee.jo@lignex1.com)
- * @version   0.0.1
- * @date      2020/05/10 22:34:53
- * @warning   
- */
-queue <STR_QUEUE_MSG> *CDialogSHU::GetQueueMessage()
-{
-	queue <STR_QUEUE_MSG> *pQueueMsg;
-
-	pQueueMsg = m_pParentDlg->m_pConnected[enSHU]->GetQueueMessage();
-
-	return pQueueMsg;
-
-}
-
-/**
- * @brief     
  * @param     BOOL bEnable
  * @return    void
  * @author    조철희 (churlhee.jo@lignex1.com)
@@ -945,7 +940,7 @@ void CDialogSHU::OpenXLSViewList( CString strPathname )
 	long l, lMaxRow;
 	float fValue;
 
-	//m_ColList.DeleteAllItems();
+	m_ColList.DeleteAllItems();
 
 #ifdef EXAUTOMATION
 	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
@@ -1205,7 +1200,7 @@ void CDialogSHU::OnBnClickedButtonSave()
 			if( TRUE == m_ColList.GetCheck(i) || true ) {
 				GetColListFromList( i, & stColList );
 
-				m_pParentDlg->MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+				MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
 
 				//SetCellValue( & XL, i+1, & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold );
 				XL.SetCellValue( 1, i+2, strNumber ); 
@@ -1229,6 +1224,21 @@ void CDialogSHU::OnBnClickedButtonSave()
 
 	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( TRUE );
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
+
+}
+
+void CDialogSHU::MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList )
+{
+	pstrNum->Format(_T("%d"), pstColList->stColItem.uiNo );
+
+	pstrMode->Format(_T("%s"), g_stColListMode[pstColList->stColItem.enMode] );
+
+	pstrCenterFreq->Format(_T("%.2f"), pstColList->stColItem.fCenterFreq );
+
+	pstrColTime->Format(_T("%d/%.1f"), pstColList->stColItem.uiColNumber, pstColList->stColItem.fColTime );
+
+	pstrThreshold->Format(_T("%.1f"), pstColList->stColItem.fThreshold );
+
 
 }
 
@@ -1372,29 +1382,29 @@ void CDialogSHU::OnBnClickedButtonAddList()
 	CString strTemp;
 
 	STR_COL_LIST stColList;
-	STR_COL_LIST *pColList;
+	//STR_COL_LIST *pColList;
 
 	GetDlgItem(IDC_BUTTON_MODIFY_LIST)->EnableWindow( FALSE );
 
 	GetColList( & stColList );
 
 	//
-	pColList = m_pColList + m_uiCoColList;
-	stColList.stColItem.uiNo = m_uiCoColList + 1;
-	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
+	//pColList = m_pColList + m_uiCoColList;
+	stColList.stColItem.uiNo = GetNextNo();
+	//memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
 
 	//
-	strTemp.Format(_T("%d"), pColList->stColItem.uiNo );
+	strTemp.Format(_T("%d"), stColList.stColItem.uiNo );
  	nIndex = m_ColList.InsertItem( INT_MAX, strTemp, NULL );
 
-	strTemp.Format(_T("%s"), g_stColListMode[pColList->stColItem.enMode] );
+	strTemp.Format(_T("%s"), g_stColListMode[stColList.stColItem.enMode] );
 	m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
-	strTemp.Format(_T("%.1f"), pColList->stColItem.fCenterFreq );
+	strTemp.Format(_T("%.1f"), stColList.stColItem.fCenterFreq );
  	m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%d/%.1f"), pColList->stColItem.uiColNumber, pColList->stColItem.fColTime );
+	strTemp.Format(_T("%d/%.1f"), stColList.stColItem.uiColNumber, stColList.stColItem.fColTime );
 	m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
-	strTemp.Format(_T("%.1f"), pColList->stColItem.fThreshold );
+	strTemp.Format(_T("%.1f"), stColList.stColItem.fThreshold );
 	m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 	
  	//m_ColList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
@@ -1434,11 +1444,101 @@ void CDialogSHU::OnBnClickedButtonModifyList()
 	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
 
 	// 목록창에 전시
-	m_pParentDlg->MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+	MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
 	
 	m_ColList.SetItem( m_iSelItem, 0, LVIF_TEXT, strNumber, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
+}
+
+void CDialogSHU::OnBnClickedButtonRemoveLiist()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int iNo, iValue;
+	CString strTemp;
+
+	iNo = (int) m_CSpinNum.GetPos();
+	for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+		strTemp = m_ColList.GetItemText( i, 0 );
+		swscanf_s( strTemp.GetBuffer(), _T("%d"), & iValue );
+		if( iNo == iValue ) {
+			m_ColList.DeleteItem( i );
+			break;
+ 		}
+	}
+
+}
+
+int CDialogSHU::GetNextNo()
+{
+	int iMaxNo=0, iValue;
+	CString strTemp;
+
+	for (int i = 0; i < m_ColList.GetItemCount(); i++) {
+		strTemp = m_ColList.GetItemText( i, 0 );
+		swscanf_s( strTemp.GetBuffer(), _T("%d"), & iValue );
+
+		iMaxNo = max( iValue, iMaxNo );
+
+	}
+
+	return iMaxNo + 1;
+}
+
+void CDialogSHU::LogTxMessage( void *pData, CString *pStrEtc )
+{
+	CString strTemp1, strTemp2;
+
+	MakeLogReqMessage( & strTemp1, & strTemp2, pData );
+
+	//m_pTabThreatDialog->MakeLogTxMessage( & strTemp1, & strTemp2, pData, true );
+
+	InsertItem( & strTemp1, & strTemp2, pStrEtc );
+
+}
+
+void CDialogSHU::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData )
+{
+	STR_MESSAGE *pstMessage;
+	STR_DATA_CONTENTS *pstData;
+
+	pstMessage = (STR_MESSAGE *) pData;
+	pstData = (STR_DATA_CONTENTS * ) ( ( char *) pData + sizeof(STR_MESSAGE) );
+
+	switch (pstMessage->uiOpcode) {
+	case REQ_INIT:
+		*pstrTemp1 = _T("<<초기화 요구");
+		pstrTemp2->Format( _T("[%d][%d]"), pstData->stResInit.uiReqCode, pstData->stResInit.uiErrorCode );
+		break;
+
+	case REQ_SETMODE:
+		*pstrTemp1 = _T("<<시스템모드 전환 통보");
+		*pstrTemp2 = _T("");
+		break;
+
+	case REQ_SET_CONFIG:
+		*pstrTemp1 = _T("<<수집 파라메터 설정");
+		pstrTemp2->Format( _T("M%d, %.1f[MHz], %d[개수], %.1f[ms], %.1f[dBm]"), pstData->stSetMode.uiMode, pstData->stSetMode.fTuneFreq, pstData->stSetMode.coPulseNum, pstData->stSetMode.fColTime, pstData->stSetMode.fThreshold );
+		break;
+
+	case REQ_COL_START :
+		*pstrTemp1 = _T("<<신호 수집 시작 요구");
+		break;
+
+	case REQ_RAWDATA :
+		*pstrTemp1 = _T("<<수집 데이터 요구");
+		break;
+
+	case REQ_SET_IQCONFIG :
+		*pstrTemp1 = _T("<<IQ 수집 시작 요청");
+		pstrTemp2->Format( _T("모드%d"), pstData->uiMode );
+		break;
+
+	default:
+		*pstrTemp1 = _T("<<");
+		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
+		break;
+	}
 }

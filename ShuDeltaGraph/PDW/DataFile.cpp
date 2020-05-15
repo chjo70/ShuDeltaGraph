@@ -133,7 +133,7 @@ void CPDW::ConvertArray( int iDataItems, int iOffset )
 	_spAOAres = (float) ( 0.351562 );
 	_spAMPres = (float) (0.351562);
 	//_spPWres = ( _spOneMicrosec * 25 ) / 10.;
-	_spPWres = (float) ( _spOneMicrosec );
+	_spPWres = (float) ( 50 );
 
 	m_PDWData.iDataItems = 0;
 
@@ -165,7 +165,7 @@ void CPDW::ConvertArray( int iDataItems, int iOffset )
 		*pfFreq = FFRQCNV(pPDW->item.band + 1, uiTemp);
 
 		uiTemp = BIT_MERGE(pPDW->item.pulse_width_h, pPDW->item.pulse_width_l);
-		*pfPW = FPWCNV(uiTemp);
+		*pfPW = FMUL( uiTemp, _spPWres );
 
 		uiTemp = BIT_MERGE(pPDW->item.direction_h, pPDW->item.direction_l);
 		*pfAOA = FAOACNV(uiTemp);
@@ -513,7 +513,7 @@ void *CSPDW::GetData()
 */
 void CSPDW::ConvertArray( int iDataItems, int iOffset )
 {
-	UINT i;
+	int i;
 
 	float *pfFreq = m_PDWData.pfFreq;
 	float *pfPW = m_PDWData.pfPW;
@@ -1810,7 +1810,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 		NULL != wcsstr( pStrPathname->GetBuffer(), L".iq" ) || NULL != wcsstr( pStrPathname->GetBuffer(), L".siq" ) ) {
 		enUnitType = en_SONATA;
 	}
-	if( NULL != wcsstr( pStrPathname->GetBuffer(), L".spdw" ) ) {
+	else if( NULL != wcsstr( pStrPathname->GetBuffer(), L".spdw" ) ) {
 		enUnitType = en_SONATA_SHU;
 	}
 	else if( NULL != wcsstr( pStrPathname->GetBuffer(), L".dat" ) ) {

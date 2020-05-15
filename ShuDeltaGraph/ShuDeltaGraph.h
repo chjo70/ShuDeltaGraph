@@ -25,6 +25,9 @@
 class CShuDeltaGraphApp : public CWinAppEx
 {
 private:
+	bool m_bColList;
+	bool m_bGraph;
+
 	CString m_strArgument;
 	CString m_strIniFile;
 
@@ -56,6 +59,11 @@ public:
 	inline CData *FindMapData( CString *pStrPathname ) { return m_theMapData.FindMapData( pStrPathname ); }
 	inline void AddMapData( CString *pStrPathname, CData *pData ) { m_theMapData.AddMapData( pStrPathname, pData ); }
 	inline void IncWindowNumber( CData *pData ) { return m_theMapData.IncWindowNumber( pData ); }
+
+	inline void MinimuzeColList() { m_bColList=false; }
+	inline void MinimuzeGraph() { m_bGraph=false; }
+
+	inline void DlgCollist() { OnDlgCollist(); }
 
 private:
 	void OnWindowCloseAll();

@@ -56,7 +56,7 @@ float _toaRes[en50MHZ_BW+1] = { (float) 65.104167, (float) 8.138021 } ;
 float _frqRes[en50MHZ_BW+1] = { (float) 0.001, (float) 0.001 } ;
 
 float _spAMPres;
-float _spAOAres=(float) 0.01;
+float _spAOAres=(float) (0.351562);
 float _spTOAres;
 float _spPWres;
 
