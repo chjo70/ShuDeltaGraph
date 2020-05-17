@@ -298,7 +298,6 @@ void CDialogSHU::FreeBuffer()
 	free( m_ptxData );
 	free( m_pColList );
 	free( m_pRawData );
-	//free( m_pSonataData );
 
 	CloseHandle( m_hReceveLAN );
 

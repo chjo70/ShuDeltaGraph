@@ -10,20 +10,7 @@
 
 extern TCHAR g_stColListMode[6][20];
 
-//DWORD WINAPI FuncColList( LPVOID lpData );
-
-//TCHAR g_stColListMode[6][20] = { _T("IF2(±¤´ë¿ª)"), _T("IF1 Course"), _T("IF1 Fine"), _T("±¤´ë¿ªIQ"), _T("Çù´ë¿ªIQ"), _T("³ÎÀÔ´Ï´Ù.") } ;
-
 TCHAR g_stRawListType[6][20] = { _T("PDW"), _T("IQ") } ;
-
-#define WAIT_RESPONSE( A, B ) 	uiTry = 0;	\
-								do {	\
-									++ uiTry;	\
-									Sleep( A );	\
-									if( uiTry > MAX_WAIT_RESPONSE ) {	\
-										break;	\
-									}	\
-								} while( B );
 
 extern float _spOneSec;
 extern float _spOneMilli;
@@ -115,6 +102,9 @@ void CDlgColList::InitBuffer()
 
 	m_hReceveLAN = CreateEvent( NULL, TRUE, FALSE, NULL );
 
+	m_pDlgRSA = new CDialogRSA( NULL, this );
+	m_pDlgSHU = new CDialogSHU( NULL , this );
+
 }
 
 /**
@@ -142,6 +132,11 @@ void CDlgColList::FreeBuffer()
 	free( m_pSonataData );
 
 	CloseHandle( m_hReceveLAN );
+
+	m_pDlgRSA->DestroyWindow();
+	delete m_pDlgRSA;
+	m_pDlgSHU->DestroyWindow();
+	delete m_pDlgSHU;
 
 	m_pTip->DestroyWindow();
 	delete m_pTip;
@@ -563,12 +558,12 @@ void CDlgColList::InitTab()
 
 	m_Tab.GetWindowRect( & rect );
 
-	m_pDlgRSA = new CDialogRSA( NULL, this );
+	//m_pDlgRSA = new CDialogRSA( NULL, this );
 	m_pDlgRSA->Create( IDD_DIALOG_RSA, & m_Tab );
 	m_pDlgRSA->MoveWindow( 0, 25, rect.Width(), rect.Height() );
 	m_pDlgRSA->ShowWindow( SW_HIDE );
 
-	m_pDlgSHU = new CDialogSHU( NULL , this );
+	//m_pDlgSHU = new CDialogSHU( NULL , this );
 	m_pDlgSHU->Create( IDD_DIALOG_SHU, & m_Tab );
 	m_pDlgSHU->MoveWindow( 0, 25, rect.Width(), rect.Height() );
 	m_pDlgSHU->ShowWindow( SW_SHOW );

@@ -220,7 +220,6 @@ private:
 
 	void UpdateResultData( char *pData );
 	void UpdateToolTip( TCHAR *pszBuffer, CWnd *pDlgItem  );
-
 	
 	void LogTxMessage( void *pData, CString *pStrEtc=NULL );
 	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );

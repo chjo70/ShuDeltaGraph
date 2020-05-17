@@ -215,7 +215,17 @@ void CDlgMulti::InitGraph()
 
 }
 
-void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
+/**
+ * @brief     
+ * @param     ENUM_Graph enGraph
+ * @param     bool bForced
+ * @return    void
+ * @author    Á¶Ã¶Èñ (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/05/17 11:28:14
+ * @warning   
+ */
+ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 {
 	double d;
 	DWORD dwArray[3] = { PERGB(128,0,198,0), PERGB(128, 0, 198, 198 ), PERGB(128, 198,198,0 ) };
@@ -999,18 +1009,32 @@ void CDlgMulti::ViewGraph()
 		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024, MAX_IQ_DATA, m_pfPA, NULL);
 		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024*2, MAX_IQ_DATA, m_pFFT, NULL);
 
-// 		d = 1024.0F * 2;
-// 		PEvset(m_hPE, PEP_fMANUALXAXISLINE, &d, 1);
-// 		//d = d / 512.0F;
-// 		//PEvset(m_hPE, PEP_fMANUALXAXISTICK, &d, 1);
-// 		PEnset(m_hPE, PEP_bMANUALXAXISTICKNLINE, TRUE);
-// 
-// 		PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-// 		d = 0.;
-// 		PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
-// 		d = 16384.;
-// 		PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
-// 
+		PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+		d = 1.;
+		PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
+		d = (double) MAX_IQ_DATA;
+		PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
+
+		PEnset(m_hPE, PEP_bMANUALXAXISTICKNLINE, TRUE);
+		PEnset(m_hPE, PEP_bXAXISLONGTICKS, TRUE);
+		d = 1024.0F;
+		PEvset(m_hPE, PEP_fMANUALXAXISLINE, &d, 1);
+		d = 1024 * 2;
+		PEvset(m_hPE, PEP_fMANUALXAXISTICK, &d, 1);
+
+		int j;
+		TCHAR szTmp[48];
+		TCHAR szTmp2[10];
+
+		//lstrcpy(szTmp, TEXT(" "));
+		//PEvsetcell(m_hPE, PEP_szaPOINTLABELS, 11999, szTmp);
+		for( j=0 ; j < MAX_IQ_DATA; j++ ) {
+			lstrcpy(szTmp, TEXT("Label"));
+			_itot(j+1, szTmp2, 10);
+			lstrcat(szTmp, szTmp2);
+			PEvsetcell(m_hPE, PEP_szaPOINTLABELS, j, szTmp);
+		}
+
 // 		PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
 // 		PEnset(m_hPE, PEP_bXAXISLONGTICKS, TRUE);
 
@@ -1022,7 +1046,6 @@ void CDlgMulti::ViewGraph()
 			PEreinitialize(m_hPE); // Because 115 create sets AutoImageReset = False, we need to call PEreinitialize to re-filter new data
 			PEresetimage(m_hPE, 0, 0);
 		}
-		::InvalidateRect(m_hPE, NULL, FALSE);
 
 // 		PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,|"));
 // 
