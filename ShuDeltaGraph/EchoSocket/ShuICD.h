@@ -8,12 +8,11 @@
 //
 
 
-enum _REQ_COMMANDCODE {
+enum SHUPERHAT_REQ_COMMANDCODE {
 	REQ_INIT=1001,
 	REQ_SETMODE=1101,
 
 	REQ_SET_CONFIG=9301,
-	REQ_STOP=9302,
 	REQ_COL_START=9401,
 	REQ_RAWDATA=9405,
 
@@ -69,31 +68,11 @@ typedef struct {
 } STR_REQ_SETMODE;
 
 typedef struct {
-	float fAOALow, fAOAHgh;
-	float fFreqLow, fFreqHgh;
-	float fPALow, fPAHgh;
-	UINT coPulseNum;
-	float fColTime;
-
-} STR_REQ_SETMODE_RSA;
-
-typedef struct {
 	unsigned int uiStatus;
 	unsigned int uiCoPulseNum;
 	unsigned int uiPhase3Num;
 
 } STR_RES_COL_START;
-
-typedef struct {
-	float fAOA;
-	float fFreq;
-	float fPA;
-	float fPW;
-	UINT uiTOA;
-
-	UINT uiIndex;
-
-} STR_RES_PDW_DATA_RSA;
 
 typedef struct {
 	float fFreq;
@@ -127,7 +106,6 @@ typedef union {
 	// 
 	// 요구 데이터 구조체 정의
 	STR_REQ_SETMODE stSetMode;
-	STR_REQ_SETMODE_RSA stSetModeRSA;
 	UINT uiMode;
 
 	// 
@@ -136,7 +114,6 @@ typedef union {
 	STR_RES_INIT stResInit;
 	STR_RES_COL_START stColStart;
 	STR_RES_PDW_DATA stPDWData[MAX_COL_PDW_DATA];
-	STR_RES_PDW_DATA_RSA stRSAPDWData[MAX_COL_PDW_DATA];
 	STR_RES_INTRA_DATA stIntraData[MAX_COL_INTRA_DATA];
 	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
 

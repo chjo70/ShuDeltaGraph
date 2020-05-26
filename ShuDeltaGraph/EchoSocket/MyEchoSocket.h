@@ -24,14 +24,6 @@ enum EN_CONNECT_MODE {
 
 };
 
-typedef enum {
-	enUnknown = -1,
-
-	enSHU = 0,
-	enRSA,
-
-} enUnitID;
-
 
 
 typedef struct {
@@ -58,8 +50,6 @@ public:
 	char *m_prxBuffer;
 
 private:
-	CCriticalSection g_criticalLanQue;
-
 	int m_uiReceivedData;
 	UINT m_uiDataLength;
 	bool m_bHeader;
@@ -67,11 +57,9 @@ private:
 	
 	UINT m_uiErrorCode;
 
-	enUnitID m_id;
-
 // Operations
 public:
-	MyEchoSocket( enUnitID id, bool bBigEndian );
+	MyEchoSocket( bool bBigEndian );
 	virtual ~MyEchoSocket();
 
 	bool Send( void *pData, int iDataLength );
@@ -80,9 +68,7 @@ public:
 
 	int GetLastError();
 
-	void LanMsg( bool bPush, STR_QUEUE_MSG *pQMsg );
-
-	//queue <STR_QUEUE_MSG> *GetQueueMessage();
+	queue <STR_QUEUE_MSG> *GetQueueMessage();
 // 	STR_MESSAGE *GetRxMessage();
 // 	STR_DATA_CONTENTS *GetRxData();
 

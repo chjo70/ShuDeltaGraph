@@ -38,8 +38,8 @@ public:
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
 	inline void *GetData() { return m_theDataFile.GetData(); }
 
-	inline STR_FILTER_SETUP *GetFilterSetup() { return m_theDataFile.GetFilterSetup(); }
-	inline void ClearFilterSetup() { m_theDataFile.ClearFilterSetup(); }
+	//inline STR_FILTER_SETUP *GetFilterSetup() { return m_theDataFile.GetFilterSetup(); }
+	//inline void ClearFilterSetup() { m_theDataFile.ClearFilterSetup(); }
 	inline int GetFilteredDataItems() { return m_theDataFile.GetFilteredDataItems(); }
 	inline UINT GetWindowNumber() { return m_theDataFile.GetWindowNumber(); }
 

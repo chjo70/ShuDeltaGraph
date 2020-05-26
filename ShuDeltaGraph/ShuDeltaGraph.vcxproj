@@ -132,7 +132,6 @@
     <None Include="res\file_view.ico" />
     <None Include="res\file_view_hc.ico" />
     <None Include="res\icon1.ico" />
-    <None Include="res\icon_connection.ico" />
     <None Include="res\menuimages.bmp" />
     <None Include="res\menuimages_hc.bmp" />
     <None Include="res\OK.ico" />
@@ -159,8 +158,6 @@
     <ClInclude Include="ButtonST\BtnST.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ClassView.h" />
-    <ClInclude Include="DialogRSA.h" />
-    <ClInclude Include="DialogSHU.h" />
     <ClInclude Include="Dlg2DHisto.h" />
     <ClInclude Include="Dlg3DBar.h" />
     <ClInclude Include="DlgColList.h" />
@@ -203,8 +200,6 @@
     <ClCompile Include="ButtonST\BtnST.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="ClassView.cpp" />
-    <ClCompile Include="DialogRSA.cpp" />
-    <ClCompile Include="DialogSHU.cpp" />
     <ClCompile Include="Dlg2DHisto.cpp" />
     <ClCompile Include="Dlg3DBar.cpp" />
     <ClCompile Include="DlgColList.cpp" />

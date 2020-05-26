@@ -683,7 +683,7 @@ void CShuSIMDlg::MakeResultOfPDWMessage( int iCoPDW, int iStartTOAIndex )
 	for( i=0 ; i < iCoPDW ; ++i ) {
 		pTxData->stPDWData[i].fFreq = m_fTuneFreq + rand() % 200;
 		pTxData->stPDWData[i].fPA = (float) ( -50.0 + ( rand() % 200 ) );
-		pTxData->stPDWData[i].fPW = 1;		// (float) ( 1.00 + ( rand() % 1000 ) );
+		pTxData->stPDWData[i].fPW = (float) ( 1.00 + ( rand() % 1000 ) );
 		pTxData->stPDWData[i].uiTOA = ( (i+iStartTOAIndex) * 5000 + rand() % 1000 );
 
 		pTxData->stPDWData[i].uiIndex = (i+iStartTOAIndex+1);

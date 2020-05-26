@@ -132,6 +132,16 @@ typedef struct {
 
 } STR_FILTER_SETUP;
 
+typedef struct {
+	double dZoomMinX;
+	double dZoomMaxX;
+	double dZoomMinY;
+	double dZoomMaxY;
+
+	ENUM_SUB_GRAPH enSubGraph;
+
+} STR_ZOOM_INFO;
+
 static char *gstpRawDataBuffer;
 
 class CData
@@ -143,14 +153,11 @@ public:
 
 	bool m_bPhaseData;
 
-	STR_FILTER_SETUP m_stFilterSetup;
-
 	_TOA m_ll1stToa;
 
 private:
 
 public:
-	void ClearFilterSetup();
 	void swapByteOrder(unsigned int& ui);
 	void swapByteOrder(unsigned long long& ull);
 	void AllSwapData32( void *pData, int iLength );
@@ -214,7 +221,7 @@ private:
 	ENUM_BANDWIDTH m_enBandWidth;
 
 public:
-	CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
+	CEPDW(STR_RAWDATA *pRawData );
 	virtual ~CEPDW();
 
 	void Alloc( int iItems=0 );
@@ -487,8 +494,8 @@ public:
 	inline ENUM_DataType GetDataType() { return m_pData->m_RawData.enDataType; }
 	inline UINT GetWindowNumber() { if( m_pData != NULL ) return m_pData->m_uiWindowNumber; else return 0; }
 	inline CData *GetRawData() { if( m_pData != NULL ) return m_pData; else return NULL; }
-	inline STR_FILTER_SETUP *GetFilterSetup() { return & m_pData->m_stFilterSetup; }
-	inline void ClearFilterSetup() { m_pData->ClearFilterSetup(); }
+	//inline STR_FILTER_SETUP *GetFilterSetup() { return & m_pData->m_stFilterSetup; }
+	//inline void ClearFilterSetup() { m_pData->ClearFilterSetup(); }
 	inline UINT GetFilteredDataItems() { STR_PDW_DATA *pPDWData=(STR_PDW_DATA *) m_pData->GetData(); return pPDWData->iDataItems; }
 
 	inline bool IsPhaseData() { return m_pData->m_bPhaseData; }

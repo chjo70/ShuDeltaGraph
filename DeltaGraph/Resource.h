@@ -87,6 +87,8 @@
 #define IDS_FIND_TAB                    302
 #define IDS_EXPLORER                    305
 #define IDS_EDIT_MENU                   306
+#define IDI_ICON1                       315
+#define IDI_INFO_ICON                   315
 #define IDC_LIST_PDW                    1001
 #define IDC_STATIC_GRAPH                1002
 #define IDC_STATIC_REV                  1003
@@ -109,15 +111,17 @@
 #define IDC_STATIC_X2                   1014
 #define IDC_STATIC_DTOA3                1015
 #define IDC_STATIC_DTOA                 1015
+#define IDC_STATIC_X1UNIT               1016
+#define IDC_STATIC_X2UNIT               1017
 #define IDC_EDIT_FREQ                   1023
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        315
+#define _APS_NEXT_RESOURCE_VALUE        316
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

@@ -15,10 +15,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // MyEchoSocket
 
-MyEchoSocket::MyEchoSocket( enUnitID id, bool bBigEndian )
+MyEchoSocket::MyEchoSocket( bool bBigEndian )
 {
-	m_id = id;
-
 	m_bConnected = false;
 	m_bBigEndian = bBigEndian;
 
@@ -60,7 +58,7 @@ void MyEchoSocket::OnAccept(int nErrorCode)
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode==0)
 	{
-		((CDlgColList*)m_pDlg)->OnAccept( m_id );
+		((CDlgColList*)m_pDlg)->OnAccept();
 		InitVar();
 
 		m_bConnected = true;
@@ -75,7 +73,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 	{
 		InitVar();
 
-		((CDlgColList*)m_pDlg)->OnSocketClose( m_id );
+		((CDlgColList*)m_pDlg)->OnSocketClose();
 	}
 	CAsyncSocket::OnClose(nErrorCode);
 }
@@ -83,7 +81,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 void MyEchoSocket::OnConnect(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode, m_id );
+	((CDlgColList*)m_pDlg)->OnConnect(nErrorCode );
 	m_uiErrorCode = CAsyncSocket::GetLastError();
 	m_bHeader = false;
 	
@@ -125,26 +123,19 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 			m_uiDataLength = pstRxMessage->uiDataLength;
 			m_uiReceivedData = 0;
 
-			//TRACE( "\n 헤더[%d] 길이[%d]" , uiReceivedMessage, m_uiDataLength );
+			TRACE( "\n 헤더[%d] 길이[%d]" , uiReceivedMessage, m_uiDataLength );
 		}
 		else {
-			m_uiReceivedData += Receive((char *) pstRxData, m_uiDataLength-m_uiReceivedData );
-			TRACE( "\n 총 수신 데이터[%d], 수신 길이[%d]" , m_uiReceivedData, m_uiDataLength );
+			m_uiReceivedData += Receive((char *) pstRxData, m_uiDataLength );
+			TRACE( "\n 데이터[%d]" , m_uiReceivedData );
 		}
 		
 		if( m_uiDataLength == 0 || m_uiReceivedData == m_uiDataLength ) {
-			BOOL bRet;
-
 			m_bHeader = false;
 			uiDataLength = 0;
 
-			TRACE( "==> Push");
-			LanMsg( true, & m_stQueueMsg );
-
-			if( m_id == enSHU )
-				bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_pDlgSHU->m_hReceveLAN );
-			else
-				bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_pDlgRSA->m_hReceveLAN );
+			m_qMsg.push( m_stQueueMsg );
+			BOOL bRet = SetEvent( ((CDlgColList*)m_pDlg)->m_hReceveLAN );
 
 			m_uiReceivedData = 0;
 		}
@@ -325,33 +316,26 @@ void MyEchoSocket::AllSwapData32( void *pData, int iLength )
 
 }
 
-
-void MyEchoSocket::LanMsg( bool bPush, STR_QUEUE_MSG *pQMsg )
+queue <STR_QUEUE_MSG> *MyEchoSocket::GetQueueMessage()
 {
 
-	g_criticalLanQue.Lock();
-
-	if( bPush == true )
-		m_qMsg.push( *pQMsg );
-	else {
-		if( m_qMsg.empty() == false ) {
-			*pQMsg = m_qMsg.front();
-			m_qMsg.pop();
-		}
-		else {
-			pQMsg->stMsg.uiOpcode = 0;
-		}
-	}
-
-	g_criticalLanQue.Unlock();
-
+	return & m_qMsg;
 }
-
-
-// queue <STR_QUEUE_MSG> *MyEchoSocket::GetQueueMessage()
+// STR_DATA_CONTENTS *MyEchoSocket::GetRxData()
 // {
+// 	STR_DATA_CONTENTS *pRxData;
 // 
-// 	return & m_qMsg;
+// 	pRxData = ;
+// 
+// 	return pRxData;
 // }
 // 
-
+// 
+// STR_MESSAGE *MyEchoSocket::GetRxMessage()
+// {
+// 	STR_MESSAGE *pRxMessage;
+// 
+// 	pRxMessage = ( STR_MESSAGE * ) ( ( char *) m_prxData );
+// 
+// 	return pRxMessage;
+// }

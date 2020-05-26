@@ -133,7 +133,7 @@ void CPDW::ConvertArray( int iDataItems, int iOffset )
 	_spAOAres = (float) ( 0.351562 );
 	_spAMPres = (float) (0.351562);
 	//_spPWres = ( _spOneMicrosec * 25 ) / 10.;
-	_spPWres = (float) ( 50 );
+	_spPWres = (float) ( _spOneMicrosec );
 
 	m_PDWData.iDataItems = 0;
 
@@ -165,7 +165,7 @@ void CPDW::ConvertArray( int iDataItems, int iOffset )
 		*pfFreq = FFRQCNV(pPDW->item.band + 1, uiTemp);
 
 		uiTemp = BIT_MERGE(pPDW->item.pulse_width_h, pPDW->item.pulse_width_l);
-		*pfPW = FMUL( uiTemp, _spPWres );
+		*pfPW = FPWCNV(uiTemp);
 
 		uiTemp = BIT_MERGE(pPDW->item.direction_h, pPDW->item.direction_l);
 		*pfAOA = FAOACNV(uiTemp);
@@ -178,39 +178,39 @@ void CPDW::ConvertArray( int iDataItems, int iOffset )
 
 		// printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 		// 필터링 조건
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-			++pfFreq;
-			++pfAOA;
-			++pfPW;
-			++pfPA;
-			++pfTOA;
-			++pfDTOA;
-			++pcType;
-			++pcDV;
+// 		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+// 			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+// 			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+// 			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+// 			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
 
-			++ pfllTOA;
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
 
-			++ m_PDWData.iDataItems;
-		}
+		++ pfllTOA;
+
+		++ m_PDWData.iDataItems;
 
 		++pPDW;
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////
-CEPDW::CEPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup ) : CData(pRawData )
+CEPDW::CEPDW(STR_RAWDATA *pRawData ) : CData(pRawData )
 {
 	//STR_PDWDATA *pPDWData;
 
 	Alloc( PDW_ITEMS );
  
-	if( pstFilterSetup != NULL ) {
-		memcpy( & m_stFilterSetup, pstFilterSetup, sizeof(STR_FILTER_SETUP) );
-	}
+// 	if( pstFilterSetup != NULL ) {
+// 		memcpy( & m_stFilterSetup, pstFilterSetup, sizeof(STR_FILTER_SETUP) );
+// 	}
 
 }
 
@@ -387,33 +387,31 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset )
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[kHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
 		// 필터링 조건
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-// 		if( ( (double) *pfAOA >= m_stFilterSetup.dAoaMin && (double) *pfAOA <= m_stFilterSetup.dAoaMax ) &&
-// 			( (double) *pfFreq >= m_stFilterSetup.dFrqMin && (double) *pfFreq <= m_stFilterSetup.dFrqMax ) ) {
-			++pfFreq;
-			++pfAOA;
-			++pfPW;
-			++pfPA;
-			++pfTOA;
-			++pfDTOA;
-			++pcType;
-			++pcDV;
+// 		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+// 			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+// 			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+// 			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+// 			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
 
-			++ pfllTOA;
+		++ pfllTOA;
 
-			if( m_bPhaseData == true ) {
-				++ pfPh1;
-				++ pfPh2;
-				++ pfPh3;
-				++ pfPh4;
-			}
-
-			++ m_PDWData.iDataItems;
+		if( m_bPhaseData == true ) {
+			++ pfPh1;
+			++ pfPh2;
+			++ pfPh3;
+			++ pfPh4;
 		}
+
+		++ m_PDWData.iDataItems;
+		
 
 		if( m_bPhaseData == true ) {
 			++ pPDW;
@@ -513,7 +511,7 @@ void *CSPDW::GetData()
 */
 void CSPDW::ConvertArray( int iDataItems, int iOffset )
 {
-	int i;
+	UINT i;
 
 	float *pfFreq = m_PDWData.pfFreq;
 	float *pfPW = m_PDWData.pfPW;
@@ -586,24 +584,23 @@ void CSPDW::ConvertArray( int iDataItems, int iOffset )
 
 		// printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 		// 필터링 조건
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-				++pfFreq;
-				++pfAOA;
-				++pfPW;
-				++pfPA;
-				++pfTOA;
-				++pfDTOA;
-				++pcType;
-				++pcDV;
+// 		if( ( m_strFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+// 			( m_strFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+// 			( m_strFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+// 			( m_strFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+// 			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
 
-				++ pfllTOA;
+		++ pfllTOA;
 
-				++ m_PDWData.iDataItems;
-		}
+		++ m_PDWData.iDataItems;
 
 		++pPDW;
 	}
@@ -765,26 +762,24 @@ void CKFXPDW::ConvertArray( int iDataItems, int iOffset )
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
 		// 필터링 조건
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-			++pfFreq;
-			++pfAOA;
-			++pfPW;
-			++pfPA;
-			++pfTOA;
-			++pfDTOA;
-			++pcType;
-			++pcDV;
-			++pfllTOA;
+// 		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+// 			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+// 			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+// 			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+// 			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
+		++pfllTOA;
 
-			++ m_PDWData.iDataItems;
+		++ m_PDWData.iDataItems;
 
 			//++ m_stFilterSetup.uiDataItems;
-
-		}
 
 		++pPDW;
 	}
@@ -954,25 +949,24 @@ void C7PDW::ConvertArray( int iDataItems, int iOffset )
  		*pcDV = pPDW->iDirectionVaild ^ 1;
 
 		// 필터링 조건
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-			++pfFreq;
-			++pfAOA;
-			++pfPW;
-			++pfPA;
-			++pfTOA;
-			++pfDTOA;
-			++pcType;
-			++pcDV;
-			++pllTOA;
+// 		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
+// 			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
+// 			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
+// 			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
+// 			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
+		++pfFreq;
+		++pfAOA;
+		++pfPW;
+		++pfPA;
+		++pfTOA;
+		++pfDTOA;
+		++pcType;
+		++pcDV;
+		++pllTOA;
 
-			++ m_PDWData.iDataItems;
+		++ m_PDWData.iDataItems;
 
 			//++ m_stFilterSetup.uiDataItems;
-		}
 
 		// printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[MHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
@@ -1449,28 +1443,6 @@ CData::CData( STR_RAWDATA *pRawData )
 
 	m_bPhaseData = true;
 
-	ClearFilterSetup();
-
-}
-
-void CData::ClearFilterSetup()
-{
-
-	m_stFilterSetup.dToaMin = 0.;
-	m_stFilterSetup.dToaMax = DBL_MAX;
-	m_stFilterSetup.dDtoaMin = 0;
-	m_stFilterSetup.dDtoaMax = DBL_MAX;
-	m_stFilterSetup.dAoaMin = 0;
-	m_stFilterSetup.dAoaMax = DBL_MAX;
-	m_stFilterSetup.dFrqMin = 0;
-	m_stFilterSetup.dFrqMax = DBL_MAX;
-	m_stFilterSetup.dPAMin = -DBL_MAX;
-	m_stFilterSetup.dPAMax = DBL_MAX;
-	m_stFilterSetup.dPWMin = 0;
-	m_stFilterSetup.dPWMax = DBL_MAX;
-
-	//m_stFilterSetup.uiDataItems = 0;
-
 }
 
 /**
@@ -1810,7 +1782,7 @@ ENUM_DataType CDataFile::WhatDataType( CString *pStrPathname )
 		NULL != wcsstr( pStrPathname->GetBuffer(), L".iq" ) || NULL != wcsstr( pStrPathname->GetBuffer(), L".siq" ) ) {
 		enUnitType = en_SONATA;
 	}
-	else if( NULL != wcsstr( pStrPathname->GetBuffer(), L".spdw" ) ) {
+	if( NULL != wcsstr( pStrPathname->GetBuffer(), L".spdw" ) ) {
 		enUnitType = en_SONATA_SHU;
 	}
 	else if( NULL != wcsstr( pStrPathname->GetBuffer(), L".dat" ) ) {
@@ -1891,15 +1863,11 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 
 	UINT uiLengthOfHeader, uiLengthOf1PDWIQ;
 
-	if( m_strPathname.IsEmpty() == true ) {
-		m_strPathname = strPathname;
-		
-		m_strPathname.MakeLower();
+	m_strPathname = strPathname;
+	m_strPathname.MakeLower();
 
-		enUnitType = WhatUnitType( & m_strPathname );
-		enDataType = WhatDataType( & m_strPathname );
-
-	}
+	enUnitType = WhatUnitType( & m_strPathname );
+	enDataType = WhatDataType( & m_strPathname );
 
 	if( enDataType == en_PDW_DATA && enUnitType == en_SONATA ) {
 		uiLengthOfHeader = 0;
@@ -1949,7 +1917,7 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 		if( m_pData == NULL ) {
 			m_pData = pData;
 			if( m_pData == NULL ) {
-				m_pData = new CEPDW( NULL, pstFilterSetup );
+				m_pData = new CEPDW( NULL );
 			}
 		}
 

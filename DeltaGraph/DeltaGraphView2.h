@@ -13,6 +13,11 @@
 
 #include "Pegrpapi.h"
 
+#include "../ShuDeltaGraph/XColorStatic/XColorStatic.h"
+#include "../ShuDeltaGraph/ToolTip/XInfoTip.h"
+
+#include <vector>
+
 
 class CDeltaGraphView2 : public CFormView, public CShow
 {
@@ -31,6 +36,13 @@ private:
 	float m_fX1;
 	float m_fX2;
 
+	CXInfoTip *m_pTip;
+	HICON m_hToolTipIcon;
+
+	STR_FILTER_SETUP m_strFilterSetup;
+
+	vector<STR_ZOOM_INFO> m_VecZoomInfo;
+
 public:
 
 private:
@@ -39,11 +51,22 @@ private:
 	void InitGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph );
 	void InitCombo();
 	void InitButton();
+	void InitToolTip();
+	void FreeBuffer();
+
 	void SetCombo( ENUM_SUB_GRAPH enSubGraph );
 	void CloseGraph();
 	void DrawGraph( ENUM_SUB_GRAPH enSubGraph );
 	void ClearGraph();
 	void SetData( HOTSPOTDATA *pHSD );
+	float SetXUnit( float fValue, ENUM_DataType enDataType );
+
+	void UpdateToolTip( TCHAR *pszBuffer, CWnd *pDlgItem );
+	void UpdateFilterToolTip();
+	void ClearFilterSetup();
+	void ClearZoomInfo();
+
+	void AddZoomInfo();
 
 public:
 	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
@@ -100,9 +123,13 @@ public:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	CComboBox m_CComboPointSize;
 	afx_msg void OnCbnSelchangeComboPointsize();
-	CStatic m_CStaticX1;
-	CStatic m_CStaticX2;
-	CStatic m_CStaticDTOA;
+	CXColorStatic m_CStaticX1;
+	CXColorStatic m_CStaticX2;
+	CXColorStatic m_CStaticDTOA;
+	CXColorStatic m_CStaticX1Unit;
+	CXColorStatic m_CStaticX2Unit;
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnBnClickedButtonFilterZoomout();
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

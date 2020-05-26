@@ -31,6 +31,12 @@
     <Filter Include="소스 파일\ButtonST">
       <UniqueIdentifier>{2a4ecdf3-39a0-4516-a420-0674141beb22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\ColorStatic">
+      <UniqueIdentifier>{6efb4e9e-5f7e-473b-9f76-3c8e4da5a4f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\ToolTip">
+      <UniqueIdentifier>{7102e797-5487-42e5-b35e-e277239498b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -122,6 +128,9 @@
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="res\chartingtocpict.ico">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="res\info.ico">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>
@@ -219,6 +228,15 @@
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.h">
       <Filter>소스 파일\ListCtrl</Filter>
     </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\XColorStatic\FontSize.h">
+      <Filter>소스 파일\ColorStatic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\XColorStatic\XColorStatic.h">
+      <Filter>소스 파일\ColorStatic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\ToolTip\XInfoTip.h">
+      <Filter>소스 파일\ToolTip</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DeltaGraph.cpp">
@@ -292,6 +310,15 @@
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\XColorStatic\FontSize.cpp">
+      <Filter>소스 파일\ColorStatic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\XColorStatic\XColorStatic.cpp">
+      <Filter>소스 파일\ColorStatic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\ToolTip\XInfoTip.cpp">
+      <Filter>소스 파일\ToolTip</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
