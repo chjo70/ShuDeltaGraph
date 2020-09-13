@@ -481,6 +481,8 @@ void CDlg3DBar::OnSysCommand(UINT nID, LPARAM lParam)
 	else if(nID == SC_MINIMIZE)
 	{ 
 		//최소화 버튼 눌릴 시
+		CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+		pApp->MinimuzeGraph();
 	}
 	else if(nID == SC_RESTORE) 
 	{ 

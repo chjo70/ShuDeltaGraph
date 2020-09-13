@@ -175,6 +175,9 @@ BOOL CShuDeltaGraphApp::InitInstance()
 	//AfxSetAllocStop( 8253 );
 
 	// 주 창이 초기화되었으므로 이를 표시하고 업데이트합니다.
+	m_bColList = false;
+	m_bGraph = false;
+
 	pMainFrame->ShowWindow( SW_SHOWMAXIMIZED /* m_nCmdShow */ );
 	pMainFrame->UpdateWindow();
 
@@ -496,6 +499,13 @@ bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPEN
 			strFilepath.ReleaseBuffer();
 			break;
 
+		case enOpenCSV :
+			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("수집 목록 파일들 (*.csv)|*.csv*|All Files (*.*)|*.*||") );
+
+			_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
+			strFilepath.ReleaseBuffer();
+			break;
+
 		case enSavePDW :
 			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
 			szinitDir[0] = NULL;
@@ -506,6 +516,14 @@ bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPEN
 
 			_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
 			strFilepath.ReleaseBuffer();
+			break;
+
+		case enSaveCSV :
+			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("수집 목록 파일들 (*.csv)|*.csv*|All Files (*.*)|*.*||") );
+
+			_tcscpy_s( szinitDir, MAX_PATH, strFilepath.GetBuffer(0) );
+			strFilepath.ReleaseBuffer();
+			
 			break;
 
 		default :
@@ -672,6 +690,7 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
+	// SHU
 	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->enMode );
 	::WritePrivateProfileString( L"COL_LIST", L"MODE", szBuffer, m_strIniFile );
 
@@ -686,6 +705,26 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 
 	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->uiColNumber );
 	::WritePrivateProfileString( L"COL_LIST", L"COL_NUM", szBuffer, m_strIniFile );
+
+	// RSA
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fAOALow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"AOA_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fAOAHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"AOA_HGH", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fFreqLow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"FREQ_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fFreqHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"FREQ_HGH", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPALow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"PA_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPAHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"PA_HGH", szBuffer, m_strIniFile );
+
 
 }
 
@@ -729,6 +768,7 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 {
 	TCHAR szBuffer[100];
 
+	//SHU
 	::GetPrivateProfileString( L"COL_LIST", L"MODE", L"0", szBuffer, 100, m_strIniFile );
 	pstColList->enMode = (ENUM_COL_MODE) _wtoi(szBuffer);
 
@@ -744,6 +784,25 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 	::GetPrivateProfileString( L"COL_LIST", L"COL_NUM", L"100.0", szBuffer, 100, m_strIniFile );
 	pstColList->uiColNumber = (int) _wtof(szBuffer);
 
+	//RSA
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"AOA_LOW", L"0", szBuffer, 100, m_strIniFile );
+	pstColList->fAOALow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"AOA_HGH", L"360", szBuffer, 100, m_strIniFile );
+	pstColList->fAOAHgh = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"FREQ_LOW", L"8000", szBuffer, 100, m_strIniFile );
+	pstColList->fFreqLow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"FREQ_HGH", L"10000", szBuffer, 100, m_strIniFile );
+	pstColList->fFreqHgh = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"PA_LOW", L"-70", szBuffer, 100, m_strIniFile );
+	pstColList->fPALow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"PA_HGH", L"0", szBuffer, 100, m_strIniFile );
+	pstColList->fPAHgh = (float) _wtof(szBuffer);
+
 }
 
 /**
@@ -757,17 +816,16 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 void CShuDeltaGraphApp::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	BOOL chk = m_pDlgColList->IsWindowVisible();
+	//BOOL chk = m_pDlgColList->IsWindowVisible();
 
-	if(chk)
-	{
+	if( m_bColList ) {
 		m_pDlgColList->ShowWindow(SW_HIDE);
 	}
-	else
-	{
+	else {
 		m_pDlgColList->ShowWindow(SW_RESTORE);
 		m_pDlgColList->ShowWindow(SW_SHOW);
-	}	
+	}
+	m_bColList = ! m_bColList;
 
 	//m_pDlgColList->SetParent();
 
@@ -799,41 +857,60 @@ void CShuDeltaGraphApp::OnAppExit()
 void CShuDeltaGraphApp::OnGraphCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	BOOL chk;
+	//BOOL chk;
 
-	chk = m_pDlg2DHisto->IsWindowVisible();
-	if(chk  )
-	{
-		//m_pDlg2DHisto->ShowWindow(SW_RESTORE);
+	//chk = m_pDlg2DHisto->IsWindowVisible();
+	if( m_bGraph ) {
 		m_pDlg2DHisto->ShowWindow(SW_HIDE);
+		m_pDlgMulti->ShowWindow(SW_HIDE);
+		m_pDlg3DBar->ShowWindow(SW_HIDE);
+
 	}
-	else
-	{
+	else {
 		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
-	}
 
-	chk = m_pDlgMulti->IsWindowVisible();
-	if(chk  )
-	{
-		m_pDlgMulti->ShowWindow(SW_HIDE);
-	}
-	else
-	{
 		m_pDlgMulti->ShowWindow(SW_RESTORE);
 		m_pDlgMulti->ShowWindow(SW_SHOW);
-	}
 
-	chk = m_pDlg3DBar->IsWindowVisible();
-	if(chk  )
-	{
-		m_pDlg3DBar->ShowWindow(SW_HIDE);
-	}
-	else
-	{
 		m_pDlg3DBar->ShowWindow(SW_RESTORE);
 		m_pDlg3DBar->ShowWindow(SW_SHOW);
+
 	}
+
+	m_bGraph = ! m_bGraph;
+
+// 	if(chk  )
+// 	{
+// 		m_pDlg2DHisto->ShowWindow(SW_HIDE);
+// 	}
+// 	else
+// 	{
+// 		m_pDlg2DHisto->ShowWindow(SW_RESTORE);
+// 		m_pDlg2DHisto->ShowWindow(SW_SHOW);
+// 	}
+// 
+// 	chk = m_pDlgMulti->IsWindowVisible();
+// 	if(chk  )
+// 	{
+// 		m_pDlgMulti->ShowWindow(SW_HIDE);
+// 	}
+// 	else
+// 	{
+// 		m_pDlgMulti->ShowWindow(SW_RESTORE);
+// 		m_pDlgMulti->ShowWindow(SW_SHOW);
+// 	}
+// 
+// 	chk = m_pDlg3DBar->IsWindowVisible();
+// 	if(chk  )
+// 	{
+// 		m_pDlg3DBar->ShowWindow(SW_HIDE);
+// 	}
+// 	else
+// 	{
+// 		m_pDlg3DBar->ShowWindow(SW_RESTORE);
+// 		m_pDlg3DBar->ShowWindow(SW_SHOW);
+// 	}
 }
 
 

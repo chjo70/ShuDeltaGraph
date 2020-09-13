@@ -49,7 +49,7 @@ void CDlgFilterSetup::OnBnClickedOk()
 	m_stFilterSetup.dFrqMin = m_CSpinFrqMin.GetPos();
 	m_stFilterSetup.dFrqMax = m_CSpinFrqMax.GetPos();
 
-	CDialogEx::OnOK();
+	//CDialogEx::OnOK();
 }
 
 

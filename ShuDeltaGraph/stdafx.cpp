@@ -216,3 +216,21 @@ int UnicodeToUtf8( char* pUtf8, TCHAR* pUnicode)
 
 	return len;
 }
+
+
+int GetStringInComma( TCHAR *pString, TCHAR *pInBuffer )
+{
+	int iIndex=0;
+
+	while( *pInBuffer != 0 ) {
+		if( pInBuffer[iIndex] == _T(',') ) {
+			break;
+		}
+
+		pString[iIndex] = pInBuffer[iIndex];
+
+		++ iIndex;
+	}
+	pString[iIndex] = 0;
+	return iIndex + 1;
+}

@@ -62,6 +62,7 @@ public:
 	afx_msg void OnFileNew();
 	virtual BOOL OnCloseDockingPane(CDockablePane* pWnd);
 	afx_msg void OnClose();
+	afx_msg void OnHotKey(UINT nHotKeyId, UINT nKey1, UINT nKey2);
 };
 
 

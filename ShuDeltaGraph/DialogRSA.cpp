@@ -575,10 +575,18 @@ void CDialogRSA::OnBnClickedButtonOpen()
 
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
+#ifdef EXAUTOMATION
 	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenXLS ) ) {
 		m_ColList.DeleteAllItems();
 		OpenXLSViewList( strPathName );
 	}
+#elif defined(_EXCELLIB_)
+#else
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenCSV ) ) {
+		m_ColList.DeleteAllItems();
+		OpenXLSViewList( strPathName );
+	}
+#endif
 
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
 }
@@ -655,7 +663,14 @@ BOOL CDialogRSA::OnInitDialog()
 	m_CSpinColNum.SetPos( (double) m_pParentDlg->m_stColItem.uiColNumber );
 
 	CString strPathname = GetFilePath();
+#ifdef EXAUTOMATION
 	strPathname += _T("//수집 목록(레이더).xlsx");
+#elif defined(_EXCELLIB_)
+	strPathname += _T("//수집 목록(레이더).xlsx");
+#else
+	strPathname += _T("//수집 목록(레이더).csv");
+#endif
+	
 	OpenXLSViewList( strPathname );
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -915,12 +930,12 @@ void CDialogRSA::OnBnClickedButtonAllselect()
  */
 void CDialogRSA::OpenXLSViewList( CString strPathname )
 {
-	long l, lMaxRow;
-	float fValue1, fValue2;
-
+	
 	m_ColList.DeleteAllItems();
 
 #ifdef EXAUTOMATION
+	long l, lMaxRow;
+	float fValue1, fValue2;
 	CString strNumber, strDOARange, strFreqRange, strColTime, strPARange;
 
 	// 엑셀 수집 파일 로딩하기...
@@ -959,7 +974,7 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 	}
 
 	XL.ReleaseExcel();
-#else
+#elif defined(_EXCELLIB_)
 	CExcelLib theExcel;
 
 	WCHAR wsResult[MAX_STRING_BUFFER_SIZE];
@@ -1002,7 +1017,48 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 
 	// 엑셀 파일을 닫는다.
 	theExcel.CloseExcelFile();
+#else
+	FILE *pCSVFile;
 
+	TCHAR szCheck[10], szNumber[100], szDOARange[100], szFreqRange[100], szColTime[100], szPARange[100];
+
+	setlocale( LC_ALL, ".OCP" );
+	if( 0 == _wfopen_s( & pCSVFile, T2W(strPathname.GetBuffer()), _T("rt") ) ) {
+		TCHAR buffer[100];
+		int iIndex, nIndex=0;
+
+		fgetws( buffer, 100, pCSVFile );
+		while( ! feof(pCSVFile) ) {
+			fgetws( buffer, 100, pCSVFile );
+
+			iIndex = 0;
+			iIndex += GetStringInComma( szCheck, & buffer[iIndex] );
+			//m_ColList.SetItemStates( nIndex, RC_ITEM_SELECTED );
+
+			iIndex += GetStringInComma( szNumber, & buffer[iIndex] );
+			nIndex = m_ColList.InsertItem( INT_MAX, szNumber, NULL );
+
+			if( szCheck[0] == 'O' )
+				m_ColList.SetItemStates( nIndex, RC_ITEM_CHECKED );
+			else
+				m_ColList.SetItemStates( nIndex, RC_ITEM_UNCHECKED );
+
+			iIndex += GetStringInComma( szDOARange, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 1, LVIF_TEXT, szDOARange, NULL, NULL, NULL, NULL);
+
+			iIndex += GetStringInComma( szFreqRange, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 2, LVIF_TEXT, szFreqRange, NULL, NULL, NULL, NULL);
+
+			iIndex += GetStringInComma( szColTime, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 3, LVIF_TEXT, szColTime, NULL, NULL, NULL, NULL);
+
+			iIndex += GetStringInComma( szPARange, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 4, LVIF_TEXT, szPARange, NULL, NULL, NULL, NULL);
+		}
+
+		fclose( pCSVFile );
+	}
+	
 
 #endif
 
@@ -1205,16 +1261,16 @@ void CDialogRSA::OnBnClickedButtonSave()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString strPathName;
 
+	CString strNumber, strAOARange, strFreqRange, strColTime, strPARange;
+
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( FALSE );
 	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( FALSE );
 
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
-	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
 #ifdef EXAUTOMATION
-		int i;
-
-		CString strNumber, strAOARange, strFreqRange, strColTime, strPARange;
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
+		int i;	
 
 		STR_COL_LIST stColList;
 
@@ -1234,7 +1290,6 @@ void CDialogRSA::OnBnClickedButtonSave()
 
 				MakeColListString( & strNumber, & strAOARange, & strFreqRange, & strColTime, & strPARange, & stColList );
 
-				//SetCellValue( & XL, i+1, & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold );
 				XL.SetCellValue( 1, i+2, strNumber ); 
 				XL.SetCellValue( 2, i+2, strAOARange ); 
 				XL.SetCellValue( 3, i+2, strFreqRange ); 
@@ -1247,8 +1302,37 @@ void CDialogRSA::OnBnClickedButtonSave()
 		XL.SaveFileAs(strPathName);
 
 		XL.ReleaseExcel();
-#else
+#elif defined(_EXCELLIB_)
 
+#else
+		int i;
+
+		STR_COL_LIST stColList;
+
+		if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveCSV ) ) {
+			FILE *pCSVFile;
+
+			setlocale( LC_ALL, ".OCP" );
+			if( 0 == _wfopen_s( &pCSVFile, T2W(strPathName.GetBuffer()), _T("wt") ) ) {
+				//swprintf( buffer, sizeof(buffer),  );
+				fwprintf_s( pCSVFile, _T("과제 번호,방위 범위[도],주파수 범위[MHz],수집 개수/시간[ms],세기 범위[dBm],기타" ) );
+
+				for ( i = 0; i < m_ColList.GetItemCount(); i++) {
+					GetColListFromList( i, & stColList );
+
+					MakeColListString( & strNumber, & strAOARange, & strFreqRange, & strColTime, & strPARange, & stColList );
+
+					if( TRUE == m_ColList.GetCheck(i) ) {
+						fwprintf_s( pCSVFile, _T("\nO,%s,%s,%s,%s,%s" ), strNumber, strAOARange, strFreqRange, strColTime, strPARange );
+
+					}
+					else {
+						fwprintf_s( pCSVFile, _T("\nX,%s,%s,%s,%s,%s" ), strNumber, strAOARange, strFreqRange, strColTime, strPARange );
+					}
+				}
+
+				fclose( pCSVFile );
+			}
 
 #endif
 
@@ -1364,3 +1448,15 @@ void CDialogRSA::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 	}
 }
 
+
+
+BOOL CDialogRSA::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	if( pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE )
+		return TRUE;
+	if( pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN )
+		return TRUE;
+
+	return CDialogEx::PreTranslateMessage(pMsg);
+}

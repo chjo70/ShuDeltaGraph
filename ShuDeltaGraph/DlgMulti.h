@@ -33,10 +33,15 @@ private:
 	float *m_pfIndex;
 	float *m_pfIP;
 	float *m_pFFT;
+	float *m_pfI;
+	float *m_pfQ;
 
 	float* m_pGlobalXData;
 
 	ENUM_Graph m_enGraph;
+
+	double m_dIMax, m_dIMin;
+	double m_dQMax, m_dQMin;
 
 public:
 	HANDLE m_hMulti;

@@ -114,7 +114,14 @@ BOOL CDialogSHU::OnInitDialog()
 	m_CComboMode.SetCurSel( m_pParentDlg->m_stColItem.enMode );
 
 	CString strPathname = GetFilePath();
+#ifdef EXAUTOMATION
 	strPathname += _T("//수집 목록(수퍼헷).xlsx");
+#elif defined(_EXCELLIB_)
+	strPathname += _T("//수집 목록(수퍼헷).xlsx");
+#else
+	strPathname += _T("//수집 목록(수퍼헷).csv");
+#endif
+
 	OpenXLSViewList( strPathname );
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -487,20 +494,24 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 			switch( pQueueMsg->stMsg.uiOpcode ) {
 			case RES_SET_CONFIG :
 				SetIBkColorOfColList( m_uiColList, 2 );
-				MakeIQMessage( m_uiColList );
+
+				MakeColStartMessage();
 				m_pParentDlg->Send( enSHU, m_ptxData );
 				break;
 
 			case RES_COL_START :
 				SetIBkColorOfColList( m_uiColList, 4 );
 
-				if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
-				}
-				else {
-					ReadyColStart( m_uiColList );
-					MakeSetModeMessage( m_uiColList );
+				MakeIQMessage( m_uiColList );
 					m_pParentDlg->Send( enSHU, m_ptxData );
-				}
+
+				//if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
+				//}
+				//else {
+				//	ReadyColStart( m_uiColList );
+				//	MakeSetModeMessage( m_uiColList );
+				//	m_pParentDlg->Send( enSHU, m_ptxData );
+				//}
 				break;
 
 			case RES_RAWDATA_IQ :
@@ -566,7 +577,7 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				break;
 
 			case RES_RAWDATA_PDW :
-				m_pParentDlg->InitUnitRes( enRSA );
+				m_pParentDlg->InitUnitRes( enSHU );
 				//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
 				//SetIBkColorOfColList( m_uiColList, 4 );
 
@@ -688,7 +699,10 @@ void CDialogSHU::MakeIQMessage( UINT uiIndex )
 
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 	pColList = m_pColList + uiIndex;
-	pTxData->uiMode = pColList->stColItem.enMode - 3;
+
+	if( pColList->stColItem.enMode == enIQ_WIDE ) pTxData->uiMode = 1;
+	else if(pColList->stColItem.enMode == enIQ_NARROW ) pTxData->uiMode = 2;
+	else pTxData->uiMode = pColList->stColItem.enMode + 1;
 
 }
 
@@ -811,11 +825,9 @@ void CDialogSHU::MakeSetModeMessage( UINT uiIndex )
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 	pColList = m_pColList + uiIndex;
 
-	if( pColList->stColItem.enMode >= enIQ_WIDE )
-		pTxData->stSetMode.uiMode = pColList->stColItem.enMode - 3;
-	else {
-		pTxData->stSetMode.uiMode = pColList->stColItem.enMode + 1;
-	}
+	if( pColList->stColItem.enMode == enIQ_WIDE ) pTxData->stSetMode.uiMode = 1;
+	else if(pColList->stColItem.enMode == enIQ_NARROW ) pTxData->stSetMode.uiMode = 2;
+	else pTxData->stSetMode.uiMode = pColList->stColItem.enMode + 1;
 
 	pTxData->stSetMode.fTuneFreq = pColList->stColItem.fCenterFreq;
 	pTxData->stSetMode.coPulseNum = pColList->stColItem.uiColNumber;
@@ -917,10 +929,18 @@ void CDialogSHU::OnBnClickedButtonOpen()
 
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
+#ifdef EXAUTOMATION
 	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenXLS ) ) {
 		m_ColList.DeleteAllItems();
 		OpenXLSViewList( strPathName );
 	}
+#elif defined(_EXCELLIB_)
+#else
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 읽어오기..."), enOpenCSV ) ) {
+		m_ColList.DeleteAllItems();
+		OpenXLSViewList( strPathName );
+	}
+#endif
 
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
 }
@@ -936,12 +956,12 @@ void CDialogSHU::OnBnClickedButtonOpen()
  */
 void CDialogSHU::OpenXLSViewList( CString strPathname )
 {
-	long l, lMaxRow;
-	float fValue;
 
 	m_ColList.DeleteAllItems();
 
 #ifdef EXAUTOMATION
+	long l, lMaxRow;
+	float fValue;
 	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
 
 	// 엑셀 수집 파일 로딩하기...
@@ -976,7 +996,7 @@ void CDialogSHU::OpenXLSViewList( CString strPathname )
 	}
 
 	XL.ReleaseExcel();
-#else
+#elif defined(_EXCELLIB_)
 	CExcelLib theExcel;
 
 	WCHAR wsResult[MAX_STRING_BUFFER_SIZE];
@@ -1019,11 +1039,54 @@ void CDialogSHU::OpenXLSViewList( CString strPathname )
 
 	// 엑셀 파일을 닫는다.
 	theExcel.CloseExcelFile();
+#else
+	FILE *pCSVFile;
 
+	TCHAR szCheck[10], szNumber[100], szMode[100], szCenterFreq[100], szColTime[100], szThreshold[100];
+
+	setlocale( LC_ALL, ".OCP" );
+	if( 0 == _wfopen_s( & pCSVFile, T2W(strPathname.GetBuffer()), _T("rt") ) ) {
+		TCHAR buffer[100];
+		int iIndex, nIndex=0;
+
+		fgetws( buffer, 100, pCSVFile );
+		while( ! feof(pCSVFile) ) {
+			fgetws( buffer, 100, pCSVFile );
+
+			iIndex = 0;
+			iIndex += GetStringInComma( szCheck, & buffer[iIndex] );
+						
+			iIndex += GetStringInComma( szNumber, & buffer[iIndex] );
+			nIndex = m_ColList.InsertItem( INT_MAX, szNumber, NULL );
+
+			if( szCheck[0] == 'O' )
+				m_ColList.SetItemStates( nIndex, RC_ITEM_CHECKED );
+			else
+				m_ColList.SetItemStates( nIndex, RC_ITEM_UNCHECKED );
+
+
+			iIndex += GetStringInComma( szMode, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 1, LVIF_TEXT, szMode, NULL, NULL, NULL, NULL);
+
+
+			iIndex += GetStringInComma( szCenterFreq, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 2, LVIF_TEXT, szCenterFreq, NULL, NULL, NULL, NULL);
+
+			iIndex += GetStringInComma( szColTime, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 3, LVIF_TEXT, szColTime, NULL, NULL, NULL, NULL);
+
+			iIndex += GetStringInComma( szThreshold, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 4, LVIF_TEXT, szThreshold, NULL, NULL, NULL, NULL);
+		}
+
+		fclose( pCSVFile );
+	}
 
 #endif
 
 }
+
+
 
 /**
  * @brief     
@@ -1170,6 +1233,12 @@ void CDialogSHU::OnBnClickedButtonInit()
 void CDialogSHU::OnBnClickedButtonSave()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int i;
+
+	STR_COL_LIST stColList;
+
+	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+
 	CString strPathName;
 
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( FALSE );
@@ -1177,13 +1246,8 @@ void CDialogSHU::OnBnClickedButtonSave()
 
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
-	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
 #ifdef EXAUTOMATION
-		int i;
-
-		CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
-
-		STR_COL_LIST stColList;
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveXLS ) ) {
 
 		// 엑셀 수집 파일 로딩하기...
 		CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
@@ -1214,8 +1278,33 @@ void CDialogSHU::OnBnClickedButtonSave()
 		XL.SaveFileAs(strPathName);
 
 		XL.ReleaseExcel();
+#elif defined(_EXCELLIB_)
+	
 #else
+	if( true == pApp->OpenFile( strPathName, _T("수집 목록 저장하기..."), enSaveCSV ) ) {
+		FILE *pCSVFile;
 
+		setlocale( LC_ALL, ".OCP" );
+		if( 0 == _wfopen_s( &pCSVFile, T2W(strPathName.GetBuffer()), _T("wt") ) ) {
+			//swprintf( buffer, sizeof(buffer),  );
+			fwprintf_s( pCSVFile, _T("과제 번호,모드,중심 주파수[MHz],수집 개수/시간[ms],임계값[dBm],기타" ) );
+
+			for ( i = 0; i < m_ColList.GetItemCount(); i++) {
+				GetColListFromList( i, & stColList );
+
+				MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+
+				if( TRUE == m_ColList.GetCheck(i) ) {
+					fwprintf_s( pCSVFile, _T("\nO, %s,%s,%s,%s,%s" ), strNumber, strMode, strCenterFreq, strColTime, strThreshold );
+
+				}
+				else {
+					fwprintf_s( pCSVFile, _T("\nX, %s,%s,%s,%s,%s" ), strNumber, strMode, strCenterFreq, strColTime, strThreshold );
+				}
+			}
+
+			fclose( pCSVFile );
+		}
 
 #endif
 
@@ -1540,4 +1629,15 @@ void CDialogSHU::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 		pstrTemp2->Format( _T("잘못된 명령[0x%x]입니다."), pstMessage->uiOpcode);
 		break;
 	}
+}
+
+BOOL CDialogSHU::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	if( pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE )
+		return TRUE;
+	if( pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN )
+		return TRUE;
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

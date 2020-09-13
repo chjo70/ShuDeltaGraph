@@ -28,7 +28,11 @@ IMPLEMENT_DYNAMIC(CDlgMulti, CDialogEx)
 CDlgMulti::CDlgMulti(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CDlgMulti::IDD, pParent)
 {
+	m_dIMin = -32767;
+	m_dIMax = 32767;
 
+	m_dQMin = -32767;
+	m_dQMax = 32767;
 }
 
 CDlgMulti::~CDlgMulti()
@@ -143,15 +147,19 @@ void CDlgMulti::InitBuffer()
 	m_pfPA = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
 	m_pfIndex = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
 	m_pfIP = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
+	m_pfI = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
+	m_pfQ = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
 
 	m_pFFT = ( float * ) malloc( sizeof(float)*MAX_IQ_DATA );
 
 	// IQ 데이터의 X 인덱스 값
-	m_pGlobalXData = new float[MAX_IQ_DATA*3];
+	m_pGlobalXData = new float[MAX_IQ_DATA*5];
 	for (j = 0; j < MAX_IQ_DATA ; j++) {
 		m_pGlobalXData[j] = (float) (j + 1);
 		m_pGlobalXData[j + MAX_IQ_DATA*1] = (float) (j + 1);
 		m_pGlobalXData[j + MAX_IQ_DATA*2] = (float) (j + 1);
+		m_pGlobalXData[j + MAX_IQ_DATA*3] = (float) (j + 1);
+		m_pGlobalXData[j + MAX_IQ_DATA*4] = (float) (j + 1);
 	}
 
 }
@@ -218,11 +226,12 @@ void CDlgMulti::InitGraph()
 void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 {
 	double d;
-	DWORD dwArray[3] = { PERGB(128,0,198,0), PERGB(128, 0, 198, 198 ), PERGB(128, 198,198,0 ) };
 
-	if( m_enGraph != enGraph || m_enGraph == enUnknownGraph ) {
+	if( m_enGraph != enGraph || m_enGraph == enUnknownGraph || true ) {
 		if( enGraph == enPDWGraph ) {
-			int nLineTypes[3] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID};
+			DWORD dwArray[4] = { PERGB(128,0,198,0), PERGB(128, 0, 198, 198 ), PERGB(198, 198, 198,0 ), PERGB(128, 198,198,0 ) };
+			int nLineTypes[4] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID };
+			int nArray[4] = {1,1,1,1};
 
 			PEreset( m_hPE );
 
@@ -248,27 +257,6 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 
 			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 			PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
-
-			// Set number of Subsets and Points //
-			//PEnset(m_hPE, PEP_nSUBSETS, 3);	
-			//PEnset(m_hPE, PEP_nPOINTS, 10 );	
-
-			double fX, fY;
-			for( int s=0; s< 3; s++ )
-			{
-				//int nOffset = GetRandom(1, 250);
-				for( int p=0; p<10 ; p++ )
-				{										  
-					fX = p;
-					PEvsetcellEx (m_hPE, PEP_faXDATA, s, p, &fX);
-					fY = 0.0;
-					PEvsetcellEx (m_hPE, PEP_faYDATA, s, p, &fY);
-				}
-			}
-
-			// Enable MouseWheel Zoom Smoothness
-			//PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
-			//PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
 
 			// Set DataShadows to show shadows
 			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
@@ -342,16 +330,17 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			//PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
 			//PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
 
-			int nArray[3] = {1,1,1};
-			PEvset (m_hPE, PEP_naMULTIAXESSUBSETS, nArray, 3);
+			PEvset (m_hPE, PEP_naMULTIAXESSUBSETS, nArray, 4 );
 
 			// Add Axis Separator //
 			PEnset(m_hPE, PEP_nMULTIAXESSEPARATORS, PEMAS_THIN);
 
 			// subset colors
-			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 3, dwArray, 0 );
+			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 4, dwArray, 0 );
 
-			PEnset(m_hPE, PEP_nSUBSETS, 3 );
+			PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 4);
+
+			PEnset(m_hPE, PEP_nSUBSETS, 4 );
 			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
 
 			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
@@ -359,6 +348,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, &val);
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 1, &val);
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 2, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 3, &val);
 
 			// Set first axis parameters //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -381,23 +371,36 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
 			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-			d = -60;
+			d = -70.0F;
 			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-			d = 0.0F;
+			d = 10.0F;
 			PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-	
+
 			// Set third axis parameters //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
-			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("DTOA[us]"));
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE );
+			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("펄스폭[ns]"));
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
- 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-			d = 0;
-			PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-			d = 18000000.0F;
-			PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			//d = 0;
+			//PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			//d = 1000.0F;
+			//PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+	
+			// Set fourth axis parameters //
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 3);
+			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("DTOA[us]"));
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE );
+			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
+			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[3] );
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+ 			//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			//d = 0;
+			//PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			//d = 18000000.0F;
+			//PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 
 			// Reset WorkingAxis when done //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
@@ -440,51 +443,158 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			//PEnset(m_hPE, PEP_bAUTOIMAGERESET, FALSE);
 		}
 		else {
-			int nLineTypes[3] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID};
+			DWORD dwArray[5] = { PERGB(128,0,198,0), PERGB(128,0,128,0), PERGB(128, 0, 198, 198 ), PERGB(198, 198, 198,0 ), PERGB(128, 198,198,0 ) };
+			int nLineTypes[5] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID };
+			int nArray[5] = {1,1,1,1,1};
 
 			PEreset( m_hPE );
 
-			PEnset(m_hPE, PEP_nSUBSETS, 3 );
+			// Enable Bar Glass Effect //
+			PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
+
+			PEnset(m_hPE, PEP_nSUBSETS, 5 );
 			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
 
-			int nval;
-			nval = 1;
-			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 0, &nval);
-			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 1, &nval);
-			PEvsetcell(m_hPE, PEP_naMULTIAXESSUBSETS, 2, &nval);
+			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
+			PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
+
+			// Set DataShadows to show shadows
+			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
+
+			PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
+			PEnset(m_hPE, PEP_nGRIDLINECONTROL, PEGLC_BOTH);
+			PEnset(m_hPE, PEP_nGRIDSTYLE, PEGS_DOT);
+			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORIZONTAL);
+			//PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_RO2_NOT);
+
+			// Enable middle mouse dragging //
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);
+
+			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("IQ 그래프"));
+			PEszset(m_hPE, PEP_szSUBTITLE, TEXT("")); // no subtitle
+
+			PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
+			PEnset(m_hPE, PEP_bSHOWLEGEND, FALSE);
+			PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
+
+			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
+			PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER );
+
+			PEnset(m_hPE, PEP_nAUTOMINMAXPADDING, 1);
+
+			PEnset(m_hPE, PEP_nGRADIENTBARS, 8);
+			//PEnset(m_hPE, PEP_nTEXTSHADOWS, PETS_BOLD_TEXT);
+			PEnset(m_hPE, PEP_bMAINTITLEBOLD, TRUE);
+			PEnset(m_hPE, PEP_bSUBTITLEBOLD, TRUE);
+			PEnset(m_hPE, PEP_bLABELBOLD, TRUE);
+			//PEnset(m_hPE, PEP_bLINESHADOWS, TRUE);
+			PEnset(m_hPE, PEP_nFONTSIZE, PEFS_SMALL);
+			//PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
+			PEnset(m_hPE, PEP_nDATAPRECISION, 1);
+
+			PEnset(m_hPE, PEP_nIMAGEADJUSTTOP, 10);
+			PEnset(m_hPE, PEP_nIMAGEADJUSTLEFT, 20);
+			PEnset(m_hPE, PEP_nIMAGEADJUSTRIGHT, 20);
+
+			// Set export defaults //
+			PEnset(m_hPE, PEP_nDPIX, 600);
+			PEnset(m_hPE, PEP_nDPIY, 600);
+
+			PEnset(m_hPE, PEP_nEXPORTSIZEDEF, PEESD_NO_SIZE_OR_PIXEL );
+			PEnset(m_hPE, PEP_nEXPORTTYPEDEF, PEETD_PNG );
+			PEnset(m_hPE, PEP_nEXPORTDESTDEF, PEEDD_CLIPBOARD );
+			PEszset(m_hPE, PEP_szEXPORTUNITXDEF, TEXT("1280"));
+			PEszset(m_hPE, PEP_szEXPORTUNITYDEF, TEXT("768"));
+			PEnset(m_hPE, PEP_nEXPORTIMAGEDPI, 300 );
+
+			PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT2D);
+
+			// Set up cursor //
+			//PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
+
+			// Help see data points //
+			PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
+
+			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
+			//PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_BAR );		
+
+			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
+			PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZPLUSVERT_ZOOM);
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGX, TRUE);  // note that pan gestures require MouseDragging to be enabled 
+			PEnset(m_hPE, PEP_bMOUSEDRAGGINGY, TRUE);  
+
+			// Enable MouseWheel Zoom Smoothness
+			//PEnset(m_hPE, PEP_nMOUSEWHEELZOOMSMOOTHNESS, 5);
+			//PEnset(m_hPE, PEP_nPINCHZOOMSMOOTHNESS, 2);
+
+			PEvset (m_hPE, PEP_naMULTIAXESSUBSETS, nArray, 5);
+
+			// Add Axis Separator //
+			PEnset(m_hPE, PEP_nMULTIAXESSEPARATORS, PEMAS_THIN);
+
+			// subset colors
+			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 5, dwArray, 0 );
+
+			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
+			float val = 0;
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 1, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 2, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 3, &val);
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 4, &val);
 
 			// Match axis color and label to subset label //
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("위상차[도]"));
+			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("I 데이터"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[0] );
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			d = m_dIMin;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			d = m_dIMax; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
+
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
+			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("Q 데이터"));
+			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			d = m_dQMin;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
+			d = m_dQMax; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
+
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
+			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("위상[도]"));
+			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = -180.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 180.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
-			PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 3);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("순시진폭[dBm]"));
-			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
-			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
+			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[3] );
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
 			d = -70.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 10.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
-			PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 4);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("FFT"));
-			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
+			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[4] );
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
  			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
- 			d = 9999940.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
+ 			d = 1.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE );
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 
+			// Axis Sizing //
+			PEnset(m_hPE, PEP_nMULTIAXESSIZING, TRUE);
+
 			// subset colors
-			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 3, dwArray, 0 );
+			PEvsetEx( m_hPE, PEP_dwaSUBSETCOLORS, 0, 5, dwArray, 0 );
 
 			// subset line types //
-			PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 3);
+			PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 5);
 
 			// Manually configure x and y axes //
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
@@ -492,13 +602,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			d = (double) MAX_IQ_DATA;  PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
 
 			// Set XData, it does not change
-			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, MAX_IQ_DATA*3 );
-
-			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
-			float val = 0;
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 0, &val);
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 1, &val);
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, 2, &val);
+			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, MAX_IQ_DATA*5 );
 
 			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("IQ 그래프"));
 			PEszset(m_hPE, PEP_szSUBTITLE, TEXT(""));
@@ -603,6 +707,9 @@ void CDlgMulti::FreeBuffer()
 	free( m_pfIndex );
 	free( m_pfIP );
 	free( m_pFFT );
+
+	free( m_pfI );
+	free( m_pfQ );
 
 	delete [] m_pGlobalXData;
 
@@ -781,7 +888,7 @@ void CDlgMulti::ViewGraph()
 
 	UINT uiToa;
 
-	float fFreq, fPA, fTOA, fFirstToa, fDtoa, fPreviousToa, fXToa;
+	float fFreq, fPA, fPW, fTOA, fFirstToa, fDtoa, fPreviousToa, fXToa;
 
 	uiItem = m_pSonataData->uiItem;
 
@@ -805,7 +912,7 @@ void CDlgMulti::ViewGraph()
 
 			uiToa = temp.wpdw[0];
 			fXToa = FDIV(uiToa, _spOneMicrosec );
-			fTOA = (float) ( fXToa / 1000000. );
+			fTOA = fXToa;
 
 			if( i == 0 ) {
 				fFirstToa = fXToa;
@@ -824,6 +931,9 @@ void CDlgMulti::ViewGraph()
 			uiTemp32 = pPDW->item.amplitude;
 			fPA = FPACNV(uiTemp32);
 
+			uiTemp32 = BIT_MERGE(pPDW->item.pulse_width_h, pPDW->item.pulse_width_l);
+			fPW = FPWCNV( uiTemp32 );
+
 			PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fXToa );
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & fFreq );
 
@@ -831,7 +941,10 @@ void CDlgMulti::ViewGraph()
 			PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & fPA );
 
 			PEvsetcellEx(m_hPE, PEP_faXDATA, 2, i, & fXToa );
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 2, i, & fDtoa );
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 2, i, & fPW );
+
+			PEvsetcellEx(m_hPE, PEP_faXDATA, 3, i, & fXToa );
+			PEvsetcellEx(m_hPE, PEP_faYDATA, 3, i, & fDtoa );
 
 			++ pPDW;
 		}
@@ -852,28 +965,43 @@ void CDlgMulti::ViewGraph()
 		TNEW_IQ *pIQ;
 
 		float fVal1, fVal2;
-		float *pfPA, *pfIndex, *pfIP;
+		float *pfPA, *pfIndex, *pfIP, *pfI, *pfQ;
+
+
 
 		PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("인덱스"));
 
-		PEnset(m_hPE, PEP_nSUBSETS, 3 );
-		PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
+		//PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
 		PEnset(m_hPE, PEP_bANTIALIASGRAPHICS, TRUE);   // Direct2D is often faster with anti alias for some reason. 
 
 		pfPA = m_pfPA;
 		pfIndex = m_pfIndex;
 		pfIP = m_pfIP;
+		pfI = m_pfI;
+		pfQ = m_pfQ;
 
 		pIQ = & m_pSonataData->unRawData.stIQData[0];
+
+		m_dIMax = pIQ->sI;
+		m_dIMin = pIQ->sI;
+
+		m_dQMax = pIQ->sQ;
+		m_dQMin = pIQ->sQ;
 
 		for( i=0 ; i < uiItem ; ++i ) {
 			float fI, fQ, fPA;
 
-			fI = (float) pIQ->sI;
-			fQ = (float) pIQ->sQ;
+			*pfI = fI = (float) pIQ->sI;
+			*pfQ = fQ = (float) pIQ->sQ;
+
+			m_dIMin = min( m_dIMin, *pfI );
+			m_dIMax = max( m_dIMax, *pfI );
+
+			m_dQMin = min( m_dQMin, *pfQ );
+			m_dQMax = max( m_dQMax, *pfQ );
 
 			// 순시 진폭
-			fPA = sqrt( fI * fI + fQ * fQ );
+			fPA = sqrt((fI * fI) + (fQ * fQ));
 			*pfPA++ = (float) (20.*log10( fPA ) ) - (float) 80.;
 
 			if( i == 0 ) {
@@ -882,8 +1010,10 @@ void CDlgMulti::ViewGraph()
 			}
 			else {
 				fVal1 = (float) ( atan2( fQ, fI ) * RAD2DEG );
-				*pfIP = fVal1 - fVal2;
-				fVal2 = fVal1;
+				*pfIP = fVal1;
+
+				//*pfIP = fVal1 - fVal2;
+				//fVal2 = fVal1;
 			}
 			if( *pfIP > 180. ) {
 				*pfIP -= ( 2 * 180. );
@@ -897,15 +1027,19 @@ void CDlgMulti::ViewGraph()
 
 			++ pfIP;
 			++ pIQ;
+			++ pfI;
+			++ pfQ;
 
 		}
 
 		ExecuteFFT( m_pFFT, uiItem, & m_pSonataData->unRawData.stIQData[0] );
 
 		// Perform the actual transfer of data, all y data is repassed //
-		PEvsetEx(m_hPE, PEP_faYDATA, 0, MAX_IQ_DATA, m_pfIP, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024, MAX_IQ_DATA, m_pfPA, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, 16*1024*2, MAX_IQ_DATA, m_pFFT, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, 0, MAX_IQ_DATA, m_pfI, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA, MAX_IQ_DATA, m_pfQ, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA*2, MAX_IQ_DATA, m_pfIP, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA*3, MAX_IQ_DATA, m_pfPA, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA*4, MAX_IQ_DATA, m_pFFT, NULL);
 
 
 		if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D)
@@ -1017,6 +1151,8 @@ void CDlgMulti::ExecuteFFT( float *pfFFT, UINT uiItem, TNEW_IQ *pstIQData )
 	fftw_complex *pP;
 	fftw_plan plan;
 
+	float *pf1FFT, maxFFT=0.0;
+
 	int N = uiItem, nShift;
 
 	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
@@ -1049,9 +1185,18 @@ void CDlgMulti::ExecuteFFT( float *pfFFT, UINT uiItem, TNEW_IQ *pstIQData )
 		++ nShift;
 	}	
 
+	pf1FFT = pfFFT;
 	for( i=0 ; i < N ; ++i ) {
-		*pfFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
-		++ pfFFT;
+		*pf1FFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
+		maxFFT = max( *pf1FFT, maxFFT );
+		++ pf1FFT;
+	}
+
+	// normalize
+	pf1FFT = pfFFT;
+	for( i=0 ; i < N ; ++i ) {
+		*pf1FFT /= maxFFT;
+		++ pf1FFT;
 	}
 
 	fftw_destroy_plan( plan );

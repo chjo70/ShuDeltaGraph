@@ -405,7 +405,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					strVal.Format( _T("%d") , *pcType );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
-					strVal.Format( _T("%12.3f/%12llu") , *pfTOA*1., *pllTOA );
+					strVal.Format( _T("%12.3f/%12llu/%llx") , *pfTOA*1., *pllTOA, *pllTOA );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
@@ -700,6 +700,8 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 	UINT uiDataItems;
 	STR_PDW_DATA *pPDWData;
 
+	double d;
+
 	TCHAR strMainTitleLabel[2][10] = { _T("신호세기"), _T("주파수") } ;
 
 	GetClientRect(&rect);
@@ -737,11 +739,37 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 			double dMax = 5.0F;
 			PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
 
+			// Grid 옵션 설정
+			PEnset(m_hPE, PEP_bMANUALXAXISTICKNLINE, TRUE);
+			d = 10.0F;
+			PEvset(m_hPE, PEP_fMANUALXAXISLINE, &d, 1);
+			d = 2.0;
+			PEvset(m_hPE, PEP_fMANUALXAXISTICK, &d, 1);
+
+			// Ticks draw similar to grid lines //
+			PEnset(m_hPE, PEP_bXAXISLONGTICKS, TRUE);
+			//PEnset(m_hPE, PEP_bYAXISLONGTICKS, TRUE);
+
+			// tick marks only draw outside this diameter //
+			double dPTT = 60.0F;
+			PEvset(m_hPE, PEP_fPOLARTICKTHRESHOLD, &dPTT, 1);
+
+			// major grid lines only draw outside this diameter //
+			double dPLT = 20.0F;
+			PEvset(m_hPE, PEP_fPOLARLINETHRESHOLD, &dPLT, 1);
+
+
+			// 30 degree major grid lines only draw outside this diameter //
+			double dP3T = 1.0F;
+			PEvset(m_hPE, PEP_fPOLAR30DEGTHRESHOLD, &dP3T, 1);
+
 			PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 			PEszset(m_hPE, PEP_szYAXISLABEL, _T("방위[도]"));
 
 			PEszset( m_hPE, PEP_szAXISFORMATX, _T("|,.000|") );
 			PEszset( m_hPE, PEP_szAXISFORMATY, _T("|.0|") );
+
+			PEnset(m_hPE, PEP_dwTICKCOLOR, PERGB( 255,70,70,70));
 
 		}
 		else {
@@ -754,6 +782,25 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 			PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
 			double dMax = 18000.0F;
 			PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
+
+			// Grid 옵션 설정
+			PEnset(m_hPE, PEP_bMANUALXAXISTICKNLINE, TRUE);
+			d = 10.0F;
+			PEvset(m_hPE, PEP_fMANUALXAXISLINE, &d, 1);
+			d = 2.0;
+			PEvset(m_hPE, PEP_fMANUALXAXISTICK, &d, 1);
+
+			// Ticks draw similar to grid lines //
+			PEnset(m_hPE, PEP_bXAXISLONGTICKS, TRUE);
+			//PEnset(m_hPE, PEP_bYAXISLONGTICKS, TRUE);
+
+			// tick marks only draw outside this diameter //
+			double dPTT = 10000.0 - 500.0;
+			PEvset(m_hPE, PEP_fPOLARTICKTHRESHOLD, &dPTT, 1);
+
+			// major grid lines only draw outside this diameter //
+			double dPLT = 15000.0F - 500.0;
+			PEvset(m_hPE, PEP_fPOLARLINETHRESHOLD, &dPLT, 1);
 
 			PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 			PEszset(m_hPE, PEP_szYAXISLABEL, _T("방위[도]"));
@@ -2391,7 +2438,7 @@ void CShuDeltaGraphView::OnDestroy()
 
 void CShuDeltaGraphView::SetFreqRange()
 {
-	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_KFX ) {
+	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_SONATA_SHU || m_pDoc->GetUnitType() == en_KFX ) {
 		_spFreqMin = 500;
 		_spFreqMax = 18000;
 	}
@@ -2406,14 +2453,18 @@ void CShuDeltaGraphView::OnDlgCollist()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp* )AfxGetApp();
-	BOOL chk = pApp->m_pDlgColList->IsWindowVisible();
 
-	if(chk) {
-		pApp->m_pDlgColList->ShowWindow(SW_HIDE);
-	}
-	else {
-		pApp->m_pDlgColList->ShowWindow(SW_SHOW);
-	}
+	pApp->DlgCollist();
+
+// 	BOOL chk = pApp->m_pDlgColList->IsWindowVisible();
+// 
+// 	if(chk) {
+// 		pApp->m_pDlgColList->ShowWindow(SW_HIDE);
+// 	}
+// 	else {
+// 
+// 		pApp->m_pDlgColList->ShowWindow(SW_SHOW);
+// 	}
 
 }
 

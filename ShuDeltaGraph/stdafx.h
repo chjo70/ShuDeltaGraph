@@ -66,6 +66,7 @@ BOOL CreateDir( TCHAR *pPath );
 void SetLocal( bool bLocal );
 CString GetIpAddress();
 int UnicodeToUtf8( char* pUtf8, TCHAR* pUnicode);
+int GetStringInComma( TCHAR *pString, TCHAR *pInBuffer );
 
 #define BUILTIN_IP					_T("192.168.0.66")
 #define OFFICE_IP					_T("10.29.52.175")

@@ -142,4 +142,5 @@ public:
 	afx_msg void OnBnClickedButtonModifyList();
 	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnBnClickedButtonRemoveLiist();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
