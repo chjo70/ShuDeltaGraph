@@ -548,42 +548,46 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("I 데이터"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[0] );
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = m_dIMin;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = m_dIMax; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("Q 데이터"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = m_dQMin;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = m_dQMax; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("위상[도]"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = -180.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 180.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 3);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("순시진폭[dBm]"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[3] );
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
 			d = -70.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 10.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINT);
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 4);
 			PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("FFT"));
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[4] );
+			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
+			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
  			d = 0.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
  			d = 1.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_LINE );
 
 			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 
@@ -680,7 +684,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nCOMPOSITE2D3D, PEC2D_FOREGROUND);
 
 			::InvalidateRect(m_hPE, NULL, FALSE);
-			::UpdateWindow(m_hPE);
+			//::UpdateWindow(m_hPE);
 
 		}
 	}
