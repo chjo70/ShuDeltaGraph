@@ -65,7 +65,7 @@ int UnicodeToUtf8( char* pUtf8, TCHAR* pUnicode);
 #define BUILTIN_IP					_T("192.168.0.66")
 #define OFFICE_IP					_T("10.29.52.175")
 #define MYHOME_IP					_T("192.168.0.156")
-#define MYHOME_IP_2					_T("192.168.0.178")
+#define MYHOME_IP_2					_T("192.168.1.245")
 #define MYHOME_SUBNET				_T("192.168.10")
 #define NO_NETWORK_IP				_T("127.0.0.1")
 

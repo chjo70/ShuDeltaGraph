@@ -954,7 +954,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 	double dMin, dMax;
 
 	TCHAR strMainTitleLabel[2][5][30] = { { _T("방위"), _T("주파수"), _T("DTOA"), _T("신호세기"), _T("펄스폭") },
-																				{ _T("I/Q 데이터"), _T("순시진폭"), _T("위상차"), _T("FFT") } };
+																				{ _T("I/Q 데이터"), _T("순시진폭"), _T("위상"), _T("FFT") } };
 
 	TCHAR strYAxisLabel[6][30] = { _T(""), _T("방위[도]"), _T("주파수[MHz]"), _T("DTOA[us]"), _T("신호세기[dBm]"), _T("펄스폭[ns]") };
 
@@ -1135,7 +1135,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 					pfY = pIQData->pfIP;
 
 					PEszset(m_hPE, PEP_szXAXISLABEL, _T("인덱스"));
-					PEszset(m_hPE, PEP_szYAXISLABEL, _T("위상차[도]"));
+					PEszset(m_hPE, PEP_szYAXISLABEL, _T("위상[도]"));
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
@@ -1301,7 +1301,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 						float fVal;
 
 						for (i = 0; i < uiDataItems; ++i) {
-							fVal = (float) ( pIQHeader->fCenterFreq-500.0 + ( i*1000.0 / MAX_COL_IQ_DATA ) );
+							fVal = (float) ( pIQHeader->fCenterFreq-500.0 + ( i*1000.0 / uiDataItems ) );
 
 							PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fVal);
 						}

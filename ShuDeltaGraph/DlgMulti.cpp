@@ -33,6 +33,8 @@ CDlgMulti::CDlgMulti(CWnd* pParent /*=NULL*/)
 
 	m_dQMin = -32767;
 	m_dQMax = 32767;
+
+	m_uiPreItem = 0;
 }
 
 CDlgMulti::~CDlgMulti()
@@ -136,6 +138,7 @@ void CDlgMulti::InitBuffer()
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	m_pSonataData = pApp->m_pDlgColList->GetSONATAData();
+	m_pSonataData->uiItem = 16 * 1024;
 
 	m_hMulti = CreateEvent( NULL, TRUE, FALSE, NULL );
 
@@ -154,12 +157,12 @@ void CDlgMulti::InitBuffer()
 
 	// IQ 데이터의 X 인덱스 값
 	m_pGlobalXData = new float[MAX_IQ_DATA*5];
-	for (j = 0; j < MAX_IQ_DATA ; j++) {
+	for (j = 0; j < m_pSonataData->uiItem ; j++) {
 		m_pGlobalXData[j] = (float) (j + 1);
-		m_pGlobalXData[j + MAX_IQ_DATA*1] = (float) (j + 1);
-		m_pGlobalXData[j + MAX_IQ_DATA*2] = (float) (j + 1);
-		m_pGlobalXData[j + MAX_IQ_DATA*3] = (float) (j + 1);
-		m_pGlobalXData[j + MAX_IQ_DATA*4] = (float) (j + 1);
+		m_pGlobalXData[j + m_pSonataData->uiItem*1] = (float) (j + 1);
+		m_pGlobalXData[j + m_pSonataData->uiItem*2] = (float) (j + 1);
+		m_pGlobalXData[j + m_pSonataData->uiItem*3] = (float) (j + 1);
+		m_pGlobalXData[j + m_pSonataData->uiItem*4] = (float) (j + 1);
 	}
 
 }
@@ -227,11 +230,18 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 {
 	double d;
 
-	if( m_enGraph != enGraph || m_enGraph == enUnknownGraph || true ) {
+	UINT uiItem;
+
+	uiItem = m_pSonataData->uiItem;
+	if( m_enGraph != enGraph || m_enGraph == enUnknownGraph || m_pSonataData->uiItem != m_uiPreItem ) {
+		DWORD dwArray[5] = { PERGB(128,0,198,0), PERGB(128,198,0,0), PERGB(128, 198, 98, 0 ), PERGB(198, 0, 198, 198 ), PERGB(198, 255, 0,0 ) };
+		int nLineTypes[5] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID };
+		int nArray[5] = {1,1,1,1,1};
+
+		uiItem = m_uiPreItem = m_pSonataData->uiItem;
+		
 		if( enGraph == enPDWGraph ) {
-			DWORD dwArray[4] = { PERGB(128,0,198,0), PERGB(128, 0, 198, 198 ), PERGB(198, 198, 198,0 ), PERGB(128, 198,198,0 ) };
-			int nLineTypes[4] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID };
-			int nArray[4] = {1,1,1,1};
+			TRACE( "\n InitGraphSetting PDW" );
 
 			PEreset( m_hPE );
 
@@ -258,9 +268,6 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 			PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
 
-			// Set DataShadows to show shadows
-			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
-
 			PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
 			PEnset(m_hPE, PEP_nGRIDLINECONTROL, PEGLC_BOTH);
 			PEnset(m_hPE, PEP_nGRIDSTYLE, PEGS_DOT);
@@ -278,7 +285,6 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_bSHOWLEGEND, FALSE);
 			PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
 
-			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
 			PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER );
 
 			PEnset(m_hPE, PEP_nAUTOMINMAXPADDING, 1);
@@ -315,10 +321,6 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			// Set up cursor //
 			//PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
 
-			// Help see data points //
-			PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
-
-			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
 			//PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_BAR );		
 
 			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
@@ -341,7 +343,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 4);
 
 			PEnset(m_hPE, PEP_nSUBSETS, 4 );
-			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
+			PEnset(m_hPE, PEP_nPOINTS, uiItem );
 
 			// Clear out default y data, start with an empty chart, not really noticable with this fast of real-time //
 			float val = 0;
@@ -409,60 +411,42 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nMULTIAXESSIZING, TRUE);
 
 			// Other various properties //
-			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
+			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE );
 			PEnset(m_hPE, PEP_bMARKDATAPOINTS, FALSE);
-			//PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
 
-			// Set some random annotations //       
-			//PEnset(m_hPE, PEP_bALLOWANNOTATIONCONTROL, TRUE);
+			// Set DataShadows to show shadows
+			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_NONE );
 
-			//PEnset(m_hPE, PEP_bZOOMWINDOW, TRUE);
-
-			// v9 features 
-			//PEnset(m_hPE, PEP_bCURSORPROMPTTRACKING, TRUE);
-			//PEnset(m_hPE, PEP_nCURSORPROMPTSTYLE, PECPS_XYVALUES);
-			//PEnset(m_hPE, PEP_nCURSORPROMPTLOCATION, PECPL_TRACKING_TOOLTIP);
-
-			//PEnset(m_hPE, PEP_bTRACKINGCUSTOMDATATEXT, TRUE);
-			//PEnset(m_hPE, PEP_bTRACKINGCUSTOMOTHERTEXT, TRUE);
-
-		// 	PEnset(m_hPE, PEP_bALLOWTITLEHOTSPOTS, TRUE);
-		// 	PEnset(m_hPE, PEP_bALLOWSUBSETHOTSPOTS, TRUE);
-		// 	PEnset(m_hPE, PEP_bALLOWAXISLABELHOTSPOTS, TRUE);
-		// 	PEnset(m_hPE, PEP_bALLOWGRIDNUMBERHOTSPOTSY, TRUE);
-		// 	PEnset(m_hPE, PEP_bALLOWGRIDNUMBERHOTSPOTSX, TRUE);
-		// 
-		// 	PEnset(m_hPE, PEP_bMOUSECURSORCONTROLCLOSESTPOINT, TRUE);
-
-			//PEszset( m_hPE, PEP_szAXISFORMATX, _T("|,|") );
-
-			// Setting to help with new Direct3D rendering and example expanded to 400K points //
-			//PEnset(m_hPE, PEP_bNULLDATAGAPS, FALSE);
-			//PEnset(m_hPE, PEP_nHOURGLASSTHRESHOLD, 10000000);
-			//PEnset(m_hPE, PEP_nFILTER2D, 1);
-			//PEnset(m_hPE, PEP_bAUTOIMAGERESET, FALSE);
+			// This allows plotting of zero values //
+			double dNill = -9999.0F;
+			PEvset(m_hPE, PEP_fNULLDATAVALUE, &dNill, 1);
 		}
 		else {
-			DWORD dwArray[5] = { PERGB(128,0,198,0), PERGB(128,0,128,0), PERGB(128, 0, 198, 198 ), PERGB(198, 198, 198,0 ), PERGB(128, 198,198,0 ) };
-			int nLineTypes[5] = { PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID, PELT_THINSOLID };
-			int nArray[5] = {1,1,1,1,1};
+			TRACE( "\n InitGraphSetting IQ[%d]" , uiItem );
 
-			PEreset( m_hPE );
+			UINT j;
+			for (j = 0; j < uiItem ; j++) {
+				m_pGlobalXData[j] = (float) (j + 1);
+				m_pGlobalXData[j + uiItem*1] = (float) (j + 1);
+				m_pGlobalXData[j + uiItem*2] = (float) (j + 1);
+				m_pGlobalXData[j + uiItem*3] = (float) (j + 1);
+				m_pGlobalXData[j + uiItem*4] = (float) (j + 1);
+			}
+
+			PEreset(m_hPE); // Because 115 create sets AutoImageReset = False, we need to call PEreinitialize to re-filter new data
 
 			// Enable Bar Glass Effect //
 			PEnset(m_hPE, PEP_bBARGLASSEFFECT, TRUE);
 
 			PEnset(m_hPE, PEP_nSUBSETS, 5 );
-			PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
+			PEnset(m_hPE, PEP_nPOINTS, uiItem );
 
 			PEnset(m_hPE, PEP_bPREPAREIMAGES, TRUE);
 			PEnset(m_hPE, PEP_bCACHEBMP, TRUE);
 
-			// Set DataShadows to show shadows
-			PEnset(m_hPE, PEP_nDATASHADOWS, PEDS_SHADOWS);
-
 			PEnset(m_hPE, PEP_bFOCALRECT, FALSE);
 			PEnset(m_hPE, PEP_nGRIDLINECONTROL, PEGLC_BOTH);
+			//PEnset(m_hPE, PEP_bYAXISLONGTICKS, TRUE);
 			PEnset(m_hPE, PEP_nGRIDSTYLE, PEGS_DOT);
 			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORIZONTAL);
 			//PEnset(m_hPE, PEP_nZOOMSTYLE, PEZS_RO2_NOT);
@@ -476,10 +460,10 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 
 			PEnset(m_hPE, PEP_bFIXEDFONTS, TRUE);
 			PEnset(m_hPE, PEP_bSHOWLEGEND, FALSE);
-			PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
+			//PEnset(m_hPE, PEP_nMULTIAXISSTYLE, PEMAS_SEPARATE_AXES);
 
 			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, TRUE);
-			PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER );
+			//PEnset(m_hPE, PEP_nQUICKSTYLE, PEQS_DARK_NO_BORDER );
 
 			PEnset(m_hPE, PEP_nAUTOMINMAXPADDING, 1);
 
@@ -514,10 +498,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			//PEnset(m_hPE, PEP_nCURSORMODE, PECM_DATACROSS);
 
 			// Help see data points //
-			PEnset(m_hPE, PEP_bMARKDATAPOINTS, TRUE);
-
-			PEnset(m_hPE, PEP_bBITMAPGRADIENTMODE, FALSE);
-			//PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_BAR );		
+			PEnset(m_hPE, PEP_bMARKDATAPOINTS, FALSE );
 
 			//PEnset(m_hPE, PEP_nALLOWZOOMING, PEAZ_HORZANDVERT);
 			PEnset(m_hPE, PEP_nMOUSEWHEELFUNCTION, PEMWF_HORZPLUSVERT_ZOOM);
@@ -576,7 +557,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[3] );
 			PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
 			PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
-			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_NONE);
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
 			d = -70.0F;  PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
 			d = 10.0F; PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
 
@@ -600,13 +581,20 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			// subset line types //
 			PEvset(m_hPE, PEP_naSUBSETLINETYPES, nLineTypes, 5);
 
+			// Manually Control Y Axis Grid Line Density //
+			double d = 64.0f;
+			PEvset(m_hPE, PEP_fMANUALXAXISLINE, &d, 1);
+			d = 16.0F;
+			PEvset(m_hPE, PEP_fMANUALXAXISTICK, &d, 1);
+			PEnset(m_hPE, PEP_bMANUALXAXISTICKNLINE, TRUE);
+
 			// Manually configure x and y axes //
 			PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-			d = 1.0;    PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
-			d = (double) MAX_IQ_DATA;  PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
+			d = 0.0;    PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
+			d = (double) uiItem;  PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
 
 			// Set XData, it does not change
-			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, MAX_IQ_DATA*5 );
+			PEvsetW(m_hPE, PEP_faXDATA, m_pGlobalXData, uiItem*5 );
 
 			PEszset(m_hPE, PEP_szMAINTITLE, TEXT("IQ 그래프"));
 			PEszset(m_hPE, PEP_szSUBTITLE, TEXT(""));
@@ -615,6 +603,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_bALLOWBAR, FALSE);
 
 			// v9 features, support for Point plotting method
+			PEnset(m_hPE, PEP_bNOGRIDLINEMULTIPLES, TRUE);
 			PEnset(m_hPE, PEP_bALLOWPOPUP, TRUE);
 			PEnset(m_hPE, PEP_bZOOMWINDOW, TRUE);
 			PEnset(m_hPE, PEP_bSCROLLINGHORZZOOM, TRUE);
@@ -662,8 +651,12 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			PEnset(m_hPE, PEP_nIMAGEADJUSTLEFT, 20);
 
 			// Set export defaults //
-			PEnset(m_hPE, PEP_nDPIX, 600);
-			PEnset(m_hPE, PEP_nDPIY, 600);
+			//PEnset(m_hPE, PEP_nDPIX, 600);
+			//PEnset(m_hPE, PEP_nDPIY, 600);
+
+			// This allows plotting of zero values //
+			double dNill = -9999.0F;
+			PEvset(m_hPE, PEP_fNULLDATAVALUE, &dNill, 1);
 
 			// Setting to help with new Direct3D rendering and example expanded to 400K points //
 		// 	PEnset(m_hPE, PEP_bNULLDATAGAPS, FALSE);
@@ -675,7 +668,7 @@ void CDlgMulti::InitGraphSetting( ENUM_Graph enGraph, bool bForced )
 			//PEszset(m_hPE, PEP_szRIGHTMARGIN, TEXT("XXXXXXXXXXXX" ));		
 			//PEnset(m_hPE, PEP_nIMAGEADJUSTLEFT, 100);
 
-			CMDIFrameWnd* pWnd = (CMDIFrameWnd*) AfxGetApp()->GetMainWnd();
+			//CMDIFrameWnd* pWnd = (CMDIFrameWnd*) AfxGetApp()->GetMainWnd();
 			PEnset(m_hPE, PEP_nRENDERENGINE, PERE_DIRECT3D);
 
 			// Composite2D3D // Faster settings are 1-force only one D2D layer in back, 2-force only one D2D layer in front 
@@ -896,6 +889,8 @@ void CDlgMulti::ViewGraph()
 
 	uiItem = m_pSonataData->uiItem;
 
+	if( uiItem == 0 ) return;
+
 	if( m_pSonataData->enDataType == en_PDW_DATA ) {
 		TNEW_PDW *pPDW;
 		TNEW_PDW temp;
@@ -971,12 +966,10 @@ void CDlgMulti::ViewGraph()
 		float fVal1, fVal2;
 		float *pfPA, *pfIndex, *pfIP, *pfI, *pfQ;
 
-
-
 		PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("인덱스"));
 
 		//PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
-		PEnset(m_hPE, PEP_bANTIALIASGRAPHICS, TRUE);   // Direct2D is often faster with anti alias for some reason. 
+		//PEnset(m_hPE, PEP_bANTIALIASGRAPHICS, TRUE);   // Direct2D is often faster with anti alias for some reason. 
 
 		pfPA = m_pfPA;
 		pfIndex = m_pfIndex;
@@ -1006,7 +999,7 @@ void CDlgMulti::ViewGraph()
 
 			// 순시 진폭
 			fPA = sqrt((fI * fI) + (fQ * fQ));
-			*pfPA++ = (float) (20.*log10( fPA ) ) - (float) 80.;
+			*pfPA = (float) (20.*log10( fPA ) ) - (float) 80.;
 
 			if( i == 0 ) {
 				*pfIP = 0.0;
@@ -1029,6 +1022,7 @@ void CDlgMulti::ViewGraph()
 
 			}
 
+			++ pfPA;
 			++ pfIP;
 			++ pIQ;
 			++ pfI;
@@ -1039,97 +1033,25 @@ void CDlgMulti::ViewGraph()
 		ExecuteFFT( m_pFFT, uiItem, & m_pSonataData->unRawData.stIQData[0] );
 
 		// Perform the actual transfer of data, all y data is repassed //
-		PEvsetEx(m_hPE, PEP_faYDATA, 0, MAX_IQ_DATA, m_pfI, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA, MAX_IQ_DATA, m_pfQ, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA*2, MAX_IQ_DATA, m_pfIP, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA*3, MAX_IQ_DATA, m_pfPA, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, MAX_IQ_DATA*4, MAX_IQ_DATA, m_pFFT, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, 0, uiItem, m_pfI, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, uiItem, uiItem, m_pfQ, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, uiItem*2, uiItem, m_pfIP, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, uiItem*3, uiItem, m_pfPA, NULL);
+		PEvsetEx(m_hPE, PEP_faYDATA, uiItem*4, uiItem, m_pFFT, NULL);
 
-
-		if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D)
+		if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D) {
 			PEreconstruct3dpolygons(m_hPE);
+		}
 		else
 		{
-			PEreinitialize(m_hPE); // Because 115 create sets AutoImageReset = False, we need to call PEreinitialize to re-filter new data
-			PEresetimage(m_hPE, 0, 0);
+			//PEreinitialize(m_hPE); // Because 115 create sets AutoImageReset = False, we need to call PEreinitialize to re-filter new data
+			//PEresetimage(m_hPE, 0, 0);
 		}
-		::InvalidateRect(m_hPE, NULL, FALSE);
+		//::InvalidateRect(m_hPE, NULL, FALSE);
 
-// 		PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,|"));
-// 
-// 		// Set first axis parameters //
-// 		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-// 		PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("위상차[도]"));
-// 		PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
-// 		PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|도"));
-// 		PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[0] );
-// 		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
-// 		// 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-// 		// 	d = 500;
-// 		// 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-// 		// 	d = 18000.0F;
-// 		// 	PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-// 
-// 		// Set second axis parameters //
-// 		PEnset(m_hPE, PEP_nWORKINGAXIS, 1);
-// 		PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("순시진폭[dB]"));
-// 		PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
-// 		PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,| dB"));
-// 		PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[1] );
-// 		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
-// 		// 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-// 		// 	d = -60;
-// 		// 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-// 		// 	d = 0.0F;
-// 		// 	PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-// 
-// 		// Set third axis parameters //
-// 		PEnset(m_hPE, PEP_nWORKINGAXIS, 2);
-// 		PEszset(m_hPE, PEP_szYAXISLABEL, TEXT("크기"));
-// 		PEnset(m_hPE, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE );
-// 		PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
-// 		PEnset(m_hPE, PEP_dwYAXISCOLOR, dwArray[2] );
-// 		PEnset(m_hPE, PEP_nPOINTSIZE, PEPS_MICRO);
-// 		// 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-// 		// 	d = 0;
-// 		// 	PEvset(m_hPE, PEP_fMANUALMINY, &d, 1);
-// 		// 	d = 18000.0F;
-// 		// 	PEvset(m_hPE, PEP_fMANUALMAXY, &d, 1);
-// 
-// 		// Reset WorkingAxis when done //
-// 		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-// 
-// 		PEnset(m_hPE, PEP_nPOINTS, uiItem );
-// 
- 		
+		// Reset WorkingAxis when done //
+		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 
-// 		// Composite2D3D // Faster settings are 1-force only one D2D layer in back, 2-force only one D2D layer in front 
-// 		// Default setting 0 creates 2 D2D layers, one in back ground and one in foreground, allowing normal separation 
-// 		// of graphics as properties dictate.
-// 		PEnset(m_hPE, PEP_nCOMPOSITE2D3D, PEC2D_FOREGROUND);
-// 
-// 		//PEnset(m_hPE, PEP_nSUBSETS, 3 );
-// 		//PEnset(m_hPE, PEP_nPOINTS, uiItem );
-// 		PEnset(m_hPE, PEP_bANTIALIASGRAPHICS, TRUE);
-// 
-// 		PEvsetEx(m_hPE, PEP_faXDATA, uiItem*0, 10000, m_pfIndex, 0 );
-// 		//PEvsetEx(m_hPE, PEP_faYDATA, uiItem*0, 10000, m_pfIP, 0);
-// 
-// 		PEvsetEx(m_hPE, PEP_faXDATA, uiItem*1, 10000, m_pfIndex, 0 );
-// 		//PEvsetEx(m_hPE, PEP_faYDATA, uiItem*1, 10000, m_pfPA, 0);
-// 
-// 		PEvsetEx(m_hPE, PEP_faXDATA, uiItem*2, 10000, m_pfIndex, 0 );
-// 		//PEvsetEx(m_hPE, PEP_faYDATA, uiItem*2, 10000, m_pfPA, 0);
-// 
-// 		double dMin, dMax;
-// 		PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-// 		dMin = 0;
-// 		PEvset(m_hPE, PEP_fMANUALMINX, & dMin, 1);
-// 		dMax = (double) uiItem;
-// 		PEvset(m_hPE, PEP_fMANUALMAXX, & dMax, 1);
-// 
-// 		// Reset WorkingAxis when done //
-// 		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 	}
 
 	::InvalidateRect(m_hPE, NULL, FALSE);

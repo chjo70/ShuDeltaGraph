@@ -204,6 +204,8 @@ enPosition GetPosition()
 		enPos = enBuiltIn;
 	}
 
+	enPos = enMyHome;
+
 	return enPos;
 
 }

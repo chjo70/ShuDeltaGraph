@@ -229,6 +229,7 @@ void CShuSIMDlg::OnReceive( char *pData )
 void CShuSIMDlg::ParseData( void *pData )
 {
 	int i;
+	int power2, nMaxIQData;
 
 	STR_MESSAGE *pstMessage;
 	STR_DATA_CONTENTS *pstData;
@@ -265,7 +266,9 @@ void CShuSIMDlg::ParseData( void *pData )
 		break;
 
 	case REQ_SET_IQCONFIG :
-		MakeResultOfIQMessage( MAX_COL_IQ_DATA );
+		power2 = 9;		// ( rand() % 5 ) + 8;
+		nMaxIQData = (int) pow( 2.0, (double) power2 );
+		MakeResultOfIQMessage( nMaxIQData );
 		Send();
 		break;
 

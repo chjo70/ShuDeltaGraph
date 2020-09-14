@@ -1097,6 +1097,7 @@ void C7IQ::ConvertArray( int iDataItems, int iOffset )
 		*psPA = (float) (20.*log10( *psPA ) ) - (float) 80.;
 
 		// 순시 위상차
+/*
 		if( i == 0 ) {
 			*psIP = 0.0;
 			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
@@ -1114,6 +1115,14 @@ void C7IQ::ConvertArray( int iDataItems, int iOffset )
 		}
 		else {
 
+		}		*/
+		if( i == 0 ) {
+			*psIP = 0.0;
+			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+		}
+		else {
+			fVal1 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+			*psIP = fVal1;
 		}
 
 		// printf( "\n [%3d] %10d %10d" , i+1, *psI, *psQ );
@@ -1247,23 +1256,32 @@ void CIQ::ConvertArray( int iDataItems, int iOffset )
 		*psPA = (float) (20.*log10( *psPA ) ) - (float) 80.;
 
 		// 순시 위상차
+// 		if( i == 0 ) {
+// 			*psIP = 0.0;
+// 			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+// 		}
+// 		else {
+// 			fVal1 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+// 			*psIP = fVal1 - fVal2;
+// 			fVal2 = fVal1;
+// 		}
+// 		if( *psIP > 180. ) {
+// 			*psIP -= ( 2 * 180. );
+// 		}
+// 		else if( *psIP < -180 ) {
+// 			*psIP += ( 2 * 180. );
+// 		}
+// 		else {
+// 
+// 		}
+
 		if( i == 0 ) {
 			*psIP = 0.0;
 			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
 		}
 		else {
 			fVal1 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
-			*psIP = fVal1 - fVal2;
-			fVal2 = fVal1;
-		}
-		if( *psIP > 180. ) {
-			*psIP -= ( 2 * 180. );
-		}
-		else if( *psIP < -180 ) {
-			*psIP += ( 2 * 180. );
-		}
-		else {
-
+			*psIP = fVal1;
 		}
 
 		// printf( "\n [%3d] %10d %10d" , i+1, *psI, *psQ );
@@ -1395,23 +1413,31 @@ void CEIQ::ConvertArray( int iDataItems, int iOffset )
 		*psPA = (float) (20.*log10( *psPA ) ) - (float) 80.;
 
 		// 순시 위상차
+// 		if( i == 0 ) {
+// 			*psIP = 0.0;
+// 			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+// 		}
+// 		else {
+// 			fVal1 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
+// 			*psIP = fVal1 - fVal2;
+// 			fVal2 = fVal1;
+// 		}
+// 		if( *psIP > 180. ) {
+// 			*psIP -= ( 2 * 180. );
+// 		}
+// 		else if( *psIP < -180 ) {
+// 			*psIP += ( 2 * 180. );
+// 		}
+// 		else {
+// 
+// 		}
 		if( i == 0 ) {
 			*psIP = 0.0;
 			fVal2 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
 		}
 		else {
 			fVal1 = (float) ( atan2( *psQ, *psI ) * RAD2DEG );
-			*psIP = fVal1 - fVal2;
-			fVal2 = fVal1;
-		}
-		if( *psIP > 180. ) {
-			*psIP -= ( 2 * 180. );
-		}
-		else if( *psIP < -180 ) {
-			*psIP += ( 2 * 180. );
-		}
-		else {
-
+			*psIP = fVal1;
 		}
 
 		// printf( "\n [%3d] %10d %10d" , i+1, *psI, *psQ );
@@ -1558,48 +1584,50 @@ void CData::ExecuteFFT( int iDataItems, STR_IQ_DATA *pIQData )
 
 	int N = iDataItems, nShift;
 
-	pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
-	pOut = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
-	plan = fftw_plan_dft_1d( N, pIn, pOut, FFTW_FORWARD, FFTW_ESTIMATE );
+	if( iDataItems != 0 ) {
+		pIn = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
+		pOut = ( fftw_complex * ) fftw_malloc( sizeof(fftw_complex) * N );
+		plan = fftw_plan_dft_1d( N, pIn, pOut, FFTW_FORWARD, FFTW_ESTIMATE );
 
-	psI = pIQData->pfI;
-	psQ = pIQData->pfQ;
+		psI = pIQData->pfI;
+		psQ = pIQData->pfQ;
 
-	pP = pIn;
-	for( i=0 ; i < N ; ++i ) {
-		pP[i][0] = *psI;
-		pP[i][1] = *psQ;
+		pP = pIn;
+		for( i=0 ; i < N ; ++i ) {
+			pP[i][0] = *psI;
+			pP[i][1] = *psQ;
 
-		++ psI;
-		++ psQ;
+			++ psI;
+			++ psQ;
+		}
+
+		fftw_execute( plan );
+
+		nShift = ( N / 2 );
+		fftw_complex swap;
+		for( i=0 ; i < (N/2) ; ++i ) {
+			swap[0] = pOut[i][0];
+			swap[1] = pOut[i][1];
+
+			pOut[i][0] = pOut[nShift][0];
+			pOut[i][1] = pOut[nShift][1];
+
+			pOut[nShift][0] = swap[0];
+			pOut[nShift][1] = swap[1];
+
+			++ nShift;
+		}	
+
+		for( i=0 ; i < N ; ++i ) {
+			*psFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
+			++ psFFT;
+
+		}
+
+		fftw_destroy_plan( plan );
+		fftw_free( pIn );
+		fftw_free( pOut );
 	}
-
-	fftw_execute( plan );
-
-	nShift = ( N / 2 );
-	fftw_complex swap;
-	for( i=0 ; i < (N/2) ; ++i ) {
-		swap[0] = pOut[i][0];
-		swap[1] = pOut[i][1];
-
-		pOut[i][0] = pOut[nShift][0];
-		pOut[i][1] = pOut[nShift][1];
-
-		pOut[nShift][0] = swap[0];
-		pOut[nShift][1] = swap[1];
-
-		++ nShift;
-	}	
-
-	for( i=0 ; i < N ; ++i ) {
-		*psFFT = (float) sqrt( pOut[i][0] * pOut[i][0] + pOut[i][1] * pOut[i][1] );
-		++ psFFT;
-
-	}
-
-	fftw_destroy_plan( plan );
-	fftw_free( pIn );
-	fftw_free( pOut );
 }
 
 //////////////////////////////////////////////////////////////////////////

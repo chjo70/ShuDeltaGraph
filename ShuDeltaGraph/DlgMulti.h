@@ -11,7 +11,7 @@ typedef enum {
 
 } ENUM_Graph;
 
-#define MAX_IQ_DATA				(16*1024)
+#define MAX_IQ_DATA				(64*1024)
 
 
 // CDlgMulti 대화 상자입니다.
@@ -42,6 +42,8 @@ private:
 
 	double m_dIMax, m_dIMin;
 	double m_dQMax, m_dQMin;
+
+	UINT m_uiPreItem;
 
 public:
 	HANDLE m_hMulti;

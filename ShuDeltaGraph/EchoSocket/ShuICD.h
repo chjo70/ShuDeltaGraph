@@ -118,7 +118,7 @@ typedef struct {
 
 #define MAX_COL_PDW_DATA			(500)
 #define MAX_COL_INTRA_DATA			(500)
-#define MAX_COL_IQ_DATA				(16*1024)
+#define MAX_COL_IQ_DATA				( (64*1024) + 1024 )
 
 typedef union {
 	unsigned char buffer[MAX_COL_IQ_DATA];

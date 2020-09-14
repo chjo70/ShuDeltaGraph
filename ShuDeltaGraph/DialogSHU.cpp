@@ -503,7 +503,7 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				SetIBkColorOfColList( m_uiColList, 4 );
 
 				MakeIQMessage( m_uiColList );
-					m_pParentDlg->Send( enSHU, m_ptxData );
+				m_pParentDlg->Send( enSHU, m_ptxData );
 
 				//if( pQueueMsg->stData.stColStart.uiCoPulseNum != 0 ) {
 				//}
@@ -520,19 +520,33 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				//
 				memcpy( & m_pRawData->stColList, pColList, sizeof(STR_COL_LIST) );
 
-				memcpy( & m_pRawData->unRawData.stIQData[0], & pQueueMsg->stData.stIQData[0], sizeof(STR_RES_IQ_DATA)*MAX_COL_IQ_DATA );
-				m_pRawData->uiItem = MAX_COL_IQ_DATA;
+				memcpy( & m_pRawData->unRawData.stIQData[0], & pQueueMsg->stData.stIQData[0], sizeof(char)*pQueueMsg->stMsg.uiDataLength );
+				m_pRawData->uiItem = pQueueMsg->stMsg.uiDataLength / sizeof(STR_RES_IQ_DATA);
 
-				m_pParentDlg->InsertIQRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, & m_stColList, m_pRawData );
-				m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
+				if( m_pRawData->uiItem != 0 ) {
+					m_pParentDlg->InsertIQRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, & m_stColList, m_pRawData );
+					m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
-				SetIBkColorOfColList( m_uiColList, -1 );
+					SetIBkColorOfColList( m_uiColList, -1 );
 
-				UpdateColList();
+					UpdateColList();
 
-				ReadyColStart( m_uiColList );
-				MakeSetModeMessage( m_uiColList );
-				m_pParentDlg->Send( enSHU, m_ptxData );
+					ReadyColStart( m_uiColList );
+					MakeSetModeMessage( m_uiColList );
+					m_pParentDlg->Send( enSHU, m_ptxData );
+				}
+				else {
+					//m_pParentDlg->InsertIQRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, & m_stColList, m_pRawData );
+					//m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
+
+					SetIBkColorOfColList( m_uiColList, -1 );
+
+					UpdateColList();
+
+					ReadyColStart( m_uiColList );
+					MakeSetModeMessage( m_uiColList );
+					m_pParentDlg->Send( enSHU, m_ptxData );
+				}
 
 				TRACE( "\n 과제 번호 : %d", m_uiColList );
 
