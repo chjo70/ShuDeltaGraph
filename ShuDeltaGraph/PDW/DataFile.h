@@ -294,7 +294,7 @@ public:
 	{
 		float fDOA;
 
-		fDOA = (float) ( (float) iDOA * (float) 360. ) / (float) 512;
+		fDOA = (float) ( (float) iDOA * (float) 360. ) / (float) 1024;
 		return fDOA;	/* [degree] */
 	} ;
 
