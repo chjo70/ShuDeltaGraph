@@ -72,6 +72,7 @@ typedef struct {
 	float fAOALow, fAOAHgh;
 	float fFreqLow, fFreqHgh;
 	float fPALow, fPAHgh;
+	float fPWLow, fPWHgh;
 	UINT coPulseNum;
 	float fColTime;
 

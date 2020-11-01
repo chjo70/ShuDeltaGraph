@@ -36,6 +36,8 @@ void CDialogRSA::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_AOA_HGH, m_CSpinAOAHgh);
 	DDX_Control(pDX, IDC_SPIN_PA_LOW, m_CSpinPALow);
 	DDX_Control(pDX, IDC_SPIN_PA_HGH, m_CSpinPAHgh);
+	DDX_Control(pDX, IDC_SPIN_PW_LOW, m_CSpinPWLow);
+	DDX_Control(pDX, IDC_SPIN_PW_HGH, m_CSpinPWHgh);
 	DDX_Control(pDX, IDC_SPIN_COL_TIME, m_CSpinColTime);
 	DDX_Control(pDX, IDC_SPIN_COL_NUM, m_CSpinColNum);
 	DDX_Control(pDX, IDC_SPIN_NUM, m_CSpinNum);
@@ -490,6 +492,8 @@ void CDialogRSA::MakeSetModeMessage( UINT uiIndex )
 	pTxData->stSetModeRSA.fFreqHgh = pColList->stColItem.fFreqHgh;
 	pTxData->stSetModeRSA.fPALow = pColList->stColItem.fPALow;
 	pTxData->stSetModeRSA.fPAHgh = pColList->stColItem.fPAHgh;
+	pTxData->stSetModeRSA.fPWLow = pColList->stColItem.fPWLow;
+	pTxData->stSetModeRSA.fPWHgh = pColList->stColItem.fPWHgh;
 	pTxData->stSetModeRSA.coPulseNum = pColList->stColItem.uiColNumber;
 	pTxData->stSetModeRSA.fColTime = pColList->stColItem.fColTime;
 
@@ -526,6 +530,9 @@ void CDialogRSA::GetColListFromList( int iRow, STR_COL_LIST *pColList )
 
 	strTemp = m_ColList.GetItemText( iRow, 4 );
 	swscanf_s( strTemp.GetBuffer(), _T("%f/%f"), & pColList->stColItem.fPALow, & pColList->stColItem.fPAHgh );
+
+	strTemp = m_ColList.GetItemText( iRow, 5 );
+	swscanf_s( strTemp.GetBuffer(), _T("%f/%f"), & pColList->stColItem.fPWLow, & pColList->stColItem.fPWHgh );
 
 }
 
@@ -644,13 +651,23 @@ BOOL CDialogRSA::OnInitDialog()
 
 	m_CSpinPALow.SetDecimalPlaces(1);
 	m_CSpinPALow.SetTrimTrailingZeros(FALSE);
-	m_CSpinPALow.SetRangeAndDelta( -60, 0, 1.0 );
+	m_CSpinPALow.SetRangeAndDelta( -70, 10, 1.0 );
 	m_CSpinPALow.SetPos( (double) m_pParentDlg->m_stColItem.fPALow );
 
 	m_CSpinPAHgh.SetDecimalPlaces(1);
 	m_CSpinPAHgh.SetTrimTrailingZeros(FALSE);
-	m_CSpinPAHgh.SetRangeAndDelta( -60, 0, 1.0 );
+	m_CSpinPAHgh.SetRangeAndDelta( -70, 10, 1.0 );
 	m_CSpinPAHgh.SetPos( (double) m_pParentDlg->m_stColItem.fPAHgh );
+
+	m_CSpinPWLow.SetDecimalPlaces(1);
+	m_CSpinPWLow.SetTrimTrailingZeros(FALSE);
+	m_CSpinPWLow.SetRangeAndDelta( 0, 1000000, 1.0 );
+	m_CSpinPWLow.SetPos( (double) m_pParentDlg->m_stColItem.fPWLow );
+
+	m_CSpinPWHgh.SetDecimalPlaces(1);
+	m_CSpinPWHgh.SetTrimTrailingZeros(FALSE);
+	m_CSpinPWHgh.SetRangeAndDelta( 0, 1000000, 1.0 );
+	m_CSpinPWHgh.SetPos( (double) m_pParentDlg->m_stColItem.fPWHgh );
 
 	m_CSpinColTime.SetDecimalPlaces(1);
 	m_CSpinColTime.SetTrimTrailingZeros(FALSE);
@@ -826,6 +843,7 @@ void CDialogRSA::InitListCtrl( bool bInit )
 		m_ColList.InsertColumn(i++, _T("주파수 범위[MHz]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.2) , -1);
 		m_ColList.InsertColumn(i++, _T("수집 개수/시간[ms]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.25), -1);
 		m_ColList.InsertColumn(i++, _T("세기 범위[dBm]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.15 ), -1);
+		m_ColList.InsertColumn(i++, _T("펄스폭[ns]"), LVCFMT_LEFT, (int) ( rt.Width() * 0.15 ), -1);
 		m_ColList.InsertColumn(i++, _T("기타"), LVCFMT_LEFT, (int) (rt.Width() * 0.07), -1);
 
 		m_ColList.SetGridLines(TRUE);
@@ -936,7 +954,7 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 #ifdef EXAUTOMATION
 	long l, lMaxRow;
 	float fValue1, fValue2;
-	CString strNumber, strDOARange, strFreqRange, strColTime, strPARange;
+	CString strNumber, strDOARange, strFreqRange, strColTime, strPARange, strPWRange;
 
 	// 엑셀 수집 파일 로딩하기...
 	CXLEzAutomation XL(FALSE); // FALSE: 처리 과정을 화면에 보이지 않는다
@@ -952,6 +970,7 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 		strFreqRange = XL.GetCellValue( 3, l );
 		strColTime = XL.GetCellValue( 4, l );
 		strPARange = XL.GetCellValue( 5, l );
+		strPWRange = XL.GetCellValue( 6, l );
 
 		strNumber.Replace( _T(".0"), _T("") );
 		nIndex = m_ColList.InsertItem( INT_MAX, strNumber, NULL );
@@ -967,10 +986,14 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 		swscanf_s( strPARange.GetBuffer(), _T("%f/%f"), & fValue1, &fValue2 );
 		strPARange.Format( _T("%.1f/%.1f"), fValue1, fValue2 );
 
+		swscanf_s( strPWRange.GetBuffer(), _T("%f/%f"), & fValue1, &fValue2 );
+		strPWRange.Format( _T("%.1f/%.1f"), fValue1, fValue2 );
+
 		m_ColList.SetItem( nIndex, 1, LVIF_TEXT, strDOARange, NULL, NULL, NULL, NULL);
 		m_ColList.SetItem( nIndex, 2, LVIF_TEXT, strFreqRange, NULL, NULL, NULL, NULL);
 		m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
 		m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strPARange, NULL, NULL, NULL, NULL);
+		m_ColList.SetItem( nIndex, 5, LVIF_TEXT, strPWRange, NULL, NULL, NULL, NULL);
 	}
 
 	XL.ReleaseExcel();
@@ -1020,7 +1043,7 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 #else
 	FILE *pCSVFile;
 
-	TCHAR szCheck[10], szNumber[100], szDOARange[100], szFreqRange[100], szColTime[100], szPARange[100];
+	TCHAR szCheck[10], szNumber[100], szDOARange[100], szFreqRange[100], szColTime[100], szPARange[100], szPWRange[100];
 
 	setlocale( LC_ALL, ".OCP" );
 	if( 0 == _wfopen_s( & pCSVFile, T2W(strPathname.GetBuffer()), _T("rt") ) ) {
@@ -1054,6 +1077,9 @@ void CDialogRSA::OpenXLSViewList( CString strPathname )
 
 			iIndex += GetStringInComma( szPARange, & buffer[iIndex] );
 			m_ColList.SetItem( nIndex, 4, LVIF_TEXT, szPARange, NULL, NULL, NULL, NULL);
+
+			iIndex += GetStringInComma( szPWRange, & buffer[iIndex] );
+			m_ColList.SetItem( nIndex, 5, LVIF_TEXT, szPWRange, NULL, NULL, NULL, NULL);
 		}
 
 		fclose( pCSVFile );
@@ -1098,6 +1124,9 @@ void CDialogRSA::OnDblclkListColList(NMHDR *pNMHDR, LRESULT *pResult)
 
 		m_CSpinPALow.SetPos( (double) stColList.stColItem.fPALow );
 		m_CSpinPAHgh.SetPos( (double) stColList.stColItem.fPAHgh );
+
+		m_CSpinPWLow.SetPos( (double) stColList.stColItem.fPWLow );
+		m_CSpinPWHgh.SetPos( (double) stColList.stColItem.fPWHgh );
 
 		m_CSpinColTime.SetPos( (double) stColList.stColItem.fColTime );
 		m_CSpinColNum.SetPos( (double) stColList.stColItem.uiColNumber );
@@ -1147,6 +1176,9 @@ void CDialogRSA::OnBnClickedButtonAddList()
 	m_ColList.SetItem( nIndex, 3, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 	strTemp.Format(_T("%.1f/%.1f"), stColList.stColItem.fPALow, stColList.stColItem.fPAHgh );
 	m_ColList.SetItem( nIndex, 4, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
+
+	strTemp.Format(_T("%.1f/%.1f"), stColList.stColItem.fPWLow, stColList.stColItem.fPWHgh );
+	m_ColList.SetItem( nIndex, 5, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 	//m_ColList.SetItemState( -1, 0, LVIS_SELECTED|LVIS_FOCUSED );
 	m_ColList.SetItemState( nIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
@@ -1215,6 +1247,8 @@ void CDialogRSA::GetColItem( STR_COL_ITEM *pstColItem )
 	pstColItem->fFreqHgh = (float) m_CSpinFreqHgh.GetPos();
 	pstColItem->fPALow = (float) m_CSpinPALow.GetPos();
 	pstColItem->fPAHgh = (float) m_CSpinPAHgh.GetPos();
+	pstColItem->fPWLow = (float) m_CSpinPWLow.GetPos();
+	pstColItem->fPWHgh = (float) m_CSpinPWHgh.GetPos();
 	pstColItem->fColTime = (float) m_CSpinColTime.GetPos();
 	pstColItem->uiColNumber = (UINT) m_CSpinColNum.GetPos();
 }
@@ -1231,7 +1265,7 @@ void CDialogRSA::GetColItem( STR_COL_ITEM *pstColItem )
 void CDialogRSA::OnBnClickedButtonModifyList()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	CString strNumber, strMode, strCenterFreq, strColTime, strThreshold;
+	CString strNumber, strMode, strCenterFreq, strColTime, strPA, strPW;
 
 	STR_COL_LIST stColList;
 	STR_COL_LIST *pColList;
@@ -1246,13 +1280,14 @@ void CDialogRSA::OnBnClickedButtonModifyList()
 	memcpy( pColList, & stColList, sizeof(STR_COL_LIST) );
 
 	// 목록창에 전시
-	MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strThreshold, & stColList );
+	MakeColListString( & strNumber, & strMode, & strCenterFreq, & strColTime, & strPA, & strPW, & stColList );
 
 	m_ColList.SetItem( m_iSelItem, 0, LVIF_TEXT, strNumber, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 1, LVIF_TEXT, strMode, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 2, LVIF_TEXT, strCenterFreq, NULL, NULL, NULL, NULL);
 	m_ColList.SetItem( m_iSelItem, 3, LVIF_TEXT, strColTime, NULL, NULL, NULL, NULL);
-	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strThreshold, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 4, LVIF_TEXT, strPA, NULL, NULL, NULL, NULL);
+	m_ColList.SetItem( m_iSelItem, 5, LVIF_TEXT, strPW, NULL, NULL, NULL, NULL);
 }
 
 
@@ -1261,7 +1296,7 @@ void CDialogRSA::OnBnClickedButtonSave()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString strPathName;
 
-	CString strNumber, strAOARange, strFreqRange, strColTime, strPARange;
+	CString strNumber, strAOARange, strFreqRange, strColTime, strPARange, strPWRange;
 
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( FALSE );
 	GetDlgItem( IDC_BUTTON_SAVE )->EnableWindow( FALSE );
@@ -1320,14 +1355,14 @@ void CDialogRSA::OnBnClickedButtonSave()
 				for ( i = 0; i < m_ColList.GetItemCount(); i++) {
 					GetColListFromList( i, & stColList );
 
-					MakeColListString( & strNumber, & strAOARange, & strFreqRange, & strColTime, & strPARange, & stColList );
+					MakeColListString( & strNumber, & strAOARange, & strFreqRange, & strColTime, & strPARange, & strPWRange, & stColList );
 
 					if( TRUE == m_ColList.GetCheck(i) ) {
-						fwprintf_s( pCSVFile, _T("\nO,%s,%s,%s,%s,%s" ), strNumber, strAOARange, strFreqRange, strColTime, strPARange );
+						fwprintf_s( pCSVFile, _T("\nO,%s,%s,%s,%s,%s,%s," ), strNumber, strAOARange, strFreqRange, strColTime, strPARange, strPWRange );
 
 					}
 					else {
-						fwprintf_s( pCSVFile, _T("\nX,%s,%s,%s,%s,%s" ), strNumber, strAOARange, strFreqRange, strColTime, strPARange );
+						fwprintf_s( pCSVFile, _T("\nX,%s,%s,%s,%s,%s,%s," ), strNumber, strAOARange, strFreqRange, strColTime, strPARange, strPWRange );
 					}
 				}
 
@@ -1342,7 +1377,7 @@ void CDialogRSA::OnBnClickedButtonSave()
 	GetDlgItem( IDC_BUTTON_OPEN )->EnableWindow( TRUE );
 }
 
-void CDialogRSA::MakeColListString( CString *pstrNum, CString *pstrAOARange, CString *pstrFreqRange, CString *pstrColTime, CString *pstrPARange, STR_COL_LIST *pstColList )
+void CDialogRSA::MakeColListString( CString *pstrNum, CString *pstrAOARange, CString *pstrFreqRange, CString *pstrColTime, CString *pstrPARange, CString *pstrPWRange, STR_COL_LIST *pstColList )
 {
 	pstrNum->Format(_T("%d"), pstColList->stColItem.uiNo );
 
@@ -1353,6 +1388,8 @@ void CDialogRSA::MakeColListString( CString *pstrNum, CString *pstrAOARange, CSt
 	pstrColTime->Format(_T("%d/%.1f"), pstColList->stColItem.uiColNumber, pstColList->stColItem.fColTime );
 
 	pstrPARange->Format(_T("%.1f/%.1f"), pstColList->stColItem.fPALow, pstColList->stColItem.fPAHgh );
+
+	pstrPWRange->Format(_T("%.1f/%.1f"), pstColList->stColItem.fPWLow, pstColList->stColItem.fPWHgh );
 
 
 }
@@ -1423,8 +1460,9 @@ void CDialogRSA::MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void
 
 	case REQ_SET_CONFIG:
 		*pstrTemp1 = _T("<<수집 파라메터 설정");
-		pstrTemp2->Format( _T("%.1f-%.1f[도], %.1f-%.1f[MHz], , %.1f-%.1f[dBm], %d[개수], %.1f[ms]"), pstData->stSetModeRSA.fAOALow, pstData->stSetModeRSA.fAOAHgh, pstData->stSetModeRSA.fFreqLow, pstData->stSetModeRSA.fFreqHgh,
+		pstrTemp2->Format( _T("%.1f-%.1f[도], %.1f-%.1f[MHz], %.1f-%.1f[dBm], %.1f-%.1f[ns], %d[개수], %.1f[ms]"), pstData->stSetModeRSA.fAOALow, pstData->stSetModeRSA.fAOAHgh, pstData->stSetModeRSA.fFreqLow, pstData->stSetModeRSA.fFreqHgh,
 			pstData->stSetModeRSA.fPALow, pstData->stSetModeRSA.fPAHgh,
+			pstData->stSetModeRSA.fPWLow, pstData->stSetModeRSA.fPWHgh,
 			pstData->stSetModeRSA.coPulseNum , pstData->stSetModeRSA.fColTime );
 		break;
 

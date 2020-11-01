@@ -725,6 +725,12 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPAHgh );
 	::WritePrivateProfileString( L"COL_LIST_RSA", L"PA_HGH", szBuffer, m_strIniFile );
 
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPWLow );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"PW_LOW", szBuffer, m_strIniFile );
+
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPWHgh );
+	::WritePrivateProfileString( L"COL_LIST_RSA", L"PW_HGH", szBuffer, m_strIniFile );
+
 
 }
 
@@ -802,6 +808,12 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 
 	::GetPrivateProfileString( L"COL_LIST_RSA", L"PA_HGH", L"0", szBuffer, 100, m_strIniFile );
 	pstColList->fPAHgh = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"PW_LOW", L"-70", szBuffer, 100, m_strIniFile );
+	pstColList->fPWLow = (float) _wtof(szBuffer);
+
+	::GetPrivateProfileString( L"COL_LIST_RSA", L"PW_HGH", L"0", szBuffer, 100, m_strIniFile );
+	pstColList->fPWHgh = (float) _wtof(szBuffer);
 
 }
 

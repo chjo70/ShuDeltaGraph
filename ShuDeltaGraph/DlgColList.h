@@ -53,6 +53,7 @@ typedef struct {
 	float fAOALow, fAOAHgh;
 	float fFreqLow, fFreqHgh;
 	float fPALow, fPAHgh;
+	float fPWLow, fPWHgh;
 
 	// 공통 정보
 	float fColTime;

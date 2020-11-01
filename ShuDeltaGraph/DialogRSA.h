@@ -75,7 +75,7 @@ private:
 	void SetTotalColList();
 	void GetColItem( STR_COL_ITEM *pstColItem );
 
-	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrThreshold, STR_COL_LIST *pstColList );
+	void MakeColListString( CString *pstrNum, CString *pstrMode, CString *pstrCenterFreq, CString *pstrColTime, CString *pstrPARange, CString *pstrPWRange, STR_COL_LIST *pstColList );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
 	int GetNextNo();
@@ -130,6 +130,8 @@ public:
 	CNumSpinCtrl m_CSpinAOAHgh;
 	CNumSpinCtrl m_CSpinPALow;
 	CNumSpinCtrl m_CSpinPAHgh;
+	CNumSpinCtrl m_CSpinPWLow;
+	CNumSpinCtrl m_CSpinPWHgh;
 	CNumSpinCtrl m_CSpinColTime;
 	CNumSpinCtrl m_CSpinColNum;
 	CNumSpinCtrl m_CSpinNum;

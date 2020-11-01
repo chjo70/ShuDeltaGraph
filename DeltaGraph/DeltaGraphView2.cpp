@@ -65,6 +65,8 @@ CDeltaGraphView2::CDeltaGraphView2()
 {
 	// TODO: 여기에 생성 코드를 추가합니다.
 	CLEAR_EASYSIZE;
+
+	m_hPE = 0;
 }
 
 CDeltaGraphView2::~CDeltaGraphView2()
@@ -311,6 +313,10 @@ void CDeltaGraphView2::ClearZoomInfo()
 {
 	m_VecZoomInfo.clear();
 
+	if( m_VecZoomInfo.size() == 0 ) {
+		GetDlgItem( IDC_BUTTON_FILTER_ZOOMOUT )->EnableWindow( FALSE );
+	}
+
 }
 
 /**
@@ -447,7 +453,11 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 
 	if( enSubGraph == enUnselectedSubGraph ) {
 		GetClientRect( &rect );
-		m_hPE = PEcreate(PECONTROL_SGRAPH, WS_VISIBLE, &rect, m_hWnd, 1001);
+		if( m_hPE ) { 
+			PEdestroy( m_hPE ); 
+		}
+
+		m_hPE = PEcreate(PECONTROL_SGRAPH, WS_VISIBLE, &rect, m_hWnd, 1001); 
 
 		if( m_hPE )
 		{
@@ -1198,15 +1208,21 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
   * @date      2020/03/12 22:41:47
   * @warning   
   */
- void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
- {
-	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	 int iCombo= m_CComboYAxis.GetCurSel() + 1;
+void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int iCombo= m_CComboYAxis.GetCurSel() + 1;
 
-	 ClearGraph();
-	 DrawGraph( (ENUM_SUB_GRAPH) iCombo );
+	//InitGraph( enUnselectedSubGraph );
+	PEreinitialize( m_hPE );
+	::SendMessage( m_hPE, WM_COMMAND, (WPARAM) MAKELONG(53053, 0), 0L);
 
- }
+	ClearZoomInfo();
+
+	ClearGraph();
+	DrawGraph( (ENUM_SUB_GRAPH) iCombo );
+
+}
 
 
  /**
@@ -1712,6 +1728,10 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 		else if( fValue > 1000.0 ) {
 			swprintf_s( szUnit, _countof(szUnit), _T("[ms]") );
 			fReturn = fValue / 1000.0;
+		}
+		else {
+			swprintf_s( szUnit, _countof(szUnit), _T("[us]") );
+			fReturn = fValue;
 		}
 	}
 	else {
