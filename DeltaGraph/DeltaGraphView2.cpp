@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(CDeltaGraphView2, CFormView)
 	ON_CBN_SELCHANGE(IDC_COMBO_LINETYPE, &CDeltaGraphView2::OnCbnSelchangeComboLinetype)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_APPLY, &CDeltaGraphView2::OnBnClickedButtonFilterApply)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_DEAPPLY, &CDeltaGraphView2::OnBnClickedButtonFilterDeapply)
+	ON_BN_CLICKED(IDC_BUTTON_RUN_SIGANAL, &CDeltaGraphView2::OnBnClickedButtonRunSigAnal)
 	ON_CBN_SELCHANGE(IDC_COMBO_POINTSIZE, &CDeltaGraphView2::OnCbnSelchangeComboPointsize)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_ZOOMOUT, &CDeltaGraphView2::OnBnClickedButtonFilterZoomout)
 	ON_CBN_SELCHANGE(IDC_COMBO_DV, &CDeltaGraphView2::OnCbnSelchangeComboDv)
@@ -1299,9 +1300,12 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
  void CDeltaGraphView2::OnCbnSelchangeComboLinetype()
  {
 	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	 int iCombo= m_CComboLineType.GetCurSel();
+	int iCombo= m_CComboLineType.GetCurSel();
 
-	 switch( iCombo ) {
+	GetDlgItem( IDC_COMBO_POINTSIZE )->EnableWindow( iCombo != 3 );
+
+
+	switch( iCombo ) {
 		case 0 :
 			{
 				// subset line types //
@@ -1398,78 +1402,8 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 	enSubGraph = ( ENUM_SUB_GRAPH ) ( m_CComboYAxis.GetCurSel() + 1 );
 
 	if( m_VecZoomInfo.size() != 0 ) {
- 		switch( enSubGraph ) {
-		case enSubMenu_1 :
-			if (enDataType == en_PDW_DATA) {
-				PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
+		GetFilterSetup( & m_strFilterSetup, enSubGraph, enDataType );
 
-				PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dAoaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dAoaMax );
-
-			}
-			else {
-
-			}
-			break;
-		case enSubMenu_2 :
-			if (enDataType == en_PDW_DATA) {
-				PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
-
-				PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dFrqMin );
-				PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dFrqMax );
-			}
-			else {
-
-			}
-			break;
-
-		case enSubMenu_3 :		// 시간대 DTOA
-			if (enDataType == en_PDW_DATA) {
-				PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
-
-				PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dDtoaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dDtoaMax );
-			}
-			else {
-
-			}
-			break;
-
-		case enSubMenu_4 :
-			if (enDataType == en_PDW_DATA) {
-				PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
-
-				PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dPAMin );
-				PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dPAMax );
-			}
-			else {
-
-			}
-			break;
-
-		case enSubMenu_5 :
-			if (enDataType == en_PDW_DATA) {
-				PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
-				PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
-
-				PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dPWMin );
-				PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dPWMax );
-			}
-			else {
-
-			}
-			break;
-
-		default:
-			break;
-		}
-
-		m_strFilterSetup.enSubGraph = enSubGraph;
-	
 		DrawGraph( enSubGraph );
 
 		UpdateFilterToolTip();
@@ -1477,6 +1411,82 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 	else {
 		AfxMessageBox( _T("기본 화면 입니다 ! 필터링 할 이유가 없습니다!!!" ) );
 	}
+
+ }
+
+ void CDeltaGraphView2::GetFilterSetup( STR_FILTER_SETUP *pstrFilterSetup, ENUM_SUB_GRAPH enSubGraph, ENUM_DataType enDataType )
+ {
+	 switch( enSubGraph ) {
+	 case enSubMenu_1 :
+		 if (enDataType == en_PDW_DATA) {
+			 PEvget(m_hPE, PEP_fZOOMMINX, & pstrFilterSetup->dToaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXX, & pstrFilterSetup->dToaMax );
+
+			 PEvget(m_hPE, PEP_fZOOMMINY, & pstrFilterSetup->dAoaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXY, & pstrFilterSetup->dAoaMax );
+
+		 }
+		 else {
+
+		 }
+		 break;
+	 case enSubMenu_2 :
+		 if (enDataType == en_PDW_DATA) {
+			 PEvget(m_hPE, PEP_fZOOMMINX, & pstrFilterSetup->dToaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXX, & pstrFilterSetup->dToaMax );
+
+			 PEvget(m_hPE, PEP_fZOOMMINY, & pstrFilterSetup->dFrqMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXY, & pstrFilterSetup->dFrqMax );
+		 }
+		 else {
+
+		 }
+		 break;
+
+	 case enSubMenu_3 :		// 시간대 DTOA
+		 if (enDataType == en_PDW_DATA) {
+			 PEvget(m_hPE, PEP_fZOOMMINX, & pstrFilterSetup->dToaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXX, & pstrFilterSetup->dToaMax );
+
+			 PEvget(m_hPE, PEP_fZOOMMINY, & pstrFilterSetup->dDtoaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXY, & pstrFilterSetup->dDtoaMax );
+		 }
+		 else {
+
+		 }
+		 break;
+
+	 case enSubMenu_4 :
+		 if (enDataType == en_PDW_DATA) {
+			 PEvget(m_hPE, PEP_fZOOMMINX, & pstrFilterSetup->dToaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXX, & pstrFilterSetup->dToaMax );
+
+			 PEvget(m_hPE, PEP_fZOOMMINY, & pstrFilterSetup->dPAMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXY, & pstrFilterSetup->dPAMax );
+		 }
+		 else {
+
+		 }
+		 break;
+
+	 case enSubMenu_5 :
+		 if (enDataType == en_PDW_DATA) {
+			 PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
+
+			 PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dPWMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dPWMax );
+		 }
+		 else {
+
+		 }
+		 break;
+
+	 default:
+		 break;
+	 }
+
+	 m_strFilterSetup.enSubGraph = enSubGraph;
 
  }
 
@@ -1524,25 +1534,31 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 	 UpdateToolTip( szBuffer, GetDlgItem(IDC_BUTTON_FILTER_APPLY) );
  }
 
- /**
-  * @brief     
-  * @return    void
-  * @author    조철희 (churlhee.jo@lignex1.com)
-  * @version   0.0.1
-  * @date      2020/03/15 16:26:20
-  * @warning   
-  */
- void CDeltaGraphView2::OnBnClickedButtonFilterDeapply()
- {
-	 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	 GetDlgItem(IDC_BUTTON_FILTER_DEAPPLY)->EnableWindow( FALSE );
+/**
+ * @brief     
+ * @return    void
+ * @author    조철희 (churlhee.jo@lignex1.com)
+ * @version   0.0.1
+ * @date      2020/03/15 16:26:20
+ * @warning   
+ */
+void CDeltaGraphView2::OnBnClickedButtonFilterDeapply()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	GetDlgItem(IDC_BUTTON_FILTER_DEAPPLY)->EnableWindow( FALSE );
 
-	 ClearFilterSetup();
+	ClearFilterSetup();
 
-	 ENUM_SUB_GRAPH enSubGraph= (ENUM_SUB_GRAPH ) ( m_CComboYAxis.GetCurSel() + 1 );
-	 DrawGraph( enSubGraph );
+	ENUM_SUB_GRAPH enSubGraph= (ENUM_SUB_GRAPH ) ( m_CComboYAxis.GetCurSel() + 1 );
+	DrawGraph( enSubGraph );
 
- }
+}
+
+void CDeltaGraphView2::OnBnClickedButtonRunSigAnal()
+{
+
+
+}
 
 
  /**
@@ -1826,7 +1842,7 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 	if( enDataType == en_PDW_DATA ) {
 		if( fValue > 1000000.0 ) {
 			swprintf_s( szUnit, _countof(szUnit), _T("[s]") );
-			fReturn = fValue / 1000000.0;
+			fReturn = fValue / (float) 1000000.0;
 		}
 		else if( fValue > 1000.0 ) {
 			swprintf_s( szUnit, _countof(szUnit), _T("[ms]") );
@@ -1968,6 +1984,10 @@ void CDeltaGraphView2::OnBnClickedButtonFilterZoomout()
 		m_VecZoomInfo.pop_back();
 
 		strZoomInfo = m_VecZoomInfo.back();
+
+		if( m_enSubGraph != strZoomInfo.enSubGraph ) {
+			DrawGraph( strZoomInfo.enSubGraph );
+		}
 
 		PEvset( m_hPE, PEP_fZOOMMINX, & strZoomInfo.dZoomMinX, 1);
 		PEvset( m_hPE, PEP_fZOOMMAXX, & strZoomInfo.dZoomMaxX, 1);

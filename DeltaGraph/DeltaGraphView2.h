@@ -73,6 +73,8 @@ private:
 	void SetGraphPointsize();
 	void UpdateZoomButton();
 
+	void GetFilterSetup( STR_FILTER_SETUP *pstrFilterSetup, ENUM_SUB_GRAPH enSubGraph, ENUM_DataType enDataType );
+
 public:
 	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
 
@@ -135,6 +137,7 @@ public:
 	CXColorStatic m_CStaticX2Unit;
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedButtonFilterZoomout();
+	afx_msg void OnBnClickedButtonRunSigAnal();
 	CComboBox m_CComboDV;
 	afx_msg void OnCbnSelchangeComboDv();
 };

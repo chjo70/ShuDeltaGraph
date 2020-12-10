@@ -115,6 +115,8 @@
 #define IDC_STATIC_X2UNIT               1017
 #define IDC_COMBO_POINTSIZE2            1018
 #define IDC_COMBO_DV                    1018
+#define IDC_BUTTON_FILTER_DEAPPLY2      1019
+#define IDC_BUTTON_RUN_SIGANAL          1019
 #define IDC_EDIT_FREQ                   1023
 
 // Next default values for new objects
