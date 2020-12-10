@@ -592,6 +592,7 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 			case RES_RAWDATA_PDW :
 				m_pParentDlg->InitUnitRes( enSHU );
+				m_pParentDlg->InitUnitRes( enSHU );
 				//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
 				//SetIBkColorOfColList( m_uiColList, 4 );
 
@@ -601,7 +602,7 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 				if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
 					SetIBkColorOfColList( m_uiColList, 4 );
 
-					m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enSHU );
+					m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enSHU, & m_stResCol );
 					m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
 					SetIBkColorOfColList( m_uiColList, -1 );

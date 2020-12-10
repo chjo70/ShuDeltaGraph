@@ -15,6 +15,8 @@ using namespace std;
 
 #define			MAX_RAWDATA_SIZE				_max( (sizeof(SRxPDWHeader) + sizeof(SRXPDWDataRGroup)*PDW_ITEMS), sizeof(TNEW_IQ)*IQ_ITEMS )	// 2,432,052
 
+#define			INIT_VAL			(-1.0)
+
 #define	RAD2DEG			(180./M_PI)		// 57.295779513082320876798154814114
 
 typedef enum {
@@ -46,7 +48,8 @@ typedef enum {
 	en_SONATA_SHU,
 	en_ELINT,
 	en_701,
-	en_KFX
+	en_KFX,
+	en_ZPOCKETSONATA,
 
 } ENUM_UnitType;
 
@@ -55,10 +58,15 @@ typedef union {
 	TNEW_PDW stPDWData[MAX_SONATA_DATA];
 	TNEW_IQ stIQData[MAX_SONATA_DATA];
 
+	DMAPDW stZPDWData[MAX_SONATA_DATA];
+
 } UNI_SONATA_DATA;
 
 typedef struct {
 	UINT uiItem;
+
+	ENUM_UnitID m_enUnitID;
+	ENUM_BoardID m_enBoardID;
 	ENUM_DataType enDataType;
 
 	UNI_SONATA_DATA unRawData;
@@ -91,7 +99,7 @@ typedef struct {
 	float *pfPA;
 	float *pfDTOA;
 
-	_TOA *pllTOA;
+	_TOA *pullTOA;
 
 	char *pcType;			// [신호형태]
 	char *pcDV;				// [DV]
@@ -174,7 +182,7 @@ public:
 	virtual void Alloc( int nItems=0 )=0;
 	virtual void Free()=0;
 	virtual void ReadDataHeader() = 0;
-	virtual void ConvertArray( int iDataItems, int iOffset=0 ) = 0;
+	virtual void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL ) = 0;
 	virtual void *GetData() = 0;
 	virtual void *GetHeader() = 0;
 };
@@ -191,7 +199,7 @@ public:
 	void Alloc( int nItems=0 );
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset=0 );
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
 	void *GetData();
 	void *GetHeader() { return NULL; }
 
@@ -210,7 +218,7 @@ public:
 	void Alloc( int iItems=0 );
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset=0 );
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
 	void *GetData();
 	void *GetHeader() { return NULL; }
 };
@@ -230,7 +238,7 @@ public:
 	void Alloc( int iItems=0 );
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset=0 );
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
 	void *GetData();
 	void *GetHeader() { return NULL; }
 
@@ -249,7 +257,7 @@ public:
 	void Alloc( int iItems=0 );
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset=0 );
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
 	void *GetData();
 	void *GetHeader() { return NULL; }
 };
@@ -267,7 +275,7 @@ public:
 	void Alloc( int iItems=0 );
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset=0 );
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
 	void *GetData();
 	void *GetHeader() { return NULL; }
 };
@@ -285,7 +293,7 @@ public:
 	void Alloc(int iItems=0);
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset=0 );
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
 	void *GetData();
 	void *GetHeader() { return NULL; }
 
@@ -332,6 +340,143 @@ public:
 
 };
 
+
+
+// 소형 전자전 PDW
+
+namespace _ZPOCKETSONATA_ {
+	#define _MAX_DR_CH		(6)
+
+	#define PH_WIDTH_FREQ		128000 //kHz
+	#define L_PH_MIN_FREQ		64000 //kHz
+	#define H_PH_MIN_FREQ		192000 //kHz
+
+	#define PDW_TIME_RES			7.8125
+	#define PDW_FREQ_RES			1.953125
+	#define PDW_AOA_RES			0.087890625
+
+	static const float m_fCenterFreq[_MAX_DR_CH] = { 3072000., 3072000., 3072000., 3072000., 3072000., 3072000. } ;
+}
+
+class CPOCKETSONATAPDW : public CData
+{
+
+
+private:
+	STR_PDWFILE_HEADER m_Header;
+
+	STR_PDW_DATA m_PDWData;
+
+	int m_iBoardID;
+
+public:
+	CPOCKETSONATAPDW(STR_RAWDATA *pRawData, STR_FILTER_SETUP *pstFilterSetup );
+	virtual ~CPOCKETSONATAPDW();
+
+	void Alloc(int iItems=0);
+	void Free();
+	void ReadDataHeader() { 
+		memcpy( & m_Header, gstpRawDataBuffer, sizeof(STR_PDWFILE_HEADER) );
+	}
+
+	void ConvertArray( int iDataItems, int iOffset=0, STR_FILTER_SETUP *pFilterSetup=NULL );
+	void *GetData();
+	void *GetHeader() { return NULL; }
+
+public:
+	static float DecodeDOA(int iDOA ) 
+	{
+		float fDOA;
+
+		fDOA = (float) ( (float) iDOA * (float) 360. ) / (float) ( 4.*1024. );
+		return fDOA;	/* [degree] */
+	} ;
+
+	static float DecodePA(int iPA ) 
+	{
+		float fPA;
+
+		fPA = (float) iPA;
+		return fPA;		/* [dBm] */
+	} ;
+
+	static float DecodeFREQ( int iFreq, int iCh, int iBoardID ) 
+	{
+		float fFREQ;
+
+		float fOffsetFreq;
+
+		fOffsetFreq = _ZPOCKETSONATA_::m_fCenterFreq[iBoardID];
+
+		if( iCh < 7 ) {
+			if( iFreq & 0x8000 ) {
+				iFreq = 0x10000 - iFreq;
+				fFREQ = ( fOffsetFreq + ( ( (float) PH_WIDTH_FREQ * (float) iCh) ) - ( (float) iFreq * (float) PDW_FREQ_RES ) );
+			}
+			else {
+				fFREQ = ( fOffsetFreq + ( ( (float) PH_WIDTH_FREQ * (float) iCh) ) + ( (float) iFreq * (float) PDW_FREQ_RES ) );
+			}
+			
+		}
+		else {
+			iCh = 15 - iCh;
+			if( iFreq & 0x8000 ) {
+				iFreq = 0x10000 - iFreq;
+				fFREQ = ( fOffsetFreq - ( ( (float) PH_WIDTH_FREQ * (float) iCh) ) - ( (float) iFreq * (float) PDW_FREQ_RES ) );
+			}
+			else {
+				fFREQ = ( fOffsetFreq - ( ( (float) PH_WIDTH_FREQ * (float) iCh) ) + ( (float) iFreq * (float) PDW_FREQ_RES ) );
+			}
+			
+			
+		}
+
+		//fFREQ = (float) ( (float) iFreq * (float) 1.953125 );
+		return fFREQ / (float) 1000.;	/* [MHz] */
+	} ;
+
+	static float DecodePW( int iPW ) 
+	{
+		float fPW;
+
+		fPW = (float) ( (float) iPW * (float) 7.8125 / (float) 1.0 );
+		return fPW;		/* [ns] */
+	} ;
+
+	static float DecodeTOA( _TOA iTOA  ) 
+	{
+		float fTOA;
+
+		fTOA = (float) ( (float) iTOA * (float) 7.8125 / (float) 1.0 );
+		return fTOA;	/* [ns] */
+	} ;
+
+	static float DecodeTOAus( _TOA iTOA  ) 
+	{
+		float fTOA;
+
+		fTOA = (float) ( (float) iTOA * (float) 7.8125 / (float) 1000.0 );
+		return fTOA;	/* [ns] */
+	} ;
+
+	static float DecodeTOA( float ffTOA ) 
+	{
+		float fTOA;
+
+		fTOA = (float) ( (float) ffTOA * (float) 7.8125 / (float) 1.0 );
+		return fTOA;	/* [ns] */
+	} ;
+
+	static float DecodeTOAus( float ffTOA ) 
+	{
+		float fTOA;
+
+		fTOA = (float) ( (float) ffTOA * (float) 7.8125 / (float) 1000.0 );
+		return fTOA;	/* [ns] */
+	} ;
+
+};
+
 class CIQ : public CData
 {
 private:
@@ -345,7 +490,7 @@ public:
 	void Alloc( int iItems=0 );
 	void Free();
 	void ReadDataHeader();
-	void ConvertArray( int iDataItems, int iOffset );
+	void ConvertArray( int iDataItems, int iOffset, STR_FILTER_SETUP *pFilterSetup );
 	void ConvertArrayForELINT() { }
 	void *GetData();
 	void *GetHeader();
@@ -365,7 +510,7 @@ public:
 	void Alloc( int iItems=0 );
 	void Free();
 	void ReadDataHeader() {  }
-	void ConvertArray( int iDataItems, int iOffset );
+	void ConvertArray( int iDataItems, int iOffset, STR_FILTER_SETUP *pFilterSetup );
 	void ConvertArrayForELINT() { }
 	void *GetData();
 	void *GetHeader() { return NULL; }
@@ -468,10 +613,10 @@ private:
 	ULONGLONG m_dwFileEnd;
 	CFile m_RawDataFile;
 
-	//STR_RAWDATA m_RawData;
 	CData *m_pData;
 
 	CString m_strPathname;
+
 
 public:
 	CDataFile(void);

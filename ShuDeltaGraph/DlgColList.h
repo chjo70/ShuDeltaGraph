@@ -14,6 +14,13 @@
 #include "./ButtonST/BtnST.h"
 #include "./ToolTip/XInfoTip.h"
 
+#include "CRWRCommonVariables.h"
+
+#define PDW_BLOCK		(30)
+#define CO_PDW_DATA		(60)
+#define CO_INTRA_DATA	(100)
+
+
 #ifdef EXAUTOMATION
 #include "./Excel/XLEzAutomation.h"
 #elif defined(_EXCELLIB_)
@@ -75,6 +82,9 @@ typedef union {
 	STR_RES_PDW_DATA_RSA stRSAPDWData[MAX_RAW_DATA];
 	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
 	STR_RES_INTRA_DATA stIntraData[MAX_RAW_DATA];
+	UDRCPDW stRSA2PDWData[MAX_RAW_DATA];
+
+	DMAPDW stZPocketPDWData[MAX_RAW_DATA];
 
 } UNI_RAW_DATA;
 
@@ -170,7 +180,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 수집 목록 제어 관련 정보
 	STR_COL_LIST m_stColList;
-	STR_RES_COL_START m_stResCol;
+	//STR_RES_COL_START m_stResCol;
 
 	STR_SONATA_DATA *m_pSonataData;
 
@@ -190,7 +200,6 @@ private:
 	int m_iClickedItem;
 
 	STR_STAT_PDW m_stStatPDW;
-
 public:
 	CDialogRSA *m_pDlgRSA;
 	CDialogSHU *m_pDlgSHU;
@@ -204,6 +213,8 @@ public:
 	MyEchoSocket *m_pConnected[enRSA+1];
 
 	STR_COL_ITEM m_stColItem;
+
+	STR_RX_THRESHOLD m_stRxThreshold;
 
 private:
 	void InitStatusBar();
@@ -232,9 +243,9 @@ private:
 	void SetControl( bool bEnable );
 	void MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
-	void ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID );
+	void ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData, ENUM_UnitID enID, ENUM_BoardID enSUbBoardID=enPRC_Unknown );
 	void MakeIQFile( int iItem, STR_RAW_DATA *pRawData );
-	void MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID );
+	void MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData, ENUM_UnitID enID, ENUM_BoardID enBoardID=enPRC_Unknown );
 
 	void InsertIntraRawDataItem( STR_DATA_CONTENTS *pstData, int iItem );
 	
@@ -247,31 +258,36 @@ private:
 
 	void ActivateGraph( BOOL bEanble );
 
+
+
 public:
 	void ProcessColList( STR_QUEUE_MSG *pQueueMsg );
 
-	void InitSocketSetting( enUnitID id );
+	void InitSocketSetting( ENUM_UnitID id );
 	void CloseSocketSetting();
 	void Connect();
 
-	void OnAccept( enUnitID id );
-	void OnConnect( int nErrorCode, enUnitID id );
-	void OnSocketClose( enUnitID id );
+	void OnAccept( ENUM_UnitID id );
+	void OnConnect( int nErrorCode, ENUM_UnitID id );
+	void OnSocketClose( ENUM_UnitID id );
 	void OnReceive( char *pData );
 
-	void Send( enUnitID id, char *ptxData );
+	void Send( ENUM_UnitID id, char *ptxData );
 
 	inline STR_SONATA_DATA *GetSONATAData() { return m_pSonataData; }
 
 	void InsertIQRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData );
-	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData, enUnitID enID );
+	void InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData, ENUM_UnitID enID, STR_RES_COL_START *pResColStart );
 
 	void ViewGraph( UINT uiOpCode );
 
 	void InitButtonST( CButtonST *pCButtonRouteSetup, int iIcon );
 
-	void InitUnitRes( enUnitID enID );
+	void InitUnitRes( ENUM_UnitID enID );
 	void ClearRawDataList();
+
+	inline void SetUnitID( ENUM_UnitID enUnitID) { m_pSonataData->m_enUnitID = enUnitID; }
+	inline void SetBoardID( int iBoardID) { m_pSonataData->m_enBoardID = (ENUM_BoardID) iBoardID; }
 
 	DECLARE_DYNAMIC(CDlgColList)
 

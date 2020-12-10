@@ -134,7 +134,7 @@ void CDlgMulti::InitButton()
  */
 void CDlgMulti::InitBuffer()
 {
-	int j;
+	unsigned int j;
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
 	m_pSonataData = pApp->m_pDlgColList->GetSONATAData();
@@ -883,175 +883,240 @@ void CDlgMulti::ViewGraph()
 {
 	UINT i, uiItem, uiTemp32;
 
-	UINT uiToa;
-
 	float fFreq, fPA, fPW, fTOA, fFirstToa, fDtoa, fPreviousToa, fXToa;
+
+	char szSubTitle[100];
 
 	uiItem = m_pSonataData->uiItem;
 
 	if( uiItem == 0 ) return;
 
-	if( m_pSonataData->enDataType == en_PDW_DATA ) {
-		TNEW_PDW *pPDW;
-		TNEW_PDW temp;
+	if( m_pSonataData->m_enUnitID == enZPocketSonata ) { 
+		//_TOA ullToa;
 
-		InitGraphSetting( enPDWGraph );
+		if( m_pSonataData->enDataType == en_PDW_DATA ) {
+			UINT uiCh;
+			DMAPDW *pPDW;
+			_TOA ullToa;
 
-		pPDW = & m_pSonataData->unRawData.stPDWData[0];
+			InitGraphSetting( enPDWGraph );
 
-		PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("½Ã°£[us]"));
+			sprintf_s( szSubTitle, "%d" , uiItem );
+			//PEszset( m_hPE, PEP_szSUBTITLE, TEXT(szSubTitle) );
 
-		PEnset(m_hPE, PEP_nPOINTS, uiItem );
+			pPDW = & m_pSonataData->unRawData.stZPDWData[0];
 
-		for( i=0 ; i < uiItem ; ++i ) {
-			temp.bpdw[0][0] = pPDW->item.toa_1;
-			temp.bpdw[0][1] = pPDW->item.toa_2;
-			temp.bpdw[0][2] = pPDW->item.toa_3;
-			temp.bpdw[0][3] = pPDW->item.toa_4;
+			PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("½Ã°£[us]"));
 
-			uiToa = temp.wpdw[0];
-			fXToa = FDIV(uiToa, _spOneMicrosec );
-			fTOA = fXToa;
+			PEnset(m_hPE, PEP_nPOINTS, uiItem );
 
-			if( i == 0 ) {
-				fFirstToa = fXToa;
-				fPreviousToa = fTOA;
-				fDtoa = 0;
+			for( i=0 ; i < uiItem ; ++i ) {
+				ullToa = (_TOA) ( pPDW->uPDW.uniPdw_freq_toa.stPdw_freq_toa.toa_L ) | ( (_TOA) pPDW->uPDW.uniPdw_toa_edge.stPdw_toa_edge.toa_H << 16 );
+				fXToa = CPOCKETSONATAPDW::DecodeTOAus( ullToa );
+				fTOA = fXToa;
+
+				if( i == 0 ) {
+					fFirstToa = fXToa;
+					fPreviousToa = fTOA;
+					fDtoa = 0;
+				}
+				else {
+					fDtoa = fTOA - fPreviousToa;
+					fPreviousToa = fTOA;
+				}
+
+				uiTemp32 = ( pPDW->uPDW.uniPdw_pw_freq.stPdw_pw_freq.frequency_L ) | ( pPDW->uPDW.uniPdw_freq_toa.stPdw_freq_toa.frequency_H << 8 );
+				uiCh = pPDW->uPDW.uniPdw_freq_toa.stPdw_freq_toa.pdw_phch;
+				fFreq = CPOCKETSONATAPDW::DecodeFREQ( uiTemp32, uiCh, m_pSonataData->m_enBoardID );
+
+				fPW = CPOCKETSONATAPDW::DecodePW( pPDW->uPDW.uniPdw_pw_freq.stPdw_pw_freq.pulse_width);
+
+				fPA = CPOCKETSONATAPDW::DecodePA( pPDW->uPDW.uniPdw_dir_pa.stPdw_dir_pa.pa );
+
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & fFreq );
+
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & fPA );
+
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 2, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 2, i, & fPW );
+
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 3, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 3, i, & fDtoa );
+
+				++ pPDW;
 			}
-			else {
-				fDtoa = fTOA - fPreviousToa;
-				fPreviousToa = fTOA;
-			}
-
-			uiTemp32 = BIT_MERGE( pPDW->item.frequency_h, pPDW->item.frequency_l);
-			fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
-			fFreq = (float) ( fFreq / 1000. );
-
-			uiTemp32 = pPDW->item.amplitude;
-			fPA = FPACNV(uiTemp32);
-
-			uiTemp32 = BIT_MERGE(pPDW->item.pulse_width_h, pPDW->item.pulse_width_l);
-			fPW = FPWCNV( uiTemp32 );
-
-			PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fXToa );
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & fFreq );
-
-			PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, & fXToa );
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & fPA );
-
-			PEvsetcellEx(m_hPE, PEP_faXDATA, 2, i, & fXToa );
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 2, i, & fPW );
-
-			PEvsetcellEx(m_hPE, PEP_faXDATA, 3, i, & fXToa );
-			PEvsetcellEx(m_hPE, PEP_faYDATA, 3, i, & fDtoa );
-
-			++ pPDW;
 		}
+		else {
 
-		double dMin, dMax;
-		PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-		dMin = fFirstToa;
-		PEvset(m_hPE, PEP_fMANUALMINX, & dMin, 1);
-		dMax = fXToa;
-		PEvset(m_hPE, PEP_fMANUALMAXX, & dMax, 1);
-
-		// Reset WorkingAxis when done //
-		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
+		}
 	}
 	else {
-		InitGraphSetting( enIQGraph );
+		UINT uiToa;
 
-		TNEW_IQ *pIQ;
+		if( m_pSonataData->enDataType == en_PDW_DATA ) {
+			TNEW_PDW *pPDW;
+			TNEW_PDW temp;
 
-		float fVal1, fVal2;
-		float *pfPA, *pfIndex, *pfIP, *pfI, *pfQ;
+			InitGraphSetting( enPDWGraph );
 
-		PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("ÀÎµ¦½º"));
+			pPDW = & m_pSonataData->unRawData.stPDWData[0];
 
-		//PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
-		//PEnset(m_hPE, PEP_bANTIALIASGRAPHICS, TRUE);   // Direct2D is often faster with anti alias for some reason. 
+			PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("½Ã°£[us]"));
 
-		pfPA = m_pfPA;
-		pfIndex = m_pfIndex;
-		pfIP = m_pfIP;
-		pfI = m_pfI;
-		pfQ = m_pfQ;
+			PEnset(m_hPE, PEP_nPOINTS, uiItem );
 
-		pIQ = & m_pSonataData->unRawData.stIQData[0];
+			for( i=0 ; i < uiItem ; ++i ) {
+				temp.bpdw[0][0] = pPDW->item.toa_1;
+				temp.bpdw[0][1] = pPDW->item.toa_2;
+				temp.bpdw[0][2] = pPDW->item.toa_3;
+				temp.bpdw[0][3] = pPDW->item.toa_4;
 
-		m_dIMax = pIQ->sI;
-		m_dIMin = pIQ->sI;
+				uiToa = temp.wpdw[0];
+				fXToa = FDIV(uiToa, _spOneMicrosec );
+				fTOA = fXToa;
 
-		m_dQMax = pIQ->sQ;
-		m_dQMin = pIQ->sQ;
+				if( i == 0 ) {
+					fFirstToa = fXToa;
+					fPreviousToa = fTOA;
+					fDtoa = 0;
+				}
+				else {
+					fDtoa = fTOA - fPreviousToa;
+					fPreviousToa = fTOA;
+				}
 
-		for( i=0 ; i < uiItem ; ++i ) {
-			float fI, fQ, fPA;
+				uiTemp32 = BIT_MERGE( pPDW->item.frequency_h, pPDW->item.frequency_l);
+				fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
+				fFreq = (float) ( fFreq / 1000. );
 
-			*pfI = fI = (float) pIQ->sI;
-			*pfQ = fQ = (float) pIQ->sQ;
+				uiTemp32 = pPDW->item.amplitude;
+				fPA = FPACNV(uiTemp32);
 
-			m_dIMin = min( m_dIMin, *pfI );
-			m_dIMax = max( m_dIMax, *pfI );
+				uiTemp32 = BIT_MERGE(pPDW->item.pulse_width_h, pPDW->item.pulse_width_l);
+				fPW = FPWCNV( uiTemp32 );
 
-			m_dQMin = min( m_dQMin, *pfQ );
-			m_dQMax = max( m_dQMax, *pfQ );
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i, & fFreq );
 
-			// ¼ø½Ã ÁøÆø
-			fPA = sqrt((fI * fI) + (fQ * fQ));
-			*pfPA = (float) (20.*log10( fPA ) ) - (float) 80.;
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & fPA );
 
-			if( i == 0 ) {
-				*pfIP = 0.0;
-				fVal2 = (float) ( atan2( fQ, fI ) * RAD2DEG );
-			}
-			else {
-				fVal1 = (float) ( atan2( fQ, fI ) * RAD2DEG );
-				*pfIP = fVal1;
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 2, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 2, i, & fPW );
 
-				//*pfIP = fVal1 - fVal2;
-				//fVal2 = fVal1;
-			}
-			if( *pfIP > 180. ) {
-				*pfIP -= ( 2 * 180. );
-			}
-			else if( *pfIP < -180 ) {
-				*pfIP += ( 2 * 180. );
-			}
-			else {
+				PEvsetcellEx(m_hPE, PEP_faXDATA, 3, i, & fXToa );
+				PEvsetcellEx(m_hPE, PEP_faYDATA, 3, i, & fDtoa );
 
+				++ pPDW;
 			}
 
-			++ pfPA;
-			++ pfIP;
-			++ pIQ;
-			++ pfI;
-			++ pfQ;
+			double dMin, dMax;
+			PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
+			dMin = fFirstToa;
+			PEvset(m_hPE, PEP_fMANUALMINX, & dMin, 1);
+			dMax = fXToa;
+			PEvset(m_hPE, PEP_fMANUALMAXX, & dMax, 1);
+
+			// Reset WorkingAxis when done //
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
+		}
+		else {
+			InitGraphSetting( enIQGraph );
+
+			TNEW_IQ *pIQ;
+
+			float fVal1, fVal2;
+			float *pfPA, *pfIndex, *pfIP, *pfI, *pfQ;
+
+			PEszset(m_hPE, PEP_szXAXISLABEL, TEXT("ÀÎµ¦½º"));
+
+			//PEnset(m_hPE, PEP_nPOINTS, MAX_IQ_DATA );
+			//PEnset(m_hPE, PEP_bANTIALIASGRAPHICS, TRUE);   // Direct2D is often faster with anti alias for some reason. 
+
+			pfPA = m_pfPA;
+			pfIndex = m_pfIndex;
+			pfIP = m_pfIP;
+			pfI = m_pfI;
+			pfQ = m_pfQ;
+
+			pIQ = & m_pSonataData->unRawData.stIQData[0];
+
+			m_dIMax = pIQ->sI;
+			m_dIMin = pIQ->sI;
+
+			m_dQMax = pIQ->sQ;
+			m_dQMin = pIQ->sQ;
+
+			for( i=0 ; i < uiItem ; ++i ) {
+				float fI, fQ, fPA;
+
+				*pfI = fI = (float) pIQ->sI;
+				*pfQ = fQ = (float) pIQ->sQ;
+
+				m_dIMin = min( m_dIMin, *pfI );
+				m_dIMax = max( m_dIMax, *pfI );
+
+				m_dQMin = min( m_dQMin, *pfQ );
+				m_dQMax = max( m_dQMax, *pfQ );
+
+				// ¼ø½Ã ÁøÆø
+				fPA = sqrt((fI * fI) + (fQ * fQ));
+				*pfPA = (float) (20.*log10( fPA ) ) - (float) 80.;
+
+				if( i == 0 ) {
+					*pfIP = 0.0;
+					fVal2 = (float) ( atan2( fQ, fI ) * RAD2DEG );
+				}
+				else {
+					fVal1 = (float) ( atan2( fQ, fI ) * RAD2DEG );
+					*pfIP = fVal1;
+
+					//*pfIP = fVal1 - fVal2;
+					//fVal2 = fVal1;
+				}
+				if( *pfIP > 180. ) {
+					*pfIP -= ( 2 * 180. );
+				}
+				else if( *pfIP < -180 ) {
+					*pfIP += ( 2 * 180. );
+				}
+				else {
+
+				}
+
+				++ pfPA;
+				++ pfIP;
+				++ pIQ;
+				++ pfI;
+				++ pfQ;
+
+			}
+
+			ExecuteFFT( m_pFFT, uiItem, & m_pSonataData->unRawData.stIQData[0] );
+
+			// Perform the actual transfer of data, all y data is repassed //
+			PEvsetEx(m_hPE, PEP_faYDATA, 0, uiItem, m_pfI, NULL);
+			PEvsetEx(m_hPE, PEP_faYDATA, uiItem, uiItem, m_pfQ, NULL);
+			PEvsetEx(m_hPE, PEP_faYDATA, uiItem*2, uiItem, m_pfIP, NULL);
+			PEvsetEx(m_hPE, PEP_faYDATA, uiItem*3, uiItem, m_pfPA, NULL);
+			PEvsetEx(m_hPE, PEP_faYDATA, uiItem*4, uiItem, m_pFFT, NULL);
+
+			if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D) {
+				PEreconstruct3dpolygons(m_hPE);
+			}
+			else
+			{
+				//PEreinitialize(m_hPE); // Because 115 create sets AutoImageReset = False, we need to call PEreinitialize to re-filter new data
+				//PEresetimage(m_hPE, 0, 0);
+			}
+			//::InvalidateRect(m_hPE, NULL, FALSE);
+
+			// Reset WorkingAxis when done //
+			PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
 
 		}
-
-		ExecuteFFT( m_pFFT, uiItem, & m_pSonataData->unRawData.stIQData[0] );
-
-		// Perform the actual transfer of data, all y data is repassed //
-		PEvsetEx(m_hPE, PEP_faYDATA, 0, uiItem, m_pfI, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, uiItem, uiItem, m_pfQ, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, uiItem*2, uiItem, m_pfIP, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, uiItem*3, uiItem, m_pfPA, NULL);
-		PEvsetEx(m_hPE, PEP_faYDATA, uiItem*4, uiItem, m_pFFT, NULL);
-
-		if (PEnget(m_hPE, PEP_nRENDERENGINE) == PERE_DIRECT3D) {
-			PEreconstruct3dpolygons(m_hPE);
-		}
-		else
-		{
-			//PEreinitialize(m_hPE); // Because 115 create sets AutoImageReset = False, we need to call PEreinitialize to re-filter new data
-			//PEresetimage(m_hPE, 0, 0);
-		}
-		//::InvalidateRect(m_hPE, NULL, FALSE);
-
-		// Reset WorkingAxis when done //
-		PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-
 	}
 
 	::InvalidateRect(m_hPE, NULL, FALSE);

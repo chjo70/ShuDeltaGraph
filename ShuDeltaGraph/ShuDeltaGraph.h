@@ -47,8 +47,8 @@ public:
 
 	void SaveProfile( STR_FILTER_SETUP *pstFilterSetup );
 	void LoadProfile( STR_FILTER_SETUP *pstFilterSetup );
-	void LoadProfile( STR_COL_ITEM *pstColList );
-	void SaveProfile( STR_COL_ITEM *pstColList );
+	void LoadProfile( STR_COL_ITEM *pstColList, STR_RX_THRESHOLD *pRxThreshold );
+	void SaveProfile( STR_COL_ITEM *pstColList, STR_RX_THRESHOLD *pRxThreshold );
 
 	bool OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYPE enOpenType=enOpenPDW );
 

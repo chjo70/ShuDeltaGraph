@@ -16,7 +16,6 @@
 
 #define SHU_PORT_NUM				(13060)
 
-
 // CShuSIMDlg 대화 상자
 class CShuSIMDlg : public CDialogEx
 {

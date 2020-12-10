@@ -6,6 +6,8 @@
 #ifndef RWRCOMMONVARIABLES_H_
 #define RWRCOMMONVARIABLES_H_
 
+#define _POCKETSONATA_
+
 #pragma pack( push, 1 )
 
 //#include <Data/CPDWContainer.h>
@@ -526,6 +528,7 @@ union UDRCPDW
 		unsigned int m_Rsvd7 :16;
 
 	}sPDWFormat;
+
 #endif
 };
 

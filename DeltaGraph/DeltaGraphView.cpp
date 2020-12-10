@@ -299,7 +299,7 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 				pfPA = pPDWData->pfPA;
 				pfPW = pPDWData->pfPW;
 				pcDV = pPDWData->pcDV;
-				pllTOA = pPDWData->pllTOA;
+				pllTOA = pPDWData->pullTOA;
 				pcType = pPDWData->pcType;
 				pfPh1 = pPDWData->pfPh1;
 				pfPh2 = pPDWData->pfPh2;

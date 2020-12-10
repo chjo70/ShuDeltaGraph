@@ -11,9 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
-#define PDW_BLOCK		(30)
-#define CO_PDW_DATA		(60)
-#define CO_INTRA_DATA	(100)
+
 
 
 

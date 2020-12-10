@@ -390,7 +390,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 				pfPA = pPDWData->pfPA;
 				pfPW = pPDWData->pfPW;
 				pcDV = pPDWData->pcDV;
-				pllTOA = pPDWData->pllTOA;
+				pllTOA = pPDWData->pullTOA;
 				pcType = pPDWData->pcType;
 				pfPh1 = pPDWData->pfPh1;
 				pfPh2 = pPDWData->pfPh2;
@@ -2438,7 +2438,7 @@ void CShuDeltaGraphView::OnDestroy()
 
 void CShuDeltaGraphView::SetFreqRange()
 {
-	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_SONATA_SHU || m_pDoc->GetUnitType() == en_KFX ) {
+	if( m_pDoc->GetUnitType() == en_SONATA || m_pDoc->GetUnitType() == en_SONATA_SHU || m_pDoc->GetUnitType() == en_KFX || m_pDoc->GetUnitType() == en_ZPOCKETSONATA ) {
 		_spFreqMin = 500;
 		_spFreqMax = 18000;
 	}

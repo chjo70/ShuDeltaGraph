@@ -321,9 +321,9 @@ void CDlg2DHisto::InitGraph()
 	//////////////////////////////////////////////////////////////////////////
 	double d;
 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-	d = 500.0F / 1000.0;
+	d = 500.0F;
 	PEvset(m_hPE, PEP_fMANUALMINX, &d, 1);
-	d = 18000.0F / 1000.0;
+	d = 18100.0F;
 	PEvset(m_hPE, PEP_fMANUALMAXX, &d, 1);
 
 	PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
@@ -538,41 +538,73 @@ DWORD WINAPI Func2DHisto( LPVOID lpData )
  */
 void CDlg2DHisto::UpdateHisto( BOOL bData )
 {
+	ENUM_UnitID enUnitID = m_pSonataData->m_enUnitID;
+
 	if( bData == TRUE ) {
 		UINT i, uiItem, uiTemp32, iMaxFreq=0;
 
-		float fFreq, fNorm;
-
-		TNEW_PDW *pPDW;
+		float fFreq, fNorm;		
 
 		UINT *pFreqX;
 
 		uiItem = m_pSonataData->uiItem;
 
-		pPDW = & m_pSonataData->unRawData.stPDWData[0];
+		if( enUnitID == enRSA ) {
+			TNEW_PDW *pPDW;
 
-		InitVar();
+			pPDW = & m_pSonataData->unRawData.stPDWData[0];
 
-		for( i=0 ; i < uiItem ; ++i ) {
-			UINT uiIndex;
+			InitVar();
 
-			uiTemp32 = BIT_MERGE( pPDW->item.frequency_h, pPDW->item.frequency_l);
-			fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
+			for( i=0 ; i < uiItem ; ++i ) {
+				UINT uiIndex;
 
-			uiIndex = (UINT) ( fFreq + 0.5 );
-			//uiIndex = IMUL( UDIV( uiIndex, 10 ), 10 );
-			++ m_nFreqX[uiIndex];
+				uiTemp32 = BIT_MERGE( pPDW->item.frequency_h, pPDW->item.frequency_l);
+				fFreq = FFRQCNV( pPDW->item.band + 1, uiTemp32 );
 
-			iMaxFreq = max( m_nFreqX[uiIndex], iMaxFreq );
+				uiIndex = (UINT) ( fFreq + 0.5 );
+				//uiIndex = IMUL( UDIV( uiIndex, 10 ), 10 );
+				++ m_nFreqX[uiIndex];
 
-			++ pPDW;
+				iMaxFreq = max( m_nFreqX[uiIndex], iMaxFreq );
+
+				++ pPDW;
+			}
+
+		}
+		else if( enUnitID == enZPocketSonata ) {
+			DMAPDW *pPDW;			
+
+			pPDW = & m_pSonataData->unRawData.stZPDWData[0];
+
+			InitVar();
+
+			for( i=0 ; i < uiItem ; ++i ) {
+				UINT uiIndex, uiCh;
+
+				uiCh = pPDW->uPDW.uniPdw_freq_toa.stPdw_freq_toa.pdw_phch;
+				uiTemp32 = ( pPDW->uPDW.uniPdw_pw_freq.stPdw_pw_freq.frequency_L ) | ( pPDW->uPDW.uniPdw_freq_toa.stPdw_freq_toa.frequency_H << 8 );
+				uiIndex = (int) ( ( CPOCKETSONATAPDW::DecodeFREQ( uiTemp32, uiCh, 0 ) )  + 0.5 );
+
+				uiIndex = min( FREQ_MAX, uiIndex );
+
+				++ m_nFreqX[uiIndex];
+
+				iMaxFreq = max( m_nFreqX[uiIndex], iMaxFreq );
+
+			}
+		}
+		else {
+
 		}
 
-		fNorm = FDIV( 100, iMaxFreq );
-		pFreqX = & m_nFreqX[FREQ_MIN];
-		for( i=FREQ_MIN ; i <= FREQ_MAX ; ++i ) {
-			*pFreqX = IMUL( *pFreqX, fNorm );
-			++ pFreqX;
+		if( iMaxFreq != 0 ) {
+			fNorm = FDIV( 100, iMaxFreq );
+			pFreqX = & m_nFreqX[FREQ_MIN];
+			for( i=FREQ_MIN ; i <= FREQ_MAX ; ++i ) {
+				*pFreqX = IMUL( *pFreqX, fNorm );
+				++ pFreqX;
+			}
 		}
 
 	}
@@ -653,7 +685,8 @@ void CDlg2DHisto::ViewGraph()
 	DWORD dwColor;
 
 	PEnset(m_hPE, PEP_nSUBSETS, 1);	
-	PEnset(m_hPE, PEP_nPOINTS, FREQ_MAX-FREQ_MIN+1 );
+	//PEnset(m_hPE, PEP_nPOINTS, FREQ_MAX-FREQ_MIN+1 );
+	PEnset(m_hPE, PEP_nPOINTS, FREQ_MAX+1 );
 
 	int nSFPC[] = {0, 1}; // First and Second subsets use SubsetPointColors feature //
 	PEvset(m_hPE, PEP_naSUBSETFORPOINTCOLORS, nSFPC, 2);
@@ -663,15 +696,16 @@ void CDlg2DHisto::ViewGraph()
 		if( m_pSonataData->uiNo % 2 ) {
 			PEvsetcellEx(m_hPE, PEP_dwaPOINTCOLORS, 0, p, &dwColor);
 
-			fX = (float) p / (float) 1000.;
+			fX = (float) p;
 			PEvsetcellEx (m_hPE, PEP_faXDATA, 0, p, &fX);
 			fY = (float) m_nFreqX[p];
+
 			PEvsetcellEx (m_hPE, PEP_faYDATA, 0, p, &fY);
 		}
 		else {
 			PEvsetcellEx(m_hPE, PEP_dwaPOINTCOLORS, 1, p, &dwColor);
 
-			fX = (float) p / (float) 1000.;
+			fX = (float) p;
 			PEvsetcellEx (m_hPE, PEP_faXDATA, 1, p, &fX);
 			fY = (float) m_nFreqX[p];
 			PEvsetcellEx (m_hPE, PEP_faYDATA, 1, p, &fY);

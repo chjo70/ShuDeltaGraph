@@ -8,9 +8,13 @@
 //
 
 
+#include "CRWRCommonVariables.h"
+
 enum _REQ_COMMANDCODE {
 	REQ_INIT=1001,
 	REQ_SETMODE=1101,
+
+	REQ_RX_Threshold = 3310,
 
 	REQ_SET_CONFIG=9301,
 	REQ_STOP=9302,
@@ -34,6 +38,7 @@ enum SHUPERHAT_RES_COMMANDCODE {
 	RES_COL_START = 9404,
 	RES_RAWDATA_PDW=9506,
 	RES_RAWDATA_INTRA=9507,
+	RES_RAWDATA_ZPDW=9508,
 
 	RES_RAWDATA_IQ=9230,
 
@@ -78,10 +83,14 @@ typedef struct {
 
 } STR_REQ_SETMODE_RSA;
 
+
+
 typedef struct {
 	unsigned int uiStatus;
 	unsigned int uiCoPulseNum;
 	unsigned int uiPhase3Num;
+
+	unsigned int uiBoardID;
 
 } STR_RES_COL_START;
 
@@ -117,6 +126,14 @@ typedef struct {
 } STR_RES_IQ_DATA;
 
 
+// 수신기 관련 구조체 정의
+struct STR_RX_THRESHOLD {
+	int iBand;
+	unsigned int uiMagThreshold;
+	unsigned int uiCorThreshold;
+};
+
+
 #define MAX_COL_PDW_DATA			(500)
 #define MAX_COL_INTRA_DATA			(500)
 #define MAX_COL_IQ_DATA				( (64*1024) + 1024 )
@@ -131,6 +148,8 @@ typedef union {
 	STR_REQ_SETMODE_RSA stSetModeRSA;
 	UINT uiMode;
 
+	STR_RX_THRESHOLD stRxThreshold;
+
 	// 
 	// 결과 데이터 구조체 정의
 	UINT uiResult;
@@ -140,6 +159,7 @@ typedef union {
 	STR_RES_PDW_DATA_RSA stRSAPDWData[MAX_COL_PDW_DATA];
 	STR_RES_INTRA_DATA stIntraData[MAX_COL_INTRA_DATA];
 	STR_RES_IQ_DATA stIQData[MAX_COL_IQ_DATA];
+	UDRCPDW stRSA2PDWData[MAX_COL_PDW_DATA];
 
 } STR_DATA_CONTENTS;
 

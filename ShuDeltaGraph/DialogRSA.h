@@ -86,6 +86,8 @@ private:
 	void MakeReqRawDataMessage();
 	void MakeLogReqMessage( CString *pstrTemp1, CString *pstrTemp2, void *pData );
 
+	void MakeRxThresholdMessage();
+
 	inline void UpdateColList() {
 		++ m_uiColList;	\
 		if( m_uiColList >= m_uiCoColList )	\
@@ -135,6 +137,8 @@ public:
 	CNumSpinCtrl m_CSpinColTime;
 	CNumSpinCtrl m_CSpinColNum;
 	CNumSpinCtrl m_CSpinNum;
+	CNumSpinCtrl m_CSpinMagThreshold;
+	CNumSpinCtrl m_CSpinCorThreshold;
 	afx_msg void OnBnClickedButtonAllselCheckbox();
 	afx_msg void OnBnClickedButtonAllselUncheckbox();
 	afx_msg void OnBnClickedButtonAllselInvcheckbox();
@@ -145,4 +149,5 @@ public:
 	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnBnClickedButtonRemoveLiist();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnBnClickedButtonRxthreshold();
 };

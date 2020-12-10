@@ -15,7 +15,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // MyEchoSocket
 
-MyEchoSocket::MyEchoSocket( enUnitID id, bool bBigEndian )
+MyEchoSocket::MyEchoSocket( ENUM_UnitID id, bool bBigEndian )
 {
 	m_id = id;
 
@@ -77,7 +77,7 @@ void MyEchoSocket::OnClose(int nErrorCode)
 
 		((CDlgColList*)m_pDlg)->OnSocketClose( m_id );
 	}
-	CAsyncSocket::OnClose(nErrorCode);
+	//CAsyncSocket::OnClose(nErrorCode);
 }
 
 void MyEchoSocket::OnConnect(int nErrorCode) 
@@ -125,10 +125,18 @@ void MyEchoSocket::OnReceive(int nErrorCode)
 			m_uiDataLength = pstRxMessage->uiDataLength;
 			m_uiReceivedData = 0;
 
+			if( m_uiDataLength > 10000 ) {
+				return;
+			}
+
 			//TRACE( "\n 헤더[%d] 길이[%d]" , uiReceivedMessage, m_uiDataLength );
 		}
 		else {
 			m_uiReceivedData += Receive((char *) & pstRxData->buffer[m_uiReceivedData], m_uiDataLength-m_uiReceivedData );
+			if( m_uiReceivedData > 100000 ) {
+				return;
+			}
+
 			TRACE( "\n 총 수신 데이터[%d], 수신 길이[%d]" , m_uiReceivedData, m_uiDataLength );
 		}
 		

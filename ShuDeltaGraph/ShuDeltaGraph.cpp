@@ -396,7 +396,7 @@ void CShuDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 						pView->ShowGraph( viewPDWGraph[i], viewPDWSubGraph[i] );
 					}
 					else {
-						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력했습니다.") , *pStrPathname );
+						wsprintf( warningMessage, _T("파일명[%s]을 잘못 입력하였거나 잘못 저장된 파일을 로딩했습니다.") , *pStrPathname );
 						AfxMessageBox( warningMessage );
 						break;
 					}
@@ -488,7 +488,7 @@ bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPEN
 	// 로그 파일을 오픈할 FILE Dialog창을 생성한다.
 	switch( enOpenType ) {
 		case enOpenPDW :
-			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.eiq;*.siq;*.dat)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.iq;*.eiq;*.siq;*.dat|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.EIQ|All Files (*.*)|*.*||") );
+			pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.zpdw;*.iq;*.eiq;*.siq;*.dat)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.zpdw;*.iq;*.eiq;*.siq;*.dat|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.EIQ|All Files (*.*)|*.*||") );
 			szinitDir[0] = NULL;
 			break;
 
@@ -507,7 +507,7 @@ bool CShuDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPEN
 			break;
 
 		case enSavePDW :
-			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
+			pWndFile = new CFileDialog(FALSE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq)|*.spdw;*.pdw;*.npw;*.epdw;*.iq;*.eiq;*.siq|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.zpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.zpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||") );
 			szinitDir[0] = NULL;
 			break;
 
@@ -686,7 +686,7 @@ void CShuDeltaGraphApp::SaveProfile( STR_FILTER_SETUP *pstFilterSetup )
  * @date      2020/02/21 9:21:14
  * @warning   
  */
-void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
+void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList, STR_RX_THRESHOLD *pRxThreshold )
 {
 	TCHAR szBuffer[100];
 
@@ -731,6 +731,11 @@ void CShuDeltaGraphApp::SaveProfile( STR_COL_ITEM *pstColList )
 	swprintf( szBuffer, sizeof(szBuffer), L"%d", pstColList->fPWHgh );
 	::WritePrivateProfileString( L"COL_LIST_RSA", L"PW_HGH", szBuffer, m_strIniFile );
 
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pRxThreshold->uiMagThreshold );
+	::WritePrivateProfileString( L"RX_THRESHOLD", L"MAG", szBuffer, m_strIniFile );
+	swprintf( szBuffer, sizeof(szBuffer), L"%d", pRxThreshold->uiCorThreshold );
+	::WritePrivateProfileString( L"RX_THRESHOLD", L"COR", szBuffer, m_strIniFile );
+
 
 }
 
@@ -770,7 +775,7 @@ void CShuDeltaGraphApp::LoadProfile( STR_FILTER_SETUP *pstFilterSetup )
  * @date      2020/02/21 9:21:09
  * @warning   
  */
-void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
+void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList, STR_RX_THRESHOLD *pRxThreshold )
 {
 	TCHAR szBuffer[100];
 
@@ -814,6 +819,12 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList )
 
 	::GetPrivateProfileString( L"COL_LIST_RSA", L"PW_HGH", L"0", szBuffer, 100, m_strIniFile );
 	pstColList->fPWHgh = (float) _wtof(szBuffer);
+
+
+	::GetPrivateProfileString( L"RX_THRESHOLD", L"MAG", L"0", szBuffer, 100, m_strIniFile );
+	pRxThreshold->uiMagThreshold = (float) _wtof(szBuffer);
+	::GetPrivateProfileString( L"RX_THRESHOLD", L"COR", L"0", szBuffer, 100, m_strIniFile );
+	pRxThreshold->uiCorThreshold = (float) _wtof(szBuffer);
 
 }
 

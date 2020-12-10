@@ -540,7 +540,7 @@ void CDlg3DBar::ViewGraph()
 
 	InitVar();
 
-	for( i=FREQ_MIN ; i < FREQ_MAX ; i++ )	{
+	for( i=FREQ_MIN ; i <= FREQ_MAX ; i++ )	{
 		iIndex = ( i - FREQ_MIN ) / STEP_OF_FREQ_MHZ;
 		m_pfFreqX[iIndex] = max( m_pfFreqX[iIndex], m_pFreqXFromHisto[i] );
 	}

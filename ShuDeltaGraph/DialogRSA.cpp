@@ -41,6 +41,8 @@ void CDialogRSA::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_COL_TIME, m_CSpinColTime);
 	DDX_Control(pDX, IDC_SPIN_COL_NUM, m_CSpinColNum);
 	DDX_Control(pDX, IDC_SPIN_NUM, m_CSpinNum);
+	DDX_Control(pDX, IDC_SPIN_MAG, m_CSpinMagThreshold);
+	DDX_Control(pDX, IDC_SPIN_COR, m_CSpinCorThreshold);
 }
 
 
@@ -57,6 +59,7 @@ BEGIN_MESSAGE_MAP(CDialogRSA, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_MODIFY_LIST, &CDialogRSA::OnBnClickedButtonModifyList)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CDialogRSA::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_REMOVE_LIIST, &CDialogRSA::OnBnClickedButtonRemoveLiist)
+	ON_BN_CLICKED(IDC_BUTTON_RXTHRESHOLD, &CDialogRSA::OnBnClickedButtonRxthreshold)
 END_MESSAGE_MAP()
 
 
@@ -121,7 +124,7 @@ void CDialogRSA::OnBnClickedButtonColstart()
 		}
 	}
 	else {
-		m_pParentDlg->m_pConnected[enRSA]->InitVar();
+		//m_pParentDlg->m_pConnected[enRSA]->InitVar();
 		InitListCtrl( false );
 
 		MakeStopMessage( 0 );
@@ -285,11 +288,12 @@ void CDialogRSA::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 			break;
 
 		case RES_RAWDATA_PDW :
+			m_pParentDlg->SetUnitID( enRSA );
 			m_pParentDlg->InitUnitRes( enRSA );
 
 			//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
-			memcpy( & m_pRawData->unRawData.stRSAPDWData[m_pRawData->uiItem], & pQueueMsg->stData.stRSAPDWData[0], sizeof(STR_RES_PDW_DATA_RSA)*30 );
-			m_pRawData->uiItem = ( m_pRawData->uiItem+30 > m_stResCol.uiCoPulseNum ? m_stResCol.uiCoPulseNum : m_pRawData->uiItem+30 );
+			memcpy( & m_pRawData->unRawData.stRSAPDWData[m_pRawData->uiItem], & pQueueMsg->stData.stRSAPDWData[0], sizeof(STR_RES_PDW_DATA_RSA)*PDW_BLOCK );
+			m_pRawData->uiItem = ( m_pRawData->uiItem+PDW_BLOCK > m_stResCol.uiCoPulseNum ? m_stResCol.uiCoPulseNum : m_pRawData->uiItem+PDW_BLOCK );
 
 			if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
 				// PDW 수신판에서 강제 첫번재 PDW 제거함. PDW수신판의 첫번째 PDW TOA 오류로 제거함.
@@ -298,7 +302,40 @@ void CDialogRSA::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 				SetIBkColorOfColList( m_uiColList, 4 );
 
-				m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enRSA );
+				m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enRSA, & m_stResCol );
+				m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
+
+				SetIBkColorOfColList( m_uiColList, -1 );
+
+				UpdateColList();
+
+				ReadyColStart( m_uiColList );
+				MakeSetModeMessage( m_uiColList );
+				m_pParentDlg->Send( enRSA, m_ptxData );
+
+				SetIBkColorOfColList( m_uiColList, 1 );
+
+				TRACE( "\n 과제 번호 : %d", m_uiColList );
+			}
+			break;
+
+		case RES_RAWDATA_ZPDW :
+			m_pParentDlg->SetUnitID( enZPocketSonata );
+			m_pParentDlg->SetBoardID( m_stResCol.uiBoardID );
+			m_pParentDlg->InitUnitRes( enZPocketSonata );
+
+			//TRACE( "\n RES_RAWDATA_PDW 처리 입니다." );
+			memcpy( & m_pRawData->unRawData.stRSA2PDWData[m_pRawData->uiItem], & pQueueMsg->stData.stRSAPDWData[0], sizeof(UDRCPDW)*PDW_BLOCK );
+			m_pRawData->uiItem = ( m_pRawData->uiItem+PDW_BLOCK > m_stResCol.uiCoPulseNum ? m_stResCol.uiCoPulseNum : m_pRawData->uiItem+PDW_BLOCK );
+
+			if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
+				// PDW 수신판에서 강제 첫번재 PDW 제거함. PDW수신판의 첫번째 PDW TOA 오류로 제거함.
+				//-- m_pRawData->uiItem;
+				//memcpy( & m_pRawData->unRawData.stRSA2PDWData[0], & m_pRawData->unRawData.stRSA2PDWData[1], sizeof(UDRCPDW)*m_pRawData->uiItem );
+
+				SetIBkColorOfColList( m_uiColList, 4 );
+
+				m_pParentDlg->InsertPDWRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, m_uiColList, & m_stColList, m_pRawData, enZPocketSonata, & m_stResCol );
 				m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
 				SetIBkColorOfColList( m_uiColList, -1 );
@@ -432,6 +469,7 @@ void CDialogRSA::MakeLogResMessage( CString *pstrTemp1, CString *pstrTemp2, void
 		break;
 
 	case RES_RAWDATA_PDW:
+	case RES_RAWDATA_ZPDW:
 		*pstrTemp1 = _T(">>PDW 데이터");
 		*pstrTemp2 = _T(" ");
 		break;
@@ -496,6 +534,23 @@ void CDialogRSA::MakeSetModeMessage( UINT uiIndex )
 	pTxData->stSetModeRSA.fPWHgh = pColList->stColItem.fPWHgh;
 	pTxData->stSetModeRSA.coPulseNum = pColList->stColItem.uiColNumber;
 	pTxData->stSetModeRSA.fColTime = pColList->stColItem.fColTime;
+
+}
+
+void CDialogRSA::MakeRxThresholdMessage()
+{
+	STR_MESSAGE *pTxMessage;
+	STR_DATA_CONTENTS *pTxData;
+
+	pTxMessage = (STR_MESSAGE * ) m_ptxData;
+	pTxMessage->uiOpcode = REQ_RX_Threshold;
+	pTxMessage->uiDataLength = sizeof(STR_RX_THRESHOLD);
+
+	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
+
+	pTxData->stRxThreshold.iBand = 0xFF;
+	m_pParentDlg->m_stRxThreshold.uiMagThreshold = pTxData->stRxThreshold.uiMagThreshold = m_CSpinMagThreshold.GetPos();	
+	m_pParentDlg->m_stRxThreshold.uiCorThreshold = pTxData->stRxThreshold.uiCorThreshold = m_CSpinCorThreshold.GetPos();
 
 }
 
@@ -570,6 +625,7 @@ void CDialogRSA::SetControl( bool bEnable )
 	//GetDlgItem(IDC_BUTTON_ADD_LIST)->EnableWindow( !bEnable );
 
 	GetDlgItem(IDC_BUTTON_COLSTART)->EnableWindow( bEnable );
+	GetDlgItem(IDC_BUTTON_RXTHRESHOLD)->EnableWindow( bEnable );
 
 }
 
@@ -674,10 +730,15 @@ BOOL CDialogRSA::OnInitDialog()
 	m_CSpinColTime.SetRangeAndDelta( 1000, 90000, 1000.0 );
 	m_CSpinColTime.SetPos( (double) m_pParentDlg->m_stColItem.fColTime );
 
-	m_CSpinColNum.SetDecimalPlaces(0);
-	m_CSpinColNum.SetTrimTrailingZeros(FALSE);
-	m_CSpinColNum.SetRangeAndDelta( 10, 1000, 1.0 );
-	m_CSpinColNum.SetPos( (double) m_pParentDlg->m_stColItem.uiColNumber );
+	m_CSpinMagThreshold.SetDecimalPlaces(0);
+	m_CSpinMagThreshold.SetTrimTrailingZeros(FALSE);
+	m_CSpinMagThreshold.SetRangeAndDelta( 0, 65536, 1.0 );
+	m_CSpinMagThreshold.SetPos( (double) m_pParentDlg->m_stRxThreshold.uiMagThreshold );
+
+	m_CSpinCorThreshold.SetDecimalPlaces(0);
+	m_CSpinCorThreshold.SetTrimTrailingZeros(FALSE);
+	m_CSpinCorThreshold.SetRangeAndDelta( 0, 65536, 1.0 );
+	m_CSpinCorThreshold.SetPos( (double) m_pParentDlg->m_stRxThreshold.uiCorThreshold );
 
 	CString strPathname = GetFilePath();
 #ifdef EXAUTOMATION
@@ -1497,4 +1558,14 @@ BOOL CDialogRSA::PreTranslateMessage(MSG* pMsg)
 		return TRUE;
 
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void CDialogRSA::OnBnClickedButtonRxthreshold()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
+
+	MakeRxThresholdMessage();
+	m_pParentDlg->Send( enRSA, m_ptxData );
 }

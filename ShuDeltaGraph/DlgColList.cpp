@@ -35,7 +35,7 @@ CDlgColList::~CDlgColList()
 
 	FreeBuffer();
 
-	pApp->SaveProfile( & m_stColItem );
+	pApp->SaveProfile( & m_stColItem, & m_stRxThreshold );
 }
 
 void CDlgColList::DoDataExchange(CDataExchange* pDX)
@@ -85,13 +85,13 @@ void CDlgColList::InitBuffer()
 {
 	int i;
 
-	m_iSelItem = -1;
+	m_iSelItem = -1; 
 
 	for( i=0 ; i <= enRSA ; ++i ) {
-		m_pListener[i] = new MyEchoSocket( (enUnitID) i, false );
+		m_pListener[i] = new MyEchoSocket( (ENUM_UnitID) i, false );
 		m_pListener[i]->SetParentDlg(this);
 
-		m_pConnected[i] = new MyEchoSocket( (enUnitID) i, false );
+		m_pConnected[i] = new MyEchoSocket( (ENUM_UnitID) i, false );
 		m_pConnected[i]->SetParentDlg(this);
 	}
 
@@ -260,7 +260,7 @@ BOOL CDlgColList::OnInitDialog()
 
 	Log( enNormal, _T("CDlgColList+++++++++++++++++++++++++++++++++++++++++++") );
 
-	pApp->LoadProfile( & m_stColItem );
+	pApp->LoadProfile( & m_stColItem, & m_stRxThreshold );
 
 	InitVar();
 	InitBuffer();
@@ -287,7 +287,7 @@ BOOL CDlgColList::OnInitDialog()
  * @date      2020/02/01 13:37:55
  * @warning   
  */
-void CDlgColList::OnAccept( enUnitID id )
+void CDlgColList::OnAccept( ENUM_UnitID id )
 {
 	CString strIP;
 	UINT port;
@@ -362,7 +362,7 @@ void CDlgColList::SetControl( bool bEnable )
  * @date      2020/02/01 13:37:52
  * @warning   
  */
-void CDlgColList::OnSocketClose( enUnitID id )
+void CDlgColList::OnSocketClose( ENUM_UnitID id )
 {
 	//m_theThread.Stop( true );
 
@@ -404,7 +404,7 @@ void CDlgColList::OnSocketClose( enUnitID id )
  * @date      2020/02/01 10:10:36
  * @warning   
  */
-void CDlgColList::InitSocketSetting( enUnitID id )
+void CDlgColList::InitSocketSetting( ENUM_UnitID id )
 {
 	UINT uiPortNum;
 	CString strPortNum;
@@ -445,7 +445,7 @@ void CDlgColList::InitThread()
  * @date      2020/02/01 10:03:20
  * @warning   
  */
-void CDlgColList::OnConnect(int nErrorCode, enUnitID id )
+void CDlgColList::OnConnect(int nErrorCode, ENUM_UnitID id )
 {
 	TCHAR szBuffer[100];
 
@@ -690,7 +690,7 @@ void CDlgColList::ActivateGraph( BOOL bEnable )
  * @date      2020/02/03 22:03:14
  * @warning   
  */
-void CDlgColList::Send( enUnitID id, char *ptxData )
+void CDlgColList::Send( ENUM_UnitID id, char *ptxData )
 {
 	STR_MESSAGE *pTxMessage;
 
@@ -971,7 +971,7 @@ void CDlgColList::ViewGraph( UINT uiOpCode )
 {
 	CShuDeltaGraphApp *pApp = ( CShuDeltaGraphApp *) AfxGetApp();
 
-	if( uiOpCode == RES_RAWDATA_PDW ) {
+	if( uiOpCode == RES_RAWDATA_PDW || uiOpCode == RES_RAWDATA_ZPDW ) {
 		SetEvent( pApp->m_pDlg2DHisto->m_hHisto[en_ReceiveData] );
 		//SetEvent( pApp->m_pDlg3DBar->m_h3DBar );
 
@@ -993,15 +993,15 @@ void CDlgColList::ViewGraph( UINT uiOpCode )
  * @date      2020/02/23 11:55:12
  * @warning   
  */
-void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData, enUnitID enID )
+void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, int uiColList, STR_COL_LIST *pColList, STR_RAW_DATA *pRawData, ENUM_UnitID enID, STR_RES_COL_START *pResColStart )
 {
 	int i, nIndex;
 	CString strTemp;
 
-	Log( enNormal, _T("PDW 데이터를 완료 처리합니다." ) );
+	Log( enNormal, _T("PDW 데이터[%d]를 완료 처리합니다." ), iItem );
 
 	// 데이터를 체계용 PDW 파일로 변환하여 저장합니다.
-	MakePDWFile( iItem, uiColList, pRawData, enID );
+	MakePDWFile( iItem, uiColList, pRawData, enID, (ENUM_BoardID) pResColStart->uiBoardID );
 
 	// 목록창 추가
  	strTemp.Format(_T("%d"), m_uiCoRawData );
@@ -1042,7 +1042,7 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, i
 		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 		// PDW 제원 통계 값 전시
-		strTemp.Format(_T("%.1f"), m_stStatPDW.fFreqMean ); 
+		strTemp.Format(_T("%.3f"), m_stStatPDW.fFreqMean ); 
 		m_RawList.SetItem( nIndex, i++, LVIF_TEXT, strTemp, NULL, NULL, NULL, NULL);
 
 		strTemp.Format(_T("%.1f"), m_stStatPDW.fDtoaMean ); 
@@ -1072,7 +1072,7 @@ void CDlgColList::InsertPDWRawDataItem( STR_DATA_CONTENTS *pstData, int iItem, i
  * @date      2020/02/23 11:55:17
  * @warning   
  */
-void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID )
+void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData, ENUM_UnitID enID, ENUM_BoardID enSubBoardID )
 {
 	CString strPathname, strFolderName;
 	SYSTEMTIME cur_time;
@@ -1083,16 +1083,32 @@ void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData,
 	strFolderName.Format( _T("%s//%04d_%02d_%02d//PDW"), RAWDATA_DIRECTORY, cur_time.wYear, cur_time.wMonth, cur_time.wDay ); 
 	CreateDir( (TCHAR*) (LPCTSTR) strFolderName );
 
+	m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld." ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
 	if( enID == enSHU )
-		m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.spdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
-	else
-		m_strFilename.Format( _T("%04d_%02d_%02d %02d_%02d_%02d_%03ld.pdw" ), cur_time.wYear, cur_time.wMonth, cur_time.wDay, cur_time.wHour, cur_time.wMinute, cur_time.wSecond, cur_time.wMilliseconds );
+		m_strFilename += "spdw";
+	else if( enID == enRSA )
+		m_strFilename += "pdw";
+	else if( enID == enZPocketSonata )
+		m_strFilename += "zpdw";
+	else {
+
+	}
 
 	strPathname = strFolderName + _T("//") + m_strFilename;
 
-	ConvertRAWData( iItem, en_PDW_DATA, uiColList, pRawData, enID );
+	ConvertRAWData( iItem, en_PDW_DATA, uiColList, pRawData, enID, enSubBoardID );
 
-	m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, m_pSonataData->uiItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+	if( enID == enSHU || enID == enRSA )
+		m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+	else {
+		STR_PDWFILE_HEADER stPDWFileHeader;
+
+		stPDWFileHeader.uiSearchBandNo = 0;
+		stPDWFileHeader.uiSignalDeletingStatus = 0;
+		stPDWFileHeader.uiSignalCount = iItem;
+		stPDWFileHeader.uiBoardID = enSubBoardID;
+		m_theDataFile.SaveDataFile( strPathname, (void * ) & pRawData->unRawData, iItem*sizeof(DMAPDW), en_ZPOCKETSONATA, en_PDW_DATA, & stPDWFileHeader, sizeof(STR_PDWFILE_HEADER) );
+	}
 
 }
 
@@ -1108,7 +1124,7 @@ void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData,
  * @date      2020/02/23 11:55:24
  * @warning   
  */
-void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData, enUnitID enID )
+void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiColList, STR_RAW_DATA *pRawData, ENUM_UnitID enID, ENUM_BoardID enSUbBoardID )
 {
 	int i;
 	bool bValid;
@@ -1116,7 +1132,8 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 	TNEW_PDW *pNEW_PDW;
 
 	int iBc=0, iCoPdw=0;
-	UINT uiTOA, uiFreq, uiPW, uiDTOA, uiPreTOA, uiAOA;
+	_TOA ullTOA, ullDTOA, ullPreTOA;
+	UINT uiTOA, uiDTOA, uiPreTOA, uiFreq, uiPW, uiAOA;
 
 	if( enID == enSHU ) {
 		STR_RES_PDW_DATA *pPDWData;
@@ -1153,7 +1170,7 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 						bValid = false;
 					}
 					else {
-						uiPreTOA = uiTOA;
+						ullPreTOA = uiTOA;
 						bValid = true;
 					}
 
@@ -1188,7 +1205,7 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 						pNEW_PDW->item.amplitude = ConvertPA( pPDWData->fPA );
 
 						// 펄스폭
-						uiPW = ConvertPW( pPDWData->fPW*1000. );
+						uiPW = ConvertPW( pPDWData->fPW*(float) 1000. );
 						pNEW_PDW->item.pulse_width_l	= uiPW & 0xFF ;		// 펄스폭 값 입력 
 						pNEW_PDW->item.pulse_width_h	= ( uiPW >> 8 ) & 0x07;
 
@@ -1251,7 +1268,7 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 				break;
 		}
 	}
-	else {
+	else if( enID == enRSA ) {
 		STR_RES_PDW_DATA_RSA *pPDWData;
 
 
@@ -1346,6 +1363,75 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 
 		m_stStatPDW.fDtoaMean /= ( iCoPdw - 1 );
 		m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean, _spOneMicrosec );
+		//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
+	}
+
+	else if( enID == enZPocketSonata ) {
+		DMAPDW *pPDWData;
+		DMAPDW *pSonataPDWData;
+
+		UINT uiCh;
+
+		// PDW 통계치 초기화
+		m_stStatPDW.fFreqMean = 0;
+		m_stStatPDW.fFreqMin = FREQ_MAX;
+		m_stStatPDW.fFreqMax = FREQ_MIN;
+
+		m_stStatPDW.fDtoaMean = 0;
+		m_stStatPDW.fDtoaMin = (float) 99999999.999;
+		m_stStatPDW.fDtoaMax = 0;
+
+		pPDWData = & pRawData->unRawData.stZPocketPDWData[0];
+		pSonataPDWData = & m_pSonataData->unRawData.stZPDWData[0];
+		for( i=0 ; i < iItem ; ++i ) {
+			ullTOA = ( pPDWData->uPDW.uniPdw_toa_edge.stPdw_toa_edge.toa_H << 16 ) | pPDWData->uPDW.uniPdw_freq_toa.stPdw_freq_toa.toa_L;			// IDIV( pPDWData->uiTOA * 5, 2 );
+
+			if( i == 0 ) {
+				ullPreTOA = 0;
+				ullDTOA = 0;
+			}
+			else {
+				ullDTOA = ullTOA - ullPreTOA;
+				if( (long long int) ullDTOA > 0 ) {
+					//m_stStatPDW.fDtoaMean += uiDTOA;
+				}
+			}
+
+			if( (long long int) ullDTOA < 0 ) {
+				bValid = false;
+			}
+			else {
+				ullPreTOA = ullTOA;
+				bValid = true;
+			}
+
+			if( bValid == true ) {
+				m_stStatPDW.fDtoaMean += (float) ullDTOA;
+
+				memcpy( pSonataPDWData, pPDWData, sizeof(DMAPDW) );
+
+				m_stStatPDW.fFreqMean += pPDWData->uPDW.uniPdw_freq_toa.stPdw_freq_toa.frequency_H << 8 | pPDWData->uPDW.uniPdw_pw_freq.stPdw_pw_freq.frequency_L;
+
+				++ iCoPdw;
+				++ pSonataPDWData;
+
+			}
+
+			++ pPDWData;
+		}
+		m_pSonataData->uiItem = iCoPdw;
+		m_pSonataData->enDataType = en_PDW_DATA;
+
+		m_pSonataData->uiNo = 1;	// m_pColList[uiColList].stColItem.uiNo;
+
+		//
+		//////////////////////////////////////////////////////////////////////////
+		m_stStatPDW.fFreqMean /= iCoPdw;
+		uiCh = pPDWData->uPDW.uniPdw_freq_toa.stPdw_freq_toa.pdw_phch;
+		m_stStatPDW.fFreqMean = CPOCKETSONATAPDW::DecodeFREQ( (int) m_stStatPDW.fFreqMean, uiCh, enSUbBoardID );
+
+		m_stStatPDW.fDtoaMean /= ( iCoPdw - 1 );
+		m_stStatPDW.fDtoaMean = CPOCKETSONATAPDW::DecodeTOAus( m_stStatPDW.fDtoaMean );
 		//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
 	}
 }
@@ -1690,10 +1776,18 @@ void CDlgColList::OnTcnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
  * @date      2020/05/15 14:24:28
  * @warning   
  */
- void CDlgColList::InitUnitRes( enUnitID enID )
+ void CDlgColList::InitUnitRes( ENUM_UnitID enID )
 {
 	if( enID == enSHU ) {
 		_spOneSec = 50000000.;
+		_spOneMilli = FDIV( _spOneSec, 1000. );
+		_spOneMicrosec = FDIV( _spOneMilli, 1000. );
+		_spOneNanosec = FDIV( _spOneMicrosec, 1000. );
+
+		_spPWres = _spOneMicrosec;
+	}
+	else if( enID == enZPocketSonata ) {
+		_spOneSec = 20000000;
 		_spOneMilli = FDIV( _spOneSec, 1000. );
 		_spOneMicrosec = FDIV( _spOneMilli, 1000. );
 		_spOneNanosec = FDIV( _spOneMicrosec, 1000. );

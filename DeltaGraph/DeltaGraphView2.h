@@ -43,6 +43,8 @@ private:
 
 	vector<STR_ZOOM_INFO> m_VecZoomInfo;
 
+	ENUM_SUB_GRAPH m_enSubGraph;
+
 public:
 
 private:
@@ -67,6 +69,9 @@ private:
 	void ClearZoomInfo();
 
 	void AddZoomInfo();
+
+	void SetGraphPointsize();
+	void UpdateZoomButton();
 
 public:
 	void ShowGraph( ENUM_SUB_GRAPH enSubGraph=enUnselectedSubGraph, int iFileIndex=0 );
@@ -130,6 +135,8 @@ public:
 	CXColorStatic m_CStaticX2Unit;
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedButtonFilterZoomout();
+	CComboBox m_CComboDV;
+	afx_msg void OnCbnSelchangeComboDv();
 };
 
 #ifndef _DEBUG  // DeltaGraphView.cpp의 디버그 버전

@@ -18,6 +18,30 @@
 #define	FREQ_MAX			(18000)
 
 
+enum ENUM_UnitID {
+	enUnknown = -1,
+
+	enSHU = 0,
+	enRSA,
+	enZPocketSonata
+
+} ;
+
+enum ENUM_BoardID {
+	enPRC_Unknown,
+	enPRC1=1,
+	enPRC2,
+	enPRC3,
+	enPRC4,
+	enPRC5,
+
+	enPRC6,
+
+	enMaster=enPRC3
+
+};
+
+
 typedef struct {
 	// frequency band code를 위한 구조체 
 	UINT min;       // min frequency
@@ -42,7 +66,8 @@ FREQ_RESOL gFreqRes[ 4 ] =
 	{    0,     0, 0     }, 
 	{    0,  2560, 0.625 },   /* LOW  FREQUENCY */
 	{ 1280,  6400, 1.25  },   /* MID  FREQUENCY */
-	{ 5866, 18740, 1.5   } } ;
+	{ 5866, 18740, 1.5   } } ;
+
 PA_RESOL gPaRes[ 6 ] = { {     0,     0,  (float) _spSONATAPAoffset, _spSONATAAMPres }, 
 												{  2000,  6000,  (float) _spSONATAPAoffset, _spSONATAAMPres },		/* 저대역		*/
 												{  5500, 10000,  (float) _spSONATAPAoffset, _spSONATAAMPres },		/* 고대역1	*/
