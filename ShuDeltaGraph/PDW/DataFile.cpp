@@ -387,13 +387,12 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset, STR_FILTER_SETUP *pFilter
 		printf( "\n [%3d] 0x%02X %5.1f%1c[deg] %8.2f[kHz] %10.3f[us] %8.3f[ns]" , i+1, *pcType, *pfAOA, stDV[*pcDV], *pfFreq, *pfTOA, *pfPW );
 
 		// 필터링 조건
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-// 		if( ( (double) *pfAOA >= m_stFilterSetup.dAoaMin && (double) *pfAOA <= m_stFilterSetup.dAoaMax ) &&
-// 			( (double) *pfFreq >= m_stFilterSetup.dFrqMin && (double) *pfFreq <= m_stFilterSetup.dFrqMax ) ) {
+		if( pFilterSetup == NULL || ( pFilterSetup->enSubGraph == enUnselectedSubGraph ||
+			( pFilterSetup->dToaMin <= *pfTOA && *pfTOA <= pFilterSetup->dToaMax ) && 
+			( ( pFilterSetup->dAoaMin == INIT_VAL ) || ( pFilterSetup->dAoaMin <= *pfAOA && *pfAOA <= pFilterSetup->dAoaMax ) ) &&
+			( ( pFilterSetup->dFrqMin == INIT_VAL ) || ( pFilterSetup->dFrqMin <= *pfFreq && *pfFreq <= pFilterSetup->dFrqMax ) ) &&
+			( ( pFilterSetup->dPAMin == INIT_VAL ) || ( pFilterSetup->dPAMin <= *pfPA && *pfPA <= pFilterSetup->dPAMax ) )
+			) ) {
 			++pfFreq;
 			++pfAOA;
 			++pfPW;
@@ -976,28 +975,6 @@ void CPOCKETSONATAPDW::ConvertArray( int iDataItems, int iOffset, STR_FILTER_SET
 			++ m_PDWData.iDataItems;
 
 		}
-
-		/*
-		if( ( m_stFilterSetup.dToaMin <= *pfTOA && m_stFilterSetup.dToaMax >= *pfTOA ) &&
-			( m_stFilterSetup.dAoaMin <= *pfAOA && m_stFilterSetup.dAoaMax >= *pfAOA ) &&
-			( m_stFilterSetup.dPAMin <= *pfPA && m_stFilterSetup.dPAMax >= *pfPA ) &&
-			( m_stFilterSetup.dPWMin <= *pfPW && m_stFilterSetup.dPWMax >= *pfPW ) &&
-			( m_stFilterSetup.dFrqMin <= *pfFreq && m_stFilterSetup.dFrqMax >= *pfFreq ) ) {
-			++pfFreq;
-			++pfAOA;
-			++pfPW;
-			++pfPA;
-			++pfTOA;
-			++pfDTOA;
-			++pcType;
-			++pcDV;
-			++pullTOA;
-
-			++ m_PDWData.iDataItems;
-
-			//++ m_stFilterSetup.uiDataItems;
-
-		} */
 
 		++pPDW;
 	}
@@ -2203,10 +2180,19 @@ CData *CDataFile::ReadDataFile( CString & strPathname, int iFileIndex, CData *pD
 			m_pData = pData;
 			if( m_pData == NULL ) {
 				m_pData = new CEPDW( NULL, pstFilterSetup );
+				iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
 			}
+			
 		}
 
-		iDataItems = LoadRawData( m_pData, iFileIndex, uiLengthOfHeader, uiLengthOf1PDWIQ );
+		else {
+			pData->ConvertArray( m_pData->m_RawData.uiDataItems, uiLengthOfHeader, pstFilterSetup );
+		}
+
+		STR_PDW_DATA *pPDWData = (STR_PDW_DATA *) GetData();
+		iDataItems = pPDWData->iDataItems;
+
+		
 
 	}
 

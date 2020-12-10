@@ -292,17 +292,21 @@ void CDeltaGraphView2::InitVar()
  * @date      2020/05/21 15:45:21
  * @warning   
  */
-void CDeltaGraphView2::ClearFilterSetup()
+void CDeltaGraphView2::ClearFilterSetup( STR_FILTER_SETUP *pstrFilterSetup )
 {
 
-	m_strFilterSetup.dToaMin = m_strFilterSetup.dToaMax = INIT_VAL;
-	m_strFilterSetup.dDtoaMin = m_strFilterSetup.dDtoaMax = INIT_VAL;
-	m_strFilterSetup.dAoaMin = m_strFilterSetup.dAoaMax = INIT_VAL;
-	m_strFilterSetup.dFrqMin = m_strFilterSetup.dFrqMax = INIT_VAL;
-	m_strFilterSetup.dPAMin = m_strFilterSetup.dPAMax = INIT_VAL;
-	m_strFilterSetup.dPWMin = m_strFilterSetup.dPWMax = INIT_VAL;
+	if( pstrFilterSetup == NULL ) {
+		pstrFilterSetup = & m_strFilterSetup;
+	}
 
-	m_strFilterSetup.enSubGraph = enUnselectedSubGraph;
+	pstrFilterSetup->dToaMin = pstrFilterSetup->dToaMax = INIT_VAL;
+	pstrFilterSetup->dDtoaMin = pstrFilterSetup->dDtoaMax = INIT_VAL;
+	pstrFilterSetup->dAoaMin = pstrFilterSetup->dAoaMax = INIT_VAL;
+	pstrFilterSetup->dFrqMin = pstrFilterSetup->dFrqMax = INIT_VAL;
+	pstrFilterSetup->dPAMin = pstrFilterSetup->dPAMax = INIT_VAL;
+	pstrFilterSetup->dPWMin = pstrFilterSetup->dPWMax = INIT_VAL;
+
+	pstrFilterSetup->enSubGraph = enUnselectedSubGraph;
 
 }
 
@@ -1471,11 +1475,11 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 
 	 case enSubMenu_5 :
 		 if (enDataType == en_PDW_DATA) {
-			 PEvget(m_hPE, PEP_fZOOMMINX, & m_strFilterSetup.dToaMin );
-			 PEvget(m_hPE, PEP_fZOOMMAXX, & m_strFilterSetup.dToaMax );
+			 PEvget(m_hPE, PEP_fZOOMMINX, & pstrFilterSetup->dToaMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXX, & pstrFilterSetup->dToaMax );
 
-			 PEvget(m_hPE, PEP_fZOOMMINY, & m_strFilterSetup.dPWMin );
-			 PEvget(m_hPE, PEP_fZOOMMAXY, & m_strFilterSetup.dPWMax );
+			 PEvget(m_hPE, PEP_fZOOMMINY, & pstrFilterSetup->dPWMin );
+			 PEvget(m_hPE, PEP_fZOOMMAXY, & pstrFilterSetup->dPWMax );
 		 }
 		 else {
 
@@ -1486,7 +1490,7 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 		 break;
 	 }
 
-	 m_strFilterSetup.enSubGraph = enSubGraph;
+	 pstrFilterSetup->enSubGraph = enSubGraph;
 
  }
 
@@ -1556,7 +1560,41 @@ void CDeltaGraphView2::OnBnClickedButtonFilterDeapply()
 
 void CDeltaGraphView2::OnBnClickedButtonRunSigAnal()
 {
+	ENUM_DataType enDataType;
+	ENUM_SUB_GRAPH enSubGraph;
 
+	STR_FILTER_SETUP strFilterSetup;
+
+	int iFileIndex=0, iFilteredDataItems=0;
+
+	GetDlgItem( IDC_BUTTON_RUN_SIGANAL )->EnableWindow( FALSE );
+
+	enDataType = m_pDoc->GetDataType();
+
+	enSubGraph = ( ENUM_SUB_GRAPH ) ( m_CComboYAxis.GetCurSel() + 1 );
+
+	ClearFilterSetup( & strFilterSetup );
+	GetFilterSetup( & strFilterSetup, enSubGraph, enDataType );
+
+
+ 	if( enDataType == en_PDW_DATA ) {
+ 		m_pDoc->ReadDataFile( iFileIndex, & strFilterSetup );
+ 
+ 	}
+ 	else {
+ 		m_pDoc->ReadDataFile( iFileIndex );
+ 
+ 		iFilteredDataItems += m_pDoc->GetFilteredDataItems();
+
+	}
+ 
+	// 아래에 인터 신호 분석 결과 창 호출...
+	{
+
+	}
+
+
+	GetDlgItem( IDC_BUTTON_RUN_SIGANAL )->EnableWindow( TRUE );
 
 }
 
@@ -1731,7 +1769,6 @@ void CDeltaGraphView2::AddZoomInfo()
 	else {
 
 	}
-
 
 	m_VecZoomInfo.push_back( strZoomInfo );
 

@@ -65,7 +65,7 @@ private:
 
 	void UpdateToolTip( TCHAR *pszBuffer, CWnd *pDlgItem );
 	void UpdateFilterToolTip();
-	void ClearFilterSetup();
+	void ClearFilterSetup( STR_FILTER_SETUP *pstrFilterSetup=NULL );
 	void ClearZoomInfo();
 
 	void AddZoomInfo();
