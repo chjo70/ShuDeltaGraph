@@ -360,7 +360,7 @@ void CEPDW::ConvertArray( int iDataItems, int iOffset, STR_FILTER_SETUP *pFilter
 		*pfPW = PWCNV(pPDW->iPW * 1000. );
 
 		if( pPDW->iAOA == 0 ) {
-			*pfAOA = (float) 0.00000001;
+			//*pfAOA = (float) 0.00000001;
 		}
 		else {
 			*pfAOA = AOACNV( pPDW->iAOA );

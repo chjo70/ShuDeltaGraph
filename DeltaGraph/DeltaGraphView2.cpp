@@ -1588,9 +1588,10 @@ void CDeltaGraphView2::OnBnClickedButtonRunSigAnal()
 
 	}
  
+
 	// 아래에 인터 신호 분석 결과 창 호출...
 	{
-
+		// ASAE 결과 호출
 	}
 
 
@@ -1632,32 +1633,37 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			wsprintf(szBuffer, _T("%s"), strMainTitleLabel[enDataType - 1][iCombo] );
 			PEszset( m_hPE, PEP_szTRACKINGTOOLTIPTITLE, szBuffer );
 
-			switch( iCombo+1 ) {
-				case enSubMenu_1 :
-					_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n방위: %.3f[도]"), dX, dY );
-					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-					break;
-				case enSubMenu_2 :
-					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n주파수: %.3f[MHz]"), dX, dY );
-					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					//PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-					break;
-				case enSubMenu_3 :
-					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\nDTOA: %.3f[us]"), dX, dY );
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-					break;
-				case enSubMenu_4 :
-					_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n세기: %.3f[dBm]"), dX, dY );
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-					break;
-				case enSubMenu_5 :
-					_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n펄스폭: %.3f[ns]"), dX, dY );
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
-					PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
-					break;
+			if( enDataType == en_PDW_DATA ) {
+				switch( iCombo+1 ) {
+					case enSubMenu_1 :
+						_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n방위: %.3f[도]"), dX, dY );
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+						break;
+					case enSubMenu_2 :
+						_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n주파수: %.3f[MHz]"), dX, dY );
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,0,245,0));
+						break;
+					case enSubMenu_3 :
+						_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\nDTOA: %.3f[us]"), dX, dY );
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,0,0,245));
+						break;
+					case enSubMenu_4 :
+						_stprintf_s(buffer, _countof(buffer), TEXT("시간: %.3f[us]\n세기: %.3f[dBm]"), dX, dY );
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+						break;
+					case enSubMenu_5 :
+						_stprintf_s(buffer, _countof(buffer), _T("시간: %.3f[us]\n펄스폭: %.3f[ns]"), dX, dY );
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPBKCOLOR, PERGB(255,0,0,0));
+						PEnset(m_hPE, PEP_dwTRACKINGTOOLTIPTEXTCOLOR, PERGB(0,245,0,0));
+						break;
+				}
+			}
+			else {
+
 			}
 
 			PEszset(m_hPE, PEP_szTRACKINGTEXT, buffer);
@@ -1666,8 +1672,9 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 		else if( HIWORD(wParam) == PEWN_MOUSEMOVE ) {
 			POINT pt;
 			HOTSPOTDATA hsd;
-			TCHAR buffer[128];
-			TCHAR buffer2[128];
+			TCHAR buffer[300];
+			TCHAR buffer2[300];
+			TCHAR strRawDataInfo[128];
 
 			// get last mouse location within control //
 			PEvget(m_hPE, PEP_ptLASTMOUSEMOVE, &pt);
@@ -1678,11 +1685,28 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			// now look at HotSpotData structure //
 			PEvget(m_hPE, PEP_structHOTSPOTDATA, &hsd);
 
+			buffer[0] = 0;
+
 			if (hsd.nHotSpotType == PEHS_DATAPOINT) {
+				int iIndex;
 				// get ydata value at hot spot //
 				float yvalue;
+				STR_PDW_DATA *pPDWData = (STR_PDW_DATA *) m_pDoc->GetData();
+
 				PEvgetcellEx(m_hPE, PEP_faYDATA, hsd.w1, hsd.w2, &yvalue);
-				_stprintf_s(buffer, _countof(buffer), TEXT("DataPoint value %.2f, s=%d,p=%d"), yvalue, hsd.w1, hsd.w2);
+				_stprintf_s(buffer, _countof(buffer), TEXT("[DataPoint value %.2f, s=%d,p=%d]"), yvalue, hsd.w1, hsd.w2);
+
+				iIndex = hsd.w2 - 1;
+				if( iIndex >= 0 && iIndex < m_pDoc->GetDataItems() ) {
+					_stprintf_s( strRawDataInfo, _countof(strRawDataInfo), TEXT(" %.1f도 %.3fMHz %.1fdBm %.1fns"), pPDWData->pfAOA[iIndex], pPDWData->pfFreq[iIndex], pPDWData->pfPA[iIndex], pPDWData->pfPW[iIndex] );
+					PEszset(m_hPE, PEP_szSUBTITLE, strRawDataInfo );
+
+					wcscat( buffer, strRawDataInfo );
+
+					//::InvalidateRect(m_hPE, NULL, FALSE);
+					//::UpdateWindow(m_hPE);
+
+				}
 			}
 			else if (hsd.nHotSpotType == PEHS_SUBSET) {
 				PEvgetcell(m_hPE, PEP_szaSUBSETLABELS, hsd.w1, buffer2);
@@ -1694,6 +1718,7 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			}
 			else {
 				// v9 features 
+/*
 				int nResult;
 				nResult = PEsearchsubsetpointindex(m_hPE, pt.x, pt.y);
 				if (nResult)
@@ -1708,6 +1733,7 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 				else {
 					lstrcpy(buffer, TEXT("No hotspot, Outside of charting area"));
 				}
+*/
 			}
 
  			CMainFrame *pMainFrame = ( CMainFrame * ) AfxGetMainWnd();
