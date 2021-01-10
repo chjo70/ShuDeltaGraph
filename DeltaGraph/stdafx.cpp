@@ -31,7 +31,7 @@ void Log( int nType, const TCHAR *fmt, ... )
 		ZeroMemory( szLog, sizeof(szLog) );
 
 		va_start( args, fmt );
-		vswprintf_s( szLog, fmt, args );
+		sprintf_s( szLog, fmt, args );
 		va_end( args );
 
 		if( stbLocal == true ) {
@@ -47,7 +47,7 @@ void Log( int nType, const TCHAR *fmt, ... )
 			strPath = strPath + strTemp;
 
 			//_wfopen_s( & fp, (LPSTR) (LPCTSTR) strPath, _T("a+") );
-			_wfopen_s( & fp, strPath.GetBuffer(), _T("a+") );
+			fopen_s( & fp, strPath.GetBuffer(), _T("a+") );
 
 			GetLocalTime( & cur_time );
 
@@ -81,15 +81,21 @@ void Log( int nType, const TCHAR *fmt, ... )
 
 				strLog += szLog;
 
-				WideCharToMultiByte( CP_ACP, 0, strLog, -1, szLogMB, 5096, NULL, NULL );
-
 				fwrite( "\n", 1, 1, fp );
+#ifdef _MBCS
+				fwrite( strLog, strlen(strLog), 1, fp );
+				TRACE( "\n%s" , strLog );
+#else
+				WideCharToMultiByte( CP_ACP, 0, strLog, -1, szLogMB, 5096, NULL, NULL );
 				fwrite( szLogMB, strlen(szLogMB), 1, fp );
+
+				TRACE( "\n%s" , szLogMB );
+#endif
 
 				fflush( fp );
 				fclose( fp );
 
-				TRACE( "\n%s" , szLogMB );
+
 			}
 			else {
 				CString strErrorMsg;

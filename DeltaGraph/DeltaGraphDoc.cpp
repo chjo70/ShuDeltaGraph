@@ -70,6 +70,7 @@ void CDeltaGraphDoc::Serialize(CArchive& ar)
 	{
 		// TODO: 여기에 로딩 코드를 추가합니다.
 		m_strPathname = ar.m_strFileName;
+		m_strPathname.MakeLower();
 
 	}
 
@@ -159,7 +160,7 @@ void CDeltaGraphDoc::Dump(CDumpContext& dc) const
  */
  ENUM_UnitType CDeltaGraphDoc::WhatUnitType()
 {
-	return m_theDataFile.WhatUnitType( & m_strPathname );
+	return m_theDataFile.WhatUnitType( (LPSTR)(LPCTSTR) m_strPathname );
 }
 
 /**
@@ -170,9 +171,22 @@ void CDeltaGraphDoc::Dump(CDumpContext& dc) const
  * @date      2020/03/12 19:42:42
  * @warning   
  */
- ENUM_DataType CDeltaGraphDoc::WhatDataType()
+ENUM_DataType CDeltaGraphDoc::WhatDataType()
 {
-	return m_theDataFile.WhatDataType( & m_strPathname );
+	return m_theDataFile.WhatDataType( (LPSTR)(LPCTSTR) m_strPathname );
+}
+
+ /**
+  * @brief		GetDataType
+  * @return		ENUM_DataType
+  * @author		조철희 (churlhee.jo@lignex1.com)
+  * @version		0.0.1
+  * @date		2021/01/04 20:12:39
+  * @warning		
+  */
+ENUM_DataType CDeltaGraphDoc::GetDataType() 
+{ 
+    return m_enDataType; 
 }
 
 /**
@@ -228,11 +242,11 @@ bool CDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFilter
  */
 bool CDeltaGraphDoc::ReadDataFile( DWORD dwOffset, STR_FILTER_SETUP *pstFilterSetup, bool bCountOfWindow )
 {
-	bool bRet;
+	//bool bRet;
 	CData *pData, *pFindMapData;
 	
 	pFindMapData = theApp.FindMapData( & m_strPathname );
-	pData = m_theDataFile.ReadDataFile( m_strPathname, dwOffset, pFindMapData, pstFilterSetup );
+	pData = m_theDataFile.ReadDataFile( (LPSTR) (LPCTSTR) m_strPathname, dwOffset, pFindMapData, pstFilterSetup );
 
 	if( pFindMapData == NULL ) {
 		theApp.AddMapData( & m_strPathname, pData );

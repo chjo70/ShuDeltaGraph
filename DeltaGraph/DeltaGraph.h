@@ -9,7 +9,7 @@
 
 #include "resource.h"       // 주 기호입니다.
 
-#include "../ShuDeltaGraph/PDW/DataFile.h"
+#include "../ShuDeltaGraph/Anal/Collect/DataFile/DataFile.h"
 
 //
 //////////////////////////////////////////////////////////////////////////

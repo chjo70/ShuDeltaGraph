@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\ProEssentials9\VC;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)DeltaGraph;C:\ProEssentials9\VC;$(IncludePath)</IncludePath>
     <LibraryPath>C:\ProEssentials9\VC;$(SolutionDir)ShuDeltaGraph\FFTW;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -54,7 +54,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USE_MATH_DEFINES;_MIDAS_;_FFTW_;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -134,6 +134,17 @@
     <None Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\Collect\DataFile\CRWRCommonVariables.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\Collect\DataFile\DataFile.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\INC\IQ.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\INC\PDW.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\MIDAS\Midas.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\MIDAS\PDWIQ.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\MIDAS\RawFile.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Define.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Macro.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Struct.h" />
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Type.h" />
     <ClInclude Include="..\ShuDeltaGraph\ButtonST\BCMenu.h" />
     <ClInclude Include="..\ShuDeltaGraph\ButtonST\BtnST.h" />
     <ClInclude Include="..\ShuDeltaGraph\EasySize\EasySize.h" />
@@ -144,10 +155,6 @@
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\EditList.h" />
     <ClInclude Include="..\ShuDeltaGraph\ListCtrl\ReportCtrl.h" />
     <ClInclude Include="..\ShuDeltaGraph\Log\LogDebug.h" />
-    <ClInclude Include="..\ShuDeltaGraph\PDW\DataFile.h" />
-    <ClInclude Include="..\ShuDeltaGraph\PDW\_iq.h" />
-    <ClInclude Include="..\ShuDeltaGraph\PDW\_macro.h" />
-    <ClInclude Include="..\ShuDeltaGraph\PDW\_pdw.h" />
     <ClInclude Include="..\ShuDeltaGraph\SpinCtrl\NumSpinCtrl.h" />
     <ClInclude Include="..\ShuDeltaGraph\ToolTip\XInfoTip.h" />
     <ClInclude Include="..\ShuDeltaGraph\XColorStatic\FontSize.h" />
@@ -170,6 +177,15 @@
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\ShuDeltaGraph\Anal\Collect\DataFile\DataFile.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\Anal\MIDAS\Midas.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\Anal\MIDAS\RawFile.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\ShuDeltaGraph\ButtonST\BCMenu.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ButtonST\BtnST.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\CBSpeedListCtrl.cpp" />
@@ -178,7 +194,6 @@
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\EditList.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ListCtrl\ReportCtrl.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\Log\LogDebug.cpp" />
-    <ClCompile Include="..\ShuDeltaGraph\PDW\DataFile.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\SpinCtrl\NumSpinCtrl.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\ToolTip\XInfoTip.cpp" />
     <ClCompile Include="..\ShuDeltaGraph\XColorStatic\FontSize.cpp" />

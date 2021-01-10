@@ -32,7 +32,7 @@ static TCHAR strPointSize[4][30] = { _T("Micro"), _T("Small"), _T("Medium"), _T(
 static TCHAR strMainTitleLabel[2][5][30] = { { _T("방위"), _T("주파수"), _T("DTOA"), _T("신호세기"), _T("펄스폭") },
 											 { _T("I/Q 데이터"), _T("순시진폭"), _T("위상차"), _T("FFT") } };
 
-static TCHAR strYAxisLabel[2][6][30] = { { _T(""), _T("방위[도]"), _T("주파수[MHz]"), _T("DTOA[us]"), _T("신호세기[dBm]"), _T("펄스폭[ns]") } ,
+static TCHAR strYAxisLabel[2][6][30] = { { _T(""), _T("방위[도]"), _T("주파수[MHz]"), _T("DTOA[s]"), _T("신호세기[dBm]"), _T("펄스폭[s]") } ,
 										 { _T(""), _T("값"), _T("순시진폭[dB]"), _T("위상차[도]"), _T("세기"), _T("") } };
 
 
@@ -74,6 +74,7 @@ CDeltaGraphView2::CDeltaGraphView2()
 CDeltaGraphView2::~CDeltaGraphView2()
 {
 	CloseGraph();
+    FreeBuffer();
 	
 }
 
@@ -183,7 +184,7 @@ void CDeltaGraphView2::DrawGraph( ENUM_SUB_GRAPH enSubGraph )
  		ShowGraph( enSubGraph, iFileIndex );
 	}
 
-	swprintf_s( szDataItems, _countof(szDataItems), _T("%d"), iFilteredDataItems );
+	sprintf_s( szDataItems, _countof(szDataItems), _T("%d"), iFilteredDataItems );
 	m_CStaticDataItems.SetWindowText( szDataItems );
 
 }
@@ -299,12 +300,18 @@ void CDeltaGraphView2::ClearFilterSetup( STR_FILTER_SETUP *pstrFilterSetup )
 		pstrFilterSetup = & m_strFilterSetup;
 	}
 
-	pstrFilterSetup->dToaMin = pstrFilterSetup->dToaMax = INIT_VAL;
-	pstrFilterSetup->dDtoaMin = pstrFilterSetup->dDtoaMax = INIT_VAL;
-	pstrFilterSetup->dAoaMin = pstrFilterSetup->dAoaMax = INIT_VAL;
-	pstrFilterSetup->dFrqMin = pstrFilterSetup->dFrqMax = INIT_VAL;
-	pstrFilterSetup->dPAMin = pstrFilterSetup->dPAMax = INIT_VAL;
-	pstrFilterSetup->dPWMin = pstrFilterSetup->dPWMax = INIT_VAL;
+    pstrFilterSetup->dToaMin = 0.;
+    pstrFilterSetup->dToaMax = DBL_MAX;
+    pstrFilterSetup->dDtoaMin = 0;
+    pstrFilterSetup->dDtoaMax = DBL_MAX;
+    pstrFilterSetup->dAoaMin = 0;
+    pstrFilterSetup->dAoaMax = DBL_MAX;
+    pstrFilterSetup->dFrqMin = 0;
+    pstrFilterSetup->dFrqMax = DBL_MAX;
+    pstrFilterSetup->dPAMin = -DBL_MAX;
+    pstrFilterSetup->dPAMax = DBL_MAX;
+    pstrFilterSetup->dPWMin = 0;
+    pstrFilterSetup->dPWMax = DBL_MAX;
 
 	pstrFilterSetup->enSubGraph = enUnselectedSubGraph;
 
@@ -597,7 +604,7 @@ void CDeltaGraphView2::InitGraph( ENUM_SUB_GRAPH enSubGraph )
 		uiDataItems = m_pDoc->GetDataItems();
 		enDataType = m_pDoc->GetDataType();
 
-		if (enDataType == en_PDW_DATA) {
+		if (enDataType == en_PDW_DATA ) {
 			PEszset(m_hPE, PEP_szSUBTITLE, _T("") ); // no subtitle
 
 			// 그래프 데이터 그룹 개수 설정
@@ -760,14 +767,14 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 		switch( enSubGraph ) {
 			case enSubMenu_1 :
-				if (enDataType == en_PDW_DATA) {
+				if (enDataType == en_PDW_DATA ) {
 					pPDWData = (STR_PDW_DATA *)pData;
 
 					pcDV = pPDWData->pcDV;
 					pfX = pPDWData->pfTOA;
 					pfY = pPDWData->pfAOA;
 
-					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
+					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
@@ -823,27 +830,13 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfX = pPDWData->pfTOA;
 					pfY = pPDWData->pfFreq;
 
-					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
+					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
-					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
+					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|,.00|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					//dMin = pPDWData->pfTOA[0];
-					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					//dMax = pPDWData->pfTOA[uiDataItems - 1];
-					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-					//dMin = 0.0;
-					//PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
-					//dMax = 360.0;
-					//PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
-					//PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-
 				}
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
@@ -855,18 +848,6 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.0|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.,|"));
-
-// 					PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-// 					dMin = 1.0;
-// 					PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-// 					dMax = (double) uiPDWDataItems;
-// 					PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-					//dMin = 0;
-					//PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
-					//dMax = 360.0;
-					//PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
 				}
 				break;
 
@@ -878,27 +859,13 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfX = pPDWData->pfTOA;
 					pfY = pPDWData->pfDTOA;
 
-					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
+					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
-					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
+					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|,.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					//dMin = pPDWData->pfTOA[0];
-					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					//dMax = pPDWData->pfTOA[uiDataItems - 1];
-					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-					//dMin = 0.0;
-					//PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
-					//dMax = 360.0;
-					//PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
-					//PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-
 				}
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
@@ -933,27 +900,13 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfX = pPDWData->pfTOA;
 					pfY = pPDWData->pfPA;
 
-					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
+					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					//dMin = pPDWData->pfTOA[0];
-					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					//dMax = pPDWData->pfTOA[uiDataItems - 1];
-					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-					//dMin = 0.0;
-					//PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
-					//dMax = 360.0;
-					//PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
-					//PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-
 				}
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
@@ -988,27 +941,13 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 					pfX = pPDWData->pfTOA;
 					pfY = pPDWData->pfPW;
 
-					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[us]"));
+					PEszset(m_hPE, PEP_szXAXISLABEL, _T("시간[s]"));
 					PEszset(m_hPE, PEP_szYAXISLABEL, strYAxisLabel[enDataType-1][enSubGraph] );
 
 					PEszset(m_hPE, PEP_szAXISFORMATX, _T("|,.000|"));
 					PEszset(m_hPE, PEP_szAXISFORMATY, _T("|.0|"));
 
 					PEvsetcellEx( m_hPE, PEP_szaTATEXT, 0, 2, strYAxisLabel[enDataType-1][enSubGraph] );
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLX, PEMSC_MINMAX);
-					//dMin = pPDWData->pfTOA[0];
-					//PEvset(m_hPE, PEP_fMANUALMINX, &dMin, 1);
-					//dMax = pPDWData->pfTOA[uiDataItems - 1];
-					//PEvset(m_hPE, PEP_fMANUALMAXX, &dMax, 1);
-
-					//PEnset(m_hPE, PEP_nMANUALSCALECONTROLY, PEMSC_MINMAX);
-					//dMin = 0.0;
-					//PEvset(m_hPE, PEP_fMANUALMINY, &dMin, 1);
-					//dMax = 360.0;
-					//PEvset(m_hPE, PEP_fMANUALMAXY, &dMax, 1);
-					//PEnset(m_hPE, PEP_nWORKINGAXIS, 0);
-
 				}
 				else {
 					pIQData = (STR_IQ_DATA *)pData;
@@ -1047,13 +986,13 @@ void CDeltaGraphView2::ShowGraph( ENUM_SUB_GRAPH enSubGraph, int iFileIndex )
 			if( uiPDWDataItems > 0 ) {
 				Log( enNormal, _T("그래프에 데이터를 삽입 시작합니다.") );
 				for (i = 0; i < uiPDWDataItems; ++i) {
-					//pfTOA = pPDWData->pfTOA;
-
 					PEvsetcellEx(m_hPE, PEP_faXDATA, 0, i+(iFileIndex*PDW_ITEMS), pfX);
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 0, i+(iFileIndex*PDW_ITEMS), pfY);
 
 					PEvsetcellEx(m_hPE, PEP_faXDATA, 1, i+(iFileIndex*PDW_ITEMS), pfX);
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i+(iFileIndex*PDW_ITEMS), pfY);
+
+                    //TRACE( "\n(%f , %f)" , *pfX, *pfY );
 
 					++pfX;
 					++pfY;
@@ -1417,7 +1356,18 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 	}
 
  }
-
+ 
+ /**
+  * @brief		GetFilterSetup
+  * @param		STR_FILTER_SETUP * pstrFilterSetup
+  * @param		ENUM_SUB_GRAPH enSubGraph
+  * @param		ENUM_DataType enDataType
+  * @return		void
+  * @author		조철희 (churlhee.jo@lignex1.com)
+  * @version		0.0.1
+  * @date		2021/01/06 16:18:25
+  * @warning		
+  */
  void CDeltaGraphView2::GetFilterSetup( STR_FILTER_SETUP *pstrFilterSetup, ENUM_SUB_GRAPH enSubGraph, ENUM_DataType enDataType )
  {
 	 switch( enSubGraph ) {
@@ -1510,19 +1460,19 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 // 	 iCnt += _stprintf_s( szBuffer, _countof(szBuffer), _T("T %.3f~%.3f[us]\rD %.3f~%.3f[도]\rF %.3f~%.3f[MHz]\rP %.3f~%.3f[dB]\rW %.3f~%.3f[ns]"), \
 // 		 m_strFilterSetup.dPAMin, m_strFilterSetup.dPAMax, m_strFilterSetup.dPWMin, m_strFilterSetup.dPWMax );
 
-	 if( m_strFilterSetup.dToaMin != m_strFilterSetup.dToaMax && m_strFilterSetup.dToaMin != INIT_VAL ) {
+	 if( m_strFilterSetup.dToaMin != m_strFilterSetup.dToaMax && m_strFilterSetup.dToaMin != 0 ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("시간 %.3f~%.3f[us]\r"), m_strFilterSetup.dToaMin, m_strFilterSetup.dToaMax );
 	 }
-	 if( m_strFilterSetup.dDtoaMin != m_strFilterSetup.dDtoaMax && m_strFilterSetup.dDtoaMin != INIT_VAL ) {
+	 if( m_strFilterSetup.dDtoaMin != m_strFilterSetup.dDtoaMax && m_strFilterSetup.dDtoaMin != 0 ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("T %.3f~%.3f[us]\r"), m_strFilterSetup.dDtoaMin, m_strFilterSetup.dDtoaMax );
 	 }
-	 if( m_strFilterSetup.dAoaMin != m_strFilterSetup.dAoaMax && m_strFilterSetup.dAoaMin != INIT_VAL ) {
+	 if( m_strFilterSetup.dAoaMin != m_strFilterSetup.dAoaMax && m_strFilterSetup.dAoaMin != 0 ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("방위 %.1f ~ %.1f[도]\r"), m_strFilterSetup.dAoaMin, m_strFilterSetup.dAoaMax );
 	 }
-	 if( m_strFilterSetup.dFrqMin != m_strFilterSetup.dFrqMax && m_strFilterSetup.dFrqMin != INIT_VAL ) {
+	 if( m_strFilterSetup.dFrqMin != m_strFilterSetup.dFrqMax && m_strFilterSetup.dFrqMin != 0 ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("주파수 %.3f,%.3f[MHz]\r"), m_strFilterSetup.dFrqMin, m_strFilterSetup.dFrqMin );
 	 }
-	 if( m_strFilterSetup.dFrqMin != m_strFilterSetup.dPAMax && m_strFilterSetup.dPAMin != INIT_VAL ) {
+	 if( m_strFilterSetup.dFrqMin != m_strFilterSetup.dPAMax && m_strFilterSetup.dPAMin != 0 ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("세기 %.1f ~ %.1f[dBm]\r"), m_strFilterSetup.dPAMin, m_strFilterSetup.dPAMax );
 	 }
 
@@ -1688,7 +1638,7 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 			buffer[0] = 0;
 
 			if (hsd.nHotSpotType == PEHS_DATAPOINT) {
-				int iIndex;
+				UINT uiIndex;
 				// get ydata value at hot spot //
 				float yvalue;
 				STR_PDW_DATA *pPDWData = (STR_PDW_DATA *) m_pDoc->GetData();
@@ -1696,12 +1646,12 @@ BOOL CDeltaGraphView2::OnCommand(WPARAM wParam, LPARAM lParam)
 				PEvgetcellEx(m_hPE, PEP_faYDATA, hsd.w1, hsd.w2, &yvalue);
 				_stprintf_s(buffer, _countof(buffer), TEXT("[DataPoint value %.2f, s=%d,p=%d]"), yvalue, hsd.w1, hsd.w2);
 
-				iIndex = hsd.w2 - 1;
-				if( iIndex >= 0 && iIndex < m_pDoc->GetDataItems() ) {
-					_stprintf_s( strRawDataInfo, _countof(strRawDataInfo), TEXT(" %.1f도 %.3fMHz %.1fdBm %.1fns"), pPDWData->pfAOA[iIndex], pPDWData->pfFreq[iIndex], pPDWData->pfPA[iIndex], pPDWData->pfPW[iIndex] );
+				uiIndex = hsd.w2 - 1;
+				if( uiIndex >= 0 && uiIndex < m_pDoc->GetDataItems() ) {
+					_stprintf_s( strRawDataInfo, _countof(strRawDataInfo), TEXT(" %.1f도 %.3fMHz %.1fdBm %.1fns"), pPDWData->pfAOA[uiIndex], pPDWData->pfFreq[uiIndex], pPDWData->pfPA[uiIndex], pPDWData->pfPW[uiIndex] );
 					PEszset(m_hPE, PEP_szSUBTITLE, strRawDataInfo );
 
-					wcscat( buffer, strRawDataInfo );
+					strcat( buffer, strRawDataInfo );
 
 					//::InvalidateRect(m_hPE, NULL, FALSE);
 					//::UpdateWindow(m_hPE);
@@ -1778,8 +1728,8 @@ void CDeltaGraphView2::AddZoomInfo()
 	STR_ZOOM_INFO strZoomInfo;
 
 	strZoomInfo.enSubGraph = enUnselectedSubGraph;
-	strZoomInfo.dZoomMinX = strZoomInfo.dZoomMaxX = INIT_VAL;
-	strZoomInfo.dZoomMinY = strZoomInfo.dZoomMaxY = INIT_VAL;
+	strZoomInfo.dZoomMinX = strZoomInfo.dZoomMaxX = 0;
+	strZoomInfo.dZoomMinY = strZoomInfo.dZoomMaxY = 0;
 
 	enDataType = m_pDoc->GetDataType();
 
@@ -1803,6 +1753,14 @@ void CDeltaGraphView2::AddZoomInfo()
 
 }
 
+/**
+ * @brief		UpdateZoomButton
+ * @return		void
+ * @author		조철희 (churlhee.jo@lignex1.com)
+ * @version		0.0.1
+ * @date		2020/12/28 16:47:36
+ * @warning		
+ */
 void CDeltaGraphView2::UpdateZoomButton()
 {
 	UINT iLevel;
@@ -1851,14 +1809,14 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 
 		fValue = pPDWData->pfTOA[pHSD->w2];
 		fValue = SetXUnit( fValue, enDataType );
-		swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), fValue );
+		sprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), fValue );
 
 	}
 	else {
 		STR_IQ_DATA *pIQData = (STR_IQ_DATA *) m_pDoc->GetData();
 
 		fValue = (float) pHSD->w2;
-		swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), fValue );
+		sprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), fValue );
 	}
 
 	if( m_bX ) {
@@ -1868,7 +1826,7 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 		
 		m_CStaticX1.SetWindowText( szBuffer );
 		m_fX1 = fValue;
-		swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), m_fX1-m_fX2 );
+		sprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), m_fX1-m_fX2 );
 		
 	 }
 	 else {
@@ -1878,7 +1836,7 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 
 		 m_CStaticX2.SetWindowText( szBuffer );
 		 m_fX2 = fValue;
-		 swprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), m_fX2-m_fX1 );
+		 sprintf_s( szBuffer, _countof(szBuffer), _T("%.3f"), m_fX2-m_fX1 );
 	 }
 
 	 m_CStaticDTOA.SetWindowText( szBuffer );
@@ -1903,18 +1861,22 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 	TCHAR szBuffer[100], szUnit[10];
 
 	if( enDataType == en_PDW_DATA ) {
-		if( fValue > 1000000.0 ) {
-			swprintf_s( szUnit, _countof(szUnit), _T("[s]") );
-			fReturn = fValue / (float) 1000000.0;
+		if( fValue > 1.0 ) {
+			sprintf_s( szUnit, _countof(szUnit), _T("[s]") );
+			fReturn = fValue; // / (float) 1000000.0;
 		}
-		else if( fValue > 1000.0 ) {
-			swprintf_s( szUnit, _countof(szUnit), _T("[ms]") );
-			fReturn = fValue / 1000.0;
+		else if( fValue > 1/1000. ) {
+			sprintf_s( szUnit, _countof(szUnit), _T("[ms]") );
+			fReturn = fValue * 1000.0;
 		}
-		else {
-			swprintf_s( szUnit, _countof(szUnit), _T("[us]") );
-			fReturn = fValue;
+		else if( fValue > 1/1000000. ) {
+			sprintf_s( szUnit, _countof(szUnit), _T("[us]") );
+			fReturn = fValue * 1000000.0;
 		}
+        else if( fValue > 1/1000000000. ) {
+            sprintf_s( szUnit, _countof(szUnit), _T("[ns]") );
+            fReturn = fValue * 1000000000.0;
+        }
 	}
 	else {
 
@@ -1922,11 +1884,11 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 
 
 	if( m_bX ) {
-		swprintf_s( szBuffer, _countof(szBuffer), _T("X1%s"), szUnit );
+		sprintf_s( szBuffer, _countof(szBuffer), _T("X1%s"), szUnit );
 		m_CStaticX1Unit.SetWindowText( szBuffer );
 	}
 	else {
-		swprintf_s( szBuffer, _countof(szBuffer), _T("X2%s"), szUnit );
+		sprintf_s( szBuffer, _countof(szBuffer), _T("X2%s"), szUnit );
 		m_CStaticX2Unit.SetWindowText( szBuffer );
 	}
 
@@ -2056,6 +2018,8 @@ void CDeltaGraphView2::OnBnClickedButtonFilterZoomout()
 		PEvset( m_hPE, PEP_fZOOMMAXX, & strZoomInfo.dZoomMaxX, 1);
 		PEvset( m_hPE, PEP_fZOOMMINY, & strZoomInfo.dZoomMinY, 1);
 		PEvset( m_hPE, PEP_fZOOMMAXY, & strZoomInfo.dZoomMaxY, 1);
+
+		m_CComboYAxis.SetCurSel( strZoomInfo.enSubGraph-1 );
 
 		::InvalidateRect(m_hPE, NULL, FALSE);
 		::UpdateWindow(m_hPE);

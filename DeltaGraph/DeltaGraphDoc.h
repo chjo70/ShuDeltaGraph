@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../ShuDeltaGraph/PDW/DataFile.h"
+#include "../ShuDeltaGraph/Anal/Collect/DataFile/DataFile.h"
 
 class CDeltaGraphDoc : public CDocument
 {
@@ -30,10 +30,11 @@ public:
 	ENUM_UnitType WhatUnitType();
 	ENUM_DataType WhatDataType();
 
+    ENUM_DataType GetDataType();
+
 	inline int GetFileIndex() { return m_theDataFile.GetFileIndex(); }
 	
 	inline UINT GetDataItems() { return m_theDataFile.GetDataItems(); }
-	inline ENUM_DataType GetDataType() { return m_enDataType; /* m_theDataFile.GetDataType(); */ }
 	inline ENUM_UnitType GetUnitType() { return m_enUnitType; /* .GetUnitType(); */ }
 	inline bool IsPhaseData() { return m_theDataFile.IsPhaseData(); }
 	inline void *GetData() { return m_theDataFile.GetData(); }

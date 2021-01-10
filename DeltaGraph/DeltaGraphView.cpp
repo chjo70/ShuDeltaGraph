@@ -171,15 +171,15 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 			m_CListRawData.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | 0x00004000);
 			//m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-			m_CListRawData.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
-			m_CListRawData.InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호 형태")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("TOA[us]/TOA[us]")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("DTOA[us]")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("DV"), LVCFMT_CENTER, TEXT_WIDTH*wcslen(_T("DV")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("방위[도]")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("주파수[MHz]")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("신호세기[dBm]")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("펄스폭[ns]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("순서  ")), -1 );
+			m_CListRawData.InsertColumn( j++, _T("신호 형태"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("신호 형태")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("TOA[us]/TOA"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("TOA[us]/TOA[us]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("DTOA[us]"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("DTOA[us]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("DV"), LVCFMT_CENTER, TEXT_WIDTH*strlen(_T("DV")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("방위[도]"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("방위[도]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("주파수[MHz]"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("주파수[MHz]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("신호세기[dBm]"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("신호세기[dBm]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("펄스폭[ns]"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("펄스폭[ns]")), -1 ); 
 
 			//m_CListPDW.SetGridLines(TRUE);
 			//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
@@ -201,12 +201,12 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 			m_CListRawData.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | 0x00004000);
 			//m_CListPDW.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT );
 
-			m_CListRawData.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순서  ")), -1 );
-			m_CListRawData.InsertColumn( j++, _T("I 데이터"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("I 데이터")), -1 );
-			m_CListRawData.InsertColumn( j++, _T("Q 데이터"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("Q 데이터")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("순시 진폭"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순시 진폭")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("순시 위상차[도]"), LVCFMT_RIGHT, TEXT_WIDTH*wcslen(_T("순시 위상차[도]")), -1 ); 
-			m_CListRawData.InsertColumn( j++, _T("FFT"), LVCFMT_CENTER, TEXT_WIDTH*wcslen(_T("FFT")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순서"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("순서  ")), -1 );
+			m_CListRawData.InsertColumn( j++, _T("I 데이터"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("I 데이터")), -1 );
+			m_CListRawData.InsertColumn( j++, _T("Q 데이터"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("Q 데이터")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순시 진폭"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("순시 진폭")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("순시 위상차[도]"), LVCFMT_RIGHT, TEXT_WIDTH*strlen(_T("순시 위상차[도]")), -1 ); 
+			m_CListRawData.InsertColumn( j++, _T("FFT"), LVCFMT_CENTER, TEXT_WIDTH*strlen(_T("FFT")), -1 ); 
 
 			//m_CListPDW.SetGridLines(TRUE);
 			//m_CListPDW.SetCheckboxeStyle(RC_CHKBOX_NORMAL); // Enable checkboxes
@@ -322,7 +322,7 @@ void CDeltaGraphView::InitListCtrl( bool bInit )
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
 					m_CListRawData.SetItemText( i, j++, strVal ); 
 
-					if( *pcDV == PDW_DV ) {
+					if( *pcDV == _spOne ) {
 						m_CListRawData.SetItemText( i, j++, _T("O") ); 
 					}
 					else {

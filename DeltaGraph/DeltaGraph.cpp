@@ -342,23 +342,13 @@ void CDeltaGraphApp::RawDataOpen( CString *pStrPathname )
 	if( true == IsExistFile( *pStrPathname ) ) {
 		++ m_uiWindowNumber;
 
-		if( GetDataType(*pStrPathname) == en_PDW_DATA ) {
-			pos = GetFirstDocTemplatePosition();
-			for( i=0 ; i < PDW_MULTI_WINDOWS ; ++i ) {
- 				pDocTemplate = GetNextDocTemplate( pos );
- 
- 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(*pStrPathname);
-			}
-		}
-		else {
-			pos = GetFirstDocTemplatePosition();
+		pos = GetFirstDocTemplatePosition();
 
-			for( i=0 ; i < IQ_MULTI_WINDOWS ; ++i ) {
- 				pDocTemplate = GetNextDocTemplate( pos );
+		for( i=0 ; i < IQ_MULTI_WINDOWS ; ++i ) {
+ 			pDocTemplate = GetNextDocTemplate( pos );
  
- 				pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(*pStrPathname);
+ 			pDoc = ( CDeltaGraphDoc *) pDocTemplate->OpenDocumentFile(*pStrPathname);
 
-			}
 		}
 
 		::PostMessage( m_pMainWnd->m_hWnd, WM_COMMAND, ID_WINDOW_TILE_HORZ, NULL );
@@ -411,11 +401,11 @@ ENUM_DataType CDeltaGraphApp::GetDataType(CString &strPathName)
 	ENUM_DataType enDataType=en_UnknownData;
 
 	strPathName.MakeLower();
-	if( NULL != wcsstr( strPathName.GetBuffer(), L"pdw" ) || NULL != wcsstr( strPathName.GetBuffer(), L"npw" ) || NULL != wcsstr( strPathName.GetBuffer(), L"dat" ) ) {
+	if( 0 != strcmp( strPathName.GetBuffer(), "pdw" ) || 0 != strcmp( strPathName.GetBuffer(), "npw" ) || 0 != strcmp( strPathName.GetBuffer(), "dat" ) ) {
 		enDataType = en_PDW_DATA;
 	}
 
-	if( NULL != wcsstr( strPathName.GetBuffer(), L"iq" ) ) {
+	if( 0 != strcmp( strPathName.GetBuffer(), "iq" ) ) {
 		enDataType = en_IQ_DATA;
 	}
 
@@ -453,7 +443,7 @@ bool CDeltaGraphApp::OpenFile( CString &strPathname, TCHAR *pTitle, ENUM_OPENTYP
 	// 로그 파일을 오픈할 FILE Dialog창을 생성한다.
 	switch( enOpenType ) {
 	case enOpenPDW :
-		pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.zpdw;*.iq;*.eiq;*.siq;*.dat)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.zpdw;*.iq;*.eiq;*.siq;*.dat|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.zpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.zpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|All Files (*.*)|*.*||"), NULL, 0, VistaStyle );
+		pWndFile = new CFileDialog(TRUE, NULL, NULL, OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_SHOWHELP | OFN_HIDEREADONLY, _T("PDW/IQ 파일들 (*.spdw,*.pdw;*.npw;*.epdw;*.kpdw;*.zpdw;*.iq;*.eiq;*.siq;*.dat;*.midas)|*.spdw;*.pdw;*.npw;*.epdw;*.kpdw;*.zpdw;*.iq;*.eiq;*.siq;*.dat;*.midas|PDW 파일들 (*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.zpdw;*.dat)|*.pdw;*.npw;*.spdw;*.epdw;*.kpdw;*.zpdw;*.dat|IQ 파일들 (*.iq;*.siq;*.eiq)|*.iq;*.siq;*.eiq|MIDAS 파일들 (*.midas)|*.midas|All Files (*.*)|*.*||"), NULL, 0, VistaStyle );
 		szinitDir[0] = NULL;
 		break;
 

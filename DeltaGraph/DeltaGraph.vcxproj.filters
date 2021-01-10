@@ -19,9 +19,6 @@
     <Filter Include="소스 파일\LOG">
       <UniqueIdentifier>{c03df85c-ea8c-439e-ac39-884ba72a8a21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\PDW">
-      <UniqueIdentifier>{2b36d8df-adb0-4715-8001-ca67cb483543}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\ListCtrl">
       <UniqueIdentifier>{d21e16ed-94b0-4490-9a1d-2ff33c8cb28b}</UniqueIdentifier>
     </Filter>
@@ -36,6 +33,27 @@
     </Filter>
     <Filter Include="소스 파일\ToolTip">
       <UniqueIdentifier>{7102e797-5487-42e5-b35e-e277239498b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal">
+      <UniqueIdentifier>{09711127-c567-40a2-8359-e18ff6a24008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\MIDAS">
+      <UniqueIdentifier>{b2ff3f06-1421-4b4c-a5fe-28c3715adc98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\SigAnal">
+      <UniqueIdentifier>{1b5ae10c-09d8-404c-aaa1-bd4489b34598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Utils">
+      <UniqueIdentifier>{b9f79767-da38-4553-b0a5-b1893b304147}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\INC">
+      <UniqueIdentifier>{b364d609-d65c-49ed-a308-eefd4142aa16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\Collect">
+      <UniqueIdentifier>{2b36d8df-adb0-4715-8001-ca67cb483543}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\Collect\DataFile">
+      <UniqueIdentifier>{144db461-0928-4ca9-aac4-c15258dec9ff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -180,18 +198,6 @@
     <ClInclude Include="..\ShuDeltaGraph\Log\LogDebug.h">
       <Filter>소스 파일\LOG</Filter>
     </ClInclude>
-    <ClInclude Include="..\ShuDeltaGraph\PDW\_iq.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShuDeltaGraph\PDW\_macro.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShuDeltaGraph\PDW\_pdw.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShuDeltaGraph\PDW\DataFile.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
     <ClInclude Include="revision.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -237,6 +243,39 @@
     <ClInclude Include="..\ShuDeltaGraph\ToolTip\XInfoTip.h">
       <Filter>소스 파일\ToolTip</Filter>
     </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\MIDAS\Midas.h">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\MIDAS\PDWIQ.h">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\MIDAS\RawFile.h">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\INC\IQ.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\INC\PDW.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Define.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Macro.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Type.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\SigAnal\_Struct.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\Collect\DataFile\CRWRCommonVariables.h">
+      <Filter>소스 파일\Anal\Collect\DataFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShuDeltaGraph\Anal\Collect\DataFile\DataFile.h">
+      <Filter>소스 파일\Anal\Collect\DataFile</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DeltaGraph.cpp">
@@ -271,9 +310,6 @@
     </ClCompile>
     <ClCompile Include="..\ShuDeltaGraph\Log\LogDebug.cpp">
       <Filter>소스 파일\LOG</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShuDeltaGraph\PDW\DataFile.cpp">
-      <Filter>소스 파일\PDW</Filter>
     </ClCompile>
     <ClCompile Include="revision.cpp">
       <Filter>소스 파일</Filter>
@@ -319,6 +355,15 @@
     </ClCompile>
     <ClCompile Include="..\ShuDeltaGraph\ToolTip\XInfoTip.cpp">
       <Filter>소스 파일\ToolTip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\Anal\MIDAS\Midas.cpp">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\Anal\MIDAS\RawFile.cpp">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShuDeltaGraph\Anal\Collect\DataFile\DataFile.cpp">
+      <Filter>소스 파일\Anal\Collect\DataFile</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
