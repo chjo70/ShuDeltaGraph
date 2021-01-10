@@ -10,9 +10,9 @@
 #include "../ShuDeltaGraph/ListCtrl/ReportCtrl.h"
 #include "./EchoSocket/MyEchoSocket.h"
 
-#include "../ShuDeltaGraph/PDW/_iq.h"
-#include "../ShuDeltaGraph/PDW/_pdw.h"
-#include "../ShuDeltaGraph/PDW/_macro.h"
+//#include "../ShuDeltaGraph/PDW/_iq.h"
+//#include "../ShuDeltaGraph/PDW/_pdw.h"
+#include "../ShuDeltaGraph/Anal/SigAnal/_macro.h"
 
 #define SHU_PORT_NUM				(13060)
 

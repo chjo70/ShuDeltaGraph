@@ -7,6 +7,10 @@
 #include "ShuSIMDlg.h"
 #include "afxdialogex.h"
 
+#define PDW_BLOCK		(30)
+#define CO_PDW_DATA		(60)
+#define CO_INTRA_DATA	(100)
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
