@@ -536,7 +536,7 @@ void CDialogSHU::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 					m_pParentDlg->Send( enSHU, m_ptxData );
 				}
 				else {
-					//m_pParentDlg->InsertIQRawDataItem( & pQueueMsg->stData, m_pRawData->uiItem, & m_stColList, m_pRawData );
+					//m_pParentDlg->InsertIQRawDataItem( & pQueueMsg->stData, m_RawData.uiItem, & m_stColList, m_pRawData );
 					//m_pParentDlg->ViewGraph( pQueueMsg->stMsg.uiOpcode );
 
 					SetIBkColorOfColList( m_uiColList, -1 );

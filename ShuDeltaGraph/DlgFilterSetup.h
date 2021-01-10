@@ -21,7 +21,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	STR_FILTER_SETUP m_stFilterSetup;
+	STR_FILTER_SETUP m_strFilterSetup;
 
 private:
 	CNumSpinCtrl m_CSpinAoaMax;

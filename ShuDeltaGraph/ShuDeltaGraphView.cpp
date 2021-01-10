@@ -16,6 +16,8 @@
 
 #include "Pegrpapi.h"
 
+#include "./Anal/Collect/DataFile/DataFile.h"
+
 #include "./Log/LogDebug.h"
 
 #ifdef _DEBUG
@@ -274,20 +276,20 @@ void CShuDeltaGraphView::ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph )
 	pData = NULL; //m_pDoc->FindMapData( & m_strPathName );
 
 	// TOA
-	PEvget(m_hPE, PEP_fZOOMMINX, & pData->m_stFilterSetup.dToaMin ); 
-	PEvget(m_hPE, PEP_fZOOMMAXX, & pData->m_stFilterSetup.dToaMax ); 
+	PEvget(m_hPE, PEP_fZOOMMINX, & pData->m_strFilterSetup.dToaMin ); 
+	PEvget(m_hPE, PEP_fZOOMMAXX, & pData->m_strFilterSetup.dToaMax ); 
 
 	PEgetsgraph( m_hPE, & stSGRAPHPROPERTIES );
 
 	// 2차원 그래프에 어떤 종류의 그래프인지를 확인한다.
 	switch( m_enSubGraph ) {
 		case enSubMenu_1 :
-			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dAoaMin ); 
-			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dAoaMax ); 
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_strFilterSetup.dAoaMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_strFilterSetup.dAoaMax ); 
 			break;
 		case enSubMenu_2 :
-			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dFrqMin ); 
-			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dFrqMax ); 
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_strFilterSetup.dFrqMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_strFilterSetup.dFrqMax ); 
 			break;
 		case enSubMenu_3 :
 			//PEvget(m_hPE, PEP_fMANUALMINY, &dMinY ); 
@@ -295,8 +297,8 @@ void CShuDeltaGraphView::ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph )
 			break;
 
 		case enSubMenu_4 :
-			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_stFilterSetup.dPAMin ); 
-			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_stFilterSetup.dPAMax ); 
+			PEvget(m_hPE, PEP_fZOOMMINY, & pData->m_strFilterSetup.dPAMin ); 
+			PEvget(m_hPE, PEP_fZOOMMAXY, & pData->m_strFilterSetup.dPAMax ); 
 			break;
 	}
 
@@ -305,7 +307,7 @@ void CShuDeltaGraphView::ShowFilterSetup( ENUM_SUB_GRAPH enSubGraph )
 	m_pDlgFilterSetup->SetValue( & stFilterSetup );
 	if( IDOK == m_pDlgFilterSetup->DoModal() ) {
 
-		pApp->SaveProfile( & m_pDlgFilterSetup->m_stFilterSetup );
+		pApp->SaveProfile( & m_pDlgFilterSetup->m_strFilterSetup );
 		// Redraw Graph
 		pApp->FilteredOpenFile( m_strPathName );
 	}
@@ -411,7 +413,7 @@ void CShuDeltaGraphView::ShowPulseInfo( ENUM_SUB_GRAPH enSubGraph )
 					strVal.Format( _T("%12.3f") , *pfDTOA*1. );
 					m_pListCtrl->SetItemText( i, j++, strVal ); 
 
-					if( *pcDV == PDW_DV ) {
+					if( *pcDV == SONATA::uiPDW_DV ) {
 						m_pListCtrl->SetItemText( i, j++, _T("O") ); 
 					}
 					else {
@@ -552,23 +554,23 @@ void CShuDeltaGraphView::ShowPieGraph(ENUM_SUB_GRAPH enSubGraph)
 			pcVal = pPDWData->pcType;
 			for( i=0 ; i < uiDataItems ; ++i ) {
 				switch( *pcVal ) {
-					case PDW_NORMAL :
+					case SONATA::uiPDW_NORMAL :
 						++ uiNormal;
 						break;
 
-					case PDW_CW :
+					case SONATA::uiPDW_CW :
 						++ uiCW;
 						break;
 
-					case PDW_CHIRPUP :
+					case SONATA::uiPDW_CHIRPUP :
 						++ uiFMOP;
 						break;
 
-					case PDW_CHIRPDN :
+					case SONATA::uiPDW_CHIRPDN :
 						++ uiFMOP;
 						break;
 
-					case PDW_PMOP :
+					case SONATA::uiPDW_PMOP :
 						++ uiPMOP;
 						break;
 				}
@@ -601,7 +603,7 @@ void CShuDeltaGraphView::ShowPieGraph(ENUM_SUB_GRAPH enSubGraph)
 		else {
 			pcVal = pPDWData->pcDV;
 			for( i=0 ; i < uiDataItems ; ++i ) {
-				if( *pcVal == PDW_DV ) {
+				if( *pcVal == SONATA::uiPDW_DV ) {
 					++ uiDirectionValid;
 				}
 				else {
@@ -828,7 +830,7 @@ void CShuDeltaGraphView::ShowPolarGraph(ENUM_SUB_GRAPH enSubGraph)
 		for (i = 0; i < uiDataItems; ++i) {
 			float f1 = -9999.0F;
 
-			if (*pcDV == PDW_DV) {
+			if (*pcDV == SONATA::uiPDW_DV) {
 				PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
 
 			}
@@ -1252,7 +1254,7 @@ void CShuDeltaGraphView::Show2DGraph( ENUM_SUB_GRAPH enSubGraph )
 			}
 
  			for (i = 0; i < uiDataItems; ++i) {
-				if (*pcDV == PDW_DV) {
+				if (*pcDV == SONATA::uiPDW_DV) {
 					PEvsetcellEx(m_hPE, PEP_faYDATA, 1, i, & f1);
 
 				}

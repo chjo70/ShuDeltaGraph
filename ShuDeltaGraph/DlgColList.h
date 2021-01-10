@@ -14,7 +14,9 @@
 #include "./ButtonST/BtnST.h"
 #include "./ToolTip/XInfoTip.h"
 
-#include "CRWRCommonVariables.h"
+#include "./Anal/SigAnal/_Macro.h"
+
+#include "./Anal/Collect/DataFile/CRWRCommonVariables.h"
 
 #define PDW_BLOCK		(30)
 #define CO_PDW_DATA		(60)

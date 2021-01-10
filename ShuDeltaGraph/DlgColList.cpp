@@ -6,7 +6,7 @@
 #include "DlgColList.h"
 #include "afxdialogex.h"
 
-#include "./PDW/DataFile.h"
+#include "./Anal/Collect/DataFile/DataFile.h"
 
 extern TCHAR g_stColListMode[6][20];
 
@@ -1099,7 +1099,7 @@ void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData,
 	ConvertRAWData( iItem, en_PDW_DATA, uiColList, pRawData, enID, enSubBoardID );
 
 	if( enID == enSHU || enID == enRSA )
-		m_theDataFile.SaveDataFile( strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
+		m_theDataFile.SaveDataFile( (char *) (LPCTSTR) strPathname, (void *) m_pSonataData->unRawData.stPDWData, iItem*sizeof(TNEW_PDW), en_SONATA, en_PDW_DATA );
 	else {
 		STR_PDWFILE_HEADER stPDWFileHeader;
 
@@ -1107,7 +1107,7 @@ void CDlgColList::MakePDWFile( int iItem, int uiColList, STR_RAW_DATA *pRawData,
 		stPDWFileHeader.uiSignalDeletingStatus = 0;
 		stPDWFileHeader.uiSignalCount = iItem;
 		stPDWFileHeader.uiBoardID = enSubBoardID;
-		m_theDataFile.SaveDataFile( strPathname, (void * ) & pRawData->unRawData, iItem*sizeof(DMAPDW), en_ZPOCKETSONATA, en_PDW_DATA, & stPDWFileHeader, sizeof(STR_PDWFILE_HEADER) );
+		m_theDataFile.SaveDataFile( (char *) (LPCTSTR) strPathname, (void * ) & pRawData->unRawData, iItem*sizeof(DMAPDW), en_ZPOCKETSONATA, en_PDW_DATA, & stPDWFileHeader, sizeof(STR_PDWFILE_HEADER) );
 	}
 
 }
@@ -1177,8 +1177,8 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 					if( bValid == true ) {
 						m_stStatPDW.fDtoaMean += uiDTOA;
 
-						pNEW_PDW->item.dv = PDW_DV;
-						pNEW_PDW->item.stat = PDW_NORMAL;
+						pNEW_PDW->item.dv = SONATA::uiPDW_DV;
+						pNEW_PDW->item.stat = SONATA::uiPDW_NORMAL;
 
 						pNEW_PDW->item.pmop = 0;
 						pNEW_PDW->item.freq_diff = 0;
@@ -1309,8 +1309,8 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 			if( bValid == true ) {
 				m_stStatPDW.fDtoaMean += uiDTOA;
 
-				pNEW_PDW->item.dv = PDW_DV;
-				pNEW_PDW->item.stat = PDW_NORMAL;
+				pNEW_PDW->item.dv = SONATA::uiPDW_DV;
+				pNEW_PDW->item.stat = SONATA::uiPDW_NORMAL;
 
 				pNEW_PDW->item.pmop = 0;
 				pNEW_PDW->item.freq_diff = 0;
@@ -1431,7 +1431,7 @@ void CDlgColList::ConvertRAWData( int iItem, ENUM_DataType enDataType, int uiCol
 		m_stStatPDW.fFreqMean = CPOCKETSONATAPDW::DecodeFREQ( (int) m_stStatPDW.fFreqMean, uiCh, enSUbBoardID );
 
 		m_stStatPDW.fDtoaMean /= ( iCoPdw - 1 );
-		m_stStatPDW.fDtoaMean = CPOCKETSONATAPDW::DecodeTOAus( m_stStatPDW.fDtoaMean );
+		m_stStatPDW.fDtoaMean = CPOCKETSONATAPDW::DecodeTOAus( (_TOA) m_stStatPDW.fDtoaMean );
 		//m_stStatPDW.fDtoaMean = FDIV( m_stStatPDW.fDtoaMean * 20., 1000. );
 	}
 }
@@ -1524,7 +1524,7 @@ void CDlgColList::MakeIQFile( int iItem, STR_RAW_DATA *pRawData )
 	stIQHeader.fColTime = pRawData->stColList.stColItem.fColTime;
 	stIQHeader.uiColNumber = pRawData->stColList.stColItem.uiColNumber;
 	stIQHeader.fThreshold = pRawData->stColList.stColItem.fThreshold;
-	m_theDataFile.SaveDataFile( strPathname, (void *) pRawData->unRawData.stIQData, iItem, en_SONATA, en_IQ_DATA, & stIQHeader, sizeof(STR_IQ_HEADER) );
+	m_theDataFile.SaveDataFile( (char*)(LPCTSTR) strPathname, (void *) pRawData->unRawData.stIQData, iItem, en_SONATA, en_IQ_DATA, & stIQHeader, sizeof(STR_IQ_HEADER) );
 
 }
 

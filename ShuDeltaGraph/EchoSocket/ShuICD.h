@@ -8,7 +8,7 @@
 //
 
 
-#include "CRWRCommonVariables.h"
+#include "../Anal/Collect/DataFile/CRWRCommonVariables.h"
 
 enum _REQ_COMMANDCODE {
 	REQ_INIT=1001,

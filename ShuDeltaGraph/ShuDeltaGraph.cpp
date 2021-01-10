@@ -626,7 +626,7 @@ void CShuDeltaGraphApp::FilteredOpenFile( CString strPathname )
 	ENUM_GRAPH_VIEW viewPDWGraph[PDW_MULTI_WINDOWS] = { enGraphPulseInfo, enGRAPH_PIE, enGRAPH_POLAR, enGRAPH_2D, enGRAPH_MULTI, enGRAPH_3D } ;
 
 	pData = theApp.FindMapData( & strPathname );
-	memcpy( & stFilterSetup, & pData->m_stFilterSetup, sizeof(STR_FILTER_SETUP) );
+	memcpy( & stFilterSetup, & pData->m_strFilterSetup, sizeof(STR_FILTER_SETUP) );
 	//pDoc->CloseMapData( & strPathname );
 
 	posTemplate = GetFirstDocTemplatePosition();
@@ -822,9 +822,9 @@ void CShuDeltaGraphApp::LoadProfile( STR_COL_ITEM *pstColList, STR_RX_THRESHOLD 
 
 
 	::GetPrivateProfileString( L"RX_THRESHOLD", L"MAG", L"0", szBuffer, 100, m_strIniFile );
-	pRxThreshold->uiMagThreshold = (float) _wtof(szBuffer);
+	pRxThreshold->uiMagThreshold = (unsigned int) _wtof(szBuffer);
 	::GetPrivateProfileString( L"RX_THRESHOLD", L"COR", L"0", szBuffer, 100, m_strIniFile );
-	pRxThreshold->uiCorThreshold = (float) _wtof(szBuffer);
+	pRxThreshold->uiCorThreshold = (unsigned int) _wtof(szBuffer);
 
 }
 

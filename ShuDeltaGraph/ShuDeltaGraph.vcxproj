@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\ProEssentials9\VC;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ShuDeltaGraph;C:\ProEssentials9\VC;$(IncludePath)</IncludePath>
     <LibraryPath>C:\ProEssentials5\VC;C:\ProEssentials9\VC;$(SolutionDir)ShuDeltaGraph\FFTW;$(SolutionDir)Debug;$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
@@ -58,7 +58,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USE_MATH_DEFINES;_MIDAS_;_FFTW_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,6 +157,22 @@
     <None Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Anal\Collect\DataFile\CRWRCommonVariables.h" />
+    <ClInclude Include="Anal\Collect\DataFile\DataFile.h" />
+    <ClInclude Include="Anal\INC\AetIPL.h" />
+    <ClInclude Include="Anal\INC\defines.h" />
+    <ClInclude Include="Anal\INC\ErrorMsg.h" />
+    <ClInclude Include="Anal\INC\Macros.h" />
+    <ClInclude Include="Anal\INC\OS.h" />
+    <ClInclude Include="Anal\INC\PDW.h" />
+    <ClInclude Include="Anal\INC\Stack.h" />
+    <ClInclude Include="Anal\INC\structs.h" />
+    <ClInclude Include="Anal\INC\system.h" />
+    <ClInclude Include="Anal\MIDAS\RawFile.h" />
+    <ClInclude Include="Anal\SigAnal\_Define.h" />
+    <ClInclude Include="Anal\SigAnal\_Macro.h" />
+    <ClInclude Include="Anal\SigAnal\_Struct.h" />
+    <ClInclude Include="Anal\SigAnal\_Type.h" />
     <ClInclude Include="ButtonST\BCMenu.h" />
     <ClInclude Include="ButtonST\BtnST.h" />
     <ClInclude Include="ChildFrm.h" />
@@ -182,10 +198,6 @@
     <ClInclude Include="Log\LogDebug.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="OutputWnd.h" />
-    <ClInclude Include="PDW\DataFile.h" />
-    <ClInclude Include="PDW\_iq.h" />
-    <ClInclude Include="PDW\_macro.h" />
-    <ClInclude Include="PDW\_pdw.h" />
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShuDeltaGraph.h" />
@@ -201,6 +213,12 @@
     <ClInclude Include="XColorStatic\XColorStatic.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Anal\Collect\DataFile\DataFile.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Anal\MIDAS\RawFile.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="ButtonST\BCMenu.cpp" />
     <ClCompile Include="ButtonST\BtnST.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
@@ -224,7 +242,6 @@
     <ClCompile Include="Log\LogDebug.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
-    <ClCompile Include="PDW\DataFile.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
     <ClCompile Include="revision.cpp" />
     <ClCompile Include="ShuDeltaGraph.cpp" />

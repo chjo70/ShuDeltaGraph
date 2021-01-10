@@ -227,7 +227,7 @@ bool CShuDeltaGraphDoc::OpenFile( CString &strPathname, STR_FILTER_SETUP *pstFil
 
 	// 데이터 읽기
 	pFindMapData = theApp.FindMapData( & m_strPathname );
-	pData = m_theDataFile.ReadDataFile( m_strPathname, 0, pFindMapData, pstFilterSetup );
+	pData = m_theDataFile.ReadDataFile( (char*)(LPCTSTR) m_strPathname, 0, pFindMapData, pstFilterSetup );
 	if( pFindMapData == NULL ) {
 		theApp.AddMapData( & m_strPathname, pData );
 	}

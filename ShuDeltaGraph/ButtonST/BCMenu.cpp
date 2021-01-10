@@ -1942,7 +1942,8 @@ void BCMenu::SynchronizeMenu(void)
 	CTypedPtrArray<CPtrArray, BCMenuData*> temp;
 	BCMenuData *mdata;
 	CString string;
-	UINT submenu,nID=0,state,j;
+	UINT submenu,nID=0,state;
+	int j;
 	
 	InitializeMenuList(0);
 	for(j=0;j<GetMenuItemCount();++j){

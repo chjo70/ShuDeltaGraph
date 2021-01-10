@@ -8,6 +8,8 @@
 
 #include "Pegrpapi.h"
 
+#include "./Anal/SigAnal/_Define.h"
+
 #include "./FFTW/fftw3.h"
 
 #define GetRandom( min, max ) ((rand() % (int)(((max)+1) - (min))) + (min))

@@ -97,14 +97,23 @@ int __cdecl CompareByLabelNameI(const void *elem1, const void *elem2)
 {
         CLabelItem *p1 = (CLabelItem*)elem1;
         CLabelItem *p2 = (CLabelItem*)elem2;
-        return wcscmp(p1->sItem[compare_column].GetBuffer(),p2->sItem[compare_column].GetBuffer());
+#ifdef _MBCS
+        return strcmp(p1->sItem[compare_column].GetBuffer(),p2->sItem[compare_column].GetBuffer());
+#else
+		return wcscmp(p1->sItem[compare_column].GetBuffer(),p2->sItem[compare_column].GetBuffer());
+#endif
 }
 
 int __cdecl CompareByLabelNameD(const void *elem1, const void *elem2)
 {
         CLabelItem *p1 = (CLabelItem*)elem1;
         CLabelItem *p2 = (CLabelItem*)elem2;
-        return wcscmp(p2->sItem[compare_column].GetBuffer(), p1->sItem[compare_column].GetBuffer());
+#ifdef _MBCS
+		return strcmp(p2->sItem[compare_column].GetBuffer(), p1->sItem[compare_column].GetBuffer());
+#else
+		return wcscmp(p2->sItem[compare_column].GetBuffer(), p1->sItem[compare_column].GetBuffer());
+#endif
+
 }
 
 void CCBSpeedListCtrl::SortByCol(const int ColIndex)

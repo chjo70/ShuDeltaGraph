@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="소스 파일\PDW">
-      <UniqueIdentifier>{9e20601c-8f74-49d0-b116-0135e8f06f1d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\LOG">
       <UniqueIdentifier>{b14ebb9f-46b3-403a-9de9-f22300394056}</UniqueIdentifier>
     </Filter>
@@ -34,9 +31,6 @@
     <Filter Include="소스 파일\SpinCtrl">
       <UniqueIdentifier>{390778d7-5292-4b80-938c-33d3043a0154}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\ColorStatic">
-      <UniqueIdentifier>{f8914ae9-eabf-41fe-bb2e-b7a3457545ff}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\ButtonST">
       <UniqueIdentifier>{f58d2632-6274-4682-9221-28cd415c43a3}</UniqueIdentifier>
     </Filter>
@@ -48,6 +42,24 @@
     </Filter>
     <Filter Include="소스 파일\EasySize">
       <UniqueIdentifier>{cb3185eb-3372-4a86-ae41-096044f6d420}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal">
+      <UniqueIdentifier>{b412ff0b-1b51-4678-a13a-d8ff68dbb521}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\SigAnal">
+      <UniqueIdentifier>{68afb5c2-83eb-4353-8386-096c3b382f09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\INC">
+      <UniqueIdentifier>{d286cc63-905a-41fb-8b19-e3a079ca3e69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\MIDAS">
+      <UniqueIdentifier>{e4df359c-2f6a-4c23-9b73-1fa66f86a424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\ColorStatic">
+      <UniqueIdentifier>{f8914ae9-eabf-41fe-bb2e-b7a3457545ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anal\Collect">
+      <UniqueIdentifier>{d418f729-dbb3-4f9c-8d1e-d5c1ee677b81}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -197,20 +209,8 @@
     <ClInclude Include="PropertiesWnd.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="PDW\_pdw.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
-    <ClInclude Include="PDW\DataFile.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
     <ClInclude Include="Log\LogDebug.h">
       <Filter>소스 파일\LOG</Filter>
-    </ClInclude>
-    <ClInclude Include="PDW\_macro.h">
-      <Filter>소스 파일\PDW</Filter>
-    </ClInclude>
-    <ClInclude Include="PDW\_iq.h">
-      <Filter>소스 파일\PDW</Filter>
     </ClInclude>
     <ClInclude Include="FFTW\fftw3.h">
       <Filter>소스 파일\FFTW</Filter>
@@ -284,6 +284,54 @@
     <ClInclude Include="DialogSHU.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Anal\SigAnal\_Define.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\SigAnal\_Macro.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\SigAnal\_Type.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\AetIPL.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\defines.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\ErrorMsg.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\Macros.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\OS.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\PDW.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\Stack.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\structs.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\INC\system.h">
+      <Filter>소스 파일\Anal\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\MIDAS\RawFile.h">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\SigAnal\_Struct.h">
+      <Filter>소스 파일\Anal\SigAnal</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\Collect\DataFile\CRWRCommonVariables.h">
+      <Filter>소스 파일\Anal\Collect</Filter>
+    </ClInclude>
+    <ClInclude Include="Anal\Collect\DataFile\DataFile.h">
+      <Filter>소스 파일\Anal\Collect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShuDeltaGraph.cpp">
@@ -318,9 +366,6 @@
     </ClCompile>
     <ClCompile Include="PropertiesWnd.cpp">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PDW\DataFile.cpp">
-      <Filter>소스 파일\PDW</Filter>
     </ClCompile>
     <ClCompile Include="Log\LogDebug.cpp">
       <Filter>소스 파일\LOG</Filter>
@@ -390,6 +435,12 @@
     </ClCompile>
     <ClCompile Include="DialogSHU.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Anal\MIDAS\RawFile.cpp">
+      <Filter>소스 파일\Anal\MIDAS</Filter>
+    </ClCompile>
+    <ClCompile Include="Anal\Collect\DataFile\DataFile.cpp">
+      <Filter>소스 파일\Anal\Collect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

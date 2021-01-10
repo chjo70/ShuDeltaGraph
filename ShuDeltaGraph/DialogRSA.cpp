@@ -199,6 +199,15 @@ DWORD WINAPI FuncColListRSA( LPVOID lpData )
 	return 0;
 }
 
+/**
+ * @brief		ReadyColStart
+ * @param		UINT uiIndex
+ * @return		void
+ * @author		조철희 (churlhee.jo@lignex1.com)
+ * @version		0.0.1
+ * @date		2020/12/29 10:47:30
+ * @warning		
+ */
 void CDialogRSA::ReadyColStart( UINT uiIndex )
 {
 	m_pRawData->uiItem = 0;
@@ -330,8 +339,8 @@ void CDialogRSA::ProcessColList( STR_QUEUE_MSG *pQueueMsg )
 
 			if( m_pRawData->uiItem >= m_stResCol.uiCoPulseNum ) {
 				// PDW 수신판에서 강제 첫번재 PDW 제거함. PDW수신판의 첫번째 PDW TOA 오류로 제거함.
-				//-- m_pRawData->uiItem;
-				//memcpy( & m_pRawData->unRawData.stRSA2PDWData[0], & m_pRawData->unRawData.stRSA2PDWData[1], sizeof(UDRCPDW)*m_pRawData->uiItem );
+				//-- m_RawData.uiItem;
+				//memcpy( & m_RawData.unRawData.stRSA2PDWData[0], & m_RawData.unRawData.stRSA2PDWData[1], sizeof(UDRCPDW)*m_RawData.uiItem );
 
 				SetIBkColorOfColList( m_uiColList, 4 );
 
@@ -549,8 +558,8 @@ void CDialogRSA::MakeRxThresholdMessage()
 	pTxData = ( STR_DATA_CONTENTS * ) ( ( char *) m_ptxData + sizeof(STR_MESSAGE) );
 
 	pTxData->stRxThreshold.iBand = 0xFF;
-	m_pParentDlg->m_stRxThreshold.uiMagThreshold = pTxData->stRxThreshold.uiMagThreshold = m_CSpinMagThreshold.GetPos();	
-	m_pParentDlg->m_stRxThreshold.uiCorThreshold = pTxData->stRxThreshold.uiCorThreshold = m_CSpinCorThreshold.GetPos();
+	m_pParentDlg->m_stRxThreshold.uiMagThreshold = pTxData->stRxThreshold.uiMagThreshold = (unsigned int) m_CSpinMagThreshold.GetPos();	
+	m_pParentDlg->m_stRxThreshold.uiCorThreshold = pTxData->stRxThreshold.uiCorThreshold = (unsigned int) m_CSpinCorThreshold.GetPos();
 
 }
 
