@@ -1460,19 +1460,19 @@ void CDeltaGraphView2::OnCbnSelchangeComboYaxis()
 // 	 iCnt += _stprintf_s( szBuffer, _countof(szBuffer), _T("T %.3f~%.3f[us]\rD %.3f~%.3f[도]\rF %.3f~%.3f[MHz]\rP %.3f~%.3f[dB]\rW %.3f~%.3f[ns]"), \
 // 		 m_strFilterSetup.dPAMin, m_strFilterSetup.dPAMax, m_strFilterSetup.dPWMin, m_strFilterSetup.dPWMax );
 
-	 if( m_strFilterSetup.dToaMin != m_strFilterSetup.dToaMax && m_strFilterSetup.dToaMin != 0 ) {
-		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("시간 %.3f~%.3f[us]\r"), m_strFilterSetup.dToaMin, m_strFilterSetup.dToaMax );
+	 if( m_strFilterSetup.dToaMin != -DBL_MAX && m_strFilterSetup.dToaMax != DBL_MAX ) {
+		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("시간 %.3f ~ %.3f[s]\r"), m_strFilterSetup.dToaMin, m_strFilterSetup.dToaMax );
 	 }
-	 if( m_strFilterSetup.dDtoaMin != m_strFilterSetup.dDtoaMax && m_strFilterSetup.dDtoaMin != 0 ) {
-		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("T %.3f~%.3f[us]\r"), m_strFilterSetup.dDtoaMin, m_strFilterSetup.dDtoaMax );
+	 if( m_strFilterSetup.dDtoaMin != -DBL_MAX && m_strFilterSetup.dDtoaMax != DBL_MAX ) {
+		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("T %.3f ~ %.3f[s]\r"), m_strFilterSetup.dDtoaMin, m_strFilterSetup.dDtoaMax );
 	 }
-	 if( m_strFilterSetup.dAoaMin != m_strFilterSetup.dAoaMax && m_strFilterSetup.dAoaMin != 0 ) {
+	 if( m_strFilterSetup.dAoaMin != -DBL_MAX && m_strFilterSetup.dAoaMax != DBL_MAX ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("방위 %.1f ~ %.1f[도]\r"), m_strFilterSetup.dAoaMin, m_strFilterSetup.dAoaMax );
 	 }
-	 if( m_strFilterSetup.dFrqMin != m_strFilterSetup.dFrqMax && m_strFilterSetup.dFrqMin != 0 ) {
-		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("주파수 %.3f,%.3f[MHz]\r"), m_strFilterSetup.dFrqMin, m_strFilterSetup.dFrqMin );
+	 if( m_strFilterSetup.dFrqMin != -DBL_MAX && m_strFilterSetup.dFrqMax != DBL_MAX ) {
+		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("주파수 %.3f ~ %.3f[MHz]\r"), m_strFilterSetup.dFrqMin, m_strFilterSetup.dFrqMin );
 	 }
-	 if( m_strFilterSetup.dFrqMin != m_strFilterSetup.dPAMax && m_strFilterSetup.dPAMin != 0 ) {
+	 if( m_strFilterSetup.dPAMin != -DBL_MAX && m_strFilterSetup.dPAMax != DBL_MAX ) {
 		 iCnt += _stprintf_s( & szBuffer[iCnt], _countof(szBuffer)-iCnt, _T("세기 %.1f ~ %.1f[dBm]\r"), m_strFilterSetup.dPAMin, m_strFilterSetup.dPAMax );
 	 }
 
@@ -1867,15 +1867,15 @@ void CDeltaGraphView2::SetData( HOTSPOTDATA *pHSD )
 		}
 		else if( fValue > 1/1000. ) {
 			sprintf_s( szUnit, _countof(szUnit), _T("[ms]") );
-			fReturn = fValue * 1000.0;
+			fReturn = FMUL( fValue, 1000.0 );
 		}
 		else if( fValue > 1/1000000. ) {
 			sprintf_s( szUnit, _countof(szUnit), _T("[us]") );
-			fReturn = fValue * 1000000.0;
+			fReturn = FMUL( fValue, 1000000.0 );
 		}
         else if( fValue > 1/1000000000. ) {
             sprintf_s( szUnit, _countof(szUnit), _T("[ns]") );
-            fReturn = fValue * 1000000000.0;
+            fReturn = FMUL( fValue, 1000000000.0 );
         }
 	}
 	else {
